@@ -1,0 +1,56 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+% \usepackage[francais]{babel}
+
+\usepackage[left=1.5cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\usepackage[space]{grffile} % Celui-là je sais plus à quoi il sert...
+
+% --- Partie code
+\usepackage{listings}
+\lstset{language=Java} % Changer eventuellement le nom du langage
+\newcommand{\class}[1]{\texttt{#1}}
+
+% --- Parti math. (app.)
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{remark}[theorem]{Remark}
+
+
+% Mathematic abbreviations
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Esp}{\mathbb{E}}
+%\newcommand{\E}{\mathbb{E}} % Si tu l'utilise beaucoup
+\newcommand{\Prob}{\mathbb{P}}
+%\newcommand{\P}{\mathbb{P}} % Si tu l'utilise beaucoup
+
+
+\begin{document}
+
+
+pvs2C functions:
+\begin{lstlisting}
+
+
+
+\end{lstlisting}
+
+
+
+
+
+
+\end{document}

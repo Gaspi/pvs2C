@@ -1,0 +1,10 @@
+test : THEORY
+BEGIN
+  
+  a:int = 3
+  b:int = 8
+  f(x:int):int = 0
+  
+  
+  
+END test

@@ -1,0 +1,39 @@
+test : THEORY
+BEGIN
+  
+  % Basic testing
+  
+  f(a:below(10), b:below(20)):int = a + b
+  
+  
+  g(a:below(10)):int = f(a,a)
+  
+  b: boolean = true
+  
+  bar(n:int):bool =
+    if even?(n+3) and n < 12
+    then n = 6
+    else even?(n) endif
+
+  adda(i:int):int = let c = 3 in c
+  
+  foo(x:int):int =
+    1 + if x = 0 then 1 else 3 + x endif
+  
+  % Higher order testing
+  
+  add2(a:int):int =
+    let (c,d) = ( a + if a = 1 then 1 else 0 endif , 2)
+    in c+d+1
+  
+  
+  f(x:int):int =
+    (lambda(x:int): x + 2)(12)
+  
+  % Recursivity testing
+  
+  factorial(n:nat) : RECURSIVE nat =
+    if n = 0 then 1 else n * factorial(n-1) endif
+  MEASURE n
+  
+END test

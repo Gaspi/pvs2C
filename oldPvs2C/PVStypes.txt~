@@ -1,0 +1,110 @@
+
+C is not meant to be used as a functionnal language...
+
+List of PVS types and functions that needs to be implemented in C :
+
+
+
+- equality    (equality of content, same function should work for any type)
+
+number, number_field, reals, rationnals, int, nat
+
+lists (nested)
+functions  (different type for every function type encountered)
+arrays (destructive, non-destructive)
+
+
+
+
+
+Suggestions :
+    Use only int and nat for formal proof
+    C programs should be written in PVS with Ctypes
+    
+   -> Write a PVS library with types and functions to represent C objects
+    (Cprelude-like)
+   -> Then convert these functions to C.
+   
+   A valid C theory contains only definitions with valid C functions and types
+   However, every theorems can contain int, nat, numfield, etc
+   
+   example :
+   
+    gcd(a:Cnat, b:Cnat): RECURSIVE Cint =
+        if a < b      then gcd(b, a)
+        else if b = 0 then a
+        else               gcd(a-b,b)
+    MEASURE a + 2*b
+    
+    is_gcd : LEMMA exists(u:int, v:int): a*u+b*v = gcd(a,b)
+    
+
+Refelctions    
+    
+Formalisme mathematique ; notion math (reels, rationnels, int, fonctions)
+Objets informatiques ; int32, float, ...
+-> Representation affaiblie des notions math
+Algorithmes sur des notions mathematique (gcd : integer x integer -> integer)
+Implementation dans un langage (limitations)
+ -> Hacks pour que les algos collent
+ -> Considerations d'efficacite (au dela de la complexite)
+
+
+But du jeu : transformer algo math en algo langage (tenir compte des limitations)
+
+
+
+
+
+
+
+
+
+List of C types and functions that we might want to provide for PVS developpers :
+
+    Cint, Cnat (unsigned int)
+    Carray  (below(n) -> T)
+    Cstring
+
+    string.h  math.h  etc
+
+
+
+
+
+
+
+
+	(mk-name '+ nil '|number_fields|)
+	(mk-name '- nil '|number_fields|)
+	(mk-name '* nil '|number_fields|)
+	(mk-name '/ nil '|number_fields|)
+	(mk-name '|number_field_pred| nil '|number_fields|)
+	(mk-name '< nil '|reals|)
+	(mk-name '<= nil '|reals|)
+	(mk-name '> nil '|reals|)
+	(mk-name '>= nil '|reals|)
+	(mk-name '|real_pred| nil '|reals|)
+	(mk-name '|integer_pred| nil '|integers|)
+	(mk-name '|integer?| nil '|integers|)
+	(mk-name '|rational_pred| nil '|rationals|)
+	(mk-name '|floor| nil '|floor_ceil|)
+	(mk-name '|ceiling| nil '|floor_ceil|)
+	(mk-name '|rem| nil '|modulo_arithmetic|)
+	(mk-name '|ndiv| nil '|modulo_arithmetic|)
+	(mk-name '|even?| nil '|integers|)
+	(mk-name '|odd?| nil '|integers|)
+	(mk-name '|cons| nil '|list_adt|)
+	(mk-name '|car| nil '|list_adt|)
+	(mk-name '|cdr| nil '|list_adt|)
+	(mk-name '|cons?| nil '|list_adt|)
+	(mk-name '|null| nil '|list_adt|)
+	(mk-name '|null?| nil '|list_adt|)
+	(mk-name '|restrict| nil '|restrict|)
+	(mk-name '|length| nil '|list_props|)
+	(mk-name '|member| nil '|list_props|)
+	(mk-name '|nth| nil '|list_props|)
+	(mk-name '|append| nil '|list_props|)
+	(mk-name '|reverse| nil '|list_props|)
+
+

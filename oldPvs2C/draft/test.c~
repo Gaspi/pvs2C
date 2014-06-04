@@ -1,0 +1,14 @@
+
+#include<stdio.h>
+
+
+int f(void* a) {
+  int b = *(int*)a;
+  return b + 1;
+}
+
+main() {
+  int arg = 0;
+  int te = f( &arg );
+  printf("%d \n", te);
+}

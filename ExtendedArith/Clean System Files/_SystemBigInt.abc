@@ -1,0 +1,622 @@
+.comp 920 01011101101
+.start _nostart_
+.depend "ExtendedArithBasics"
+.depend "StdOverloaded"
+.depend "StdBool"
+.depend "_SystemBigInt"
+.endinfo
+.module m__SystemBigInt "_SystemBigInt"
+.implab _cycle_in_spine
+.implab _type_error
+.implab _hnf
+.impdesc _ind
+.implab _indirection _eaind
+.impdesc e_system_dif
+.implab e_system_nif e_system_eaif
+.implab e_system_sif
+.impdesc e_system_dAP
+.implab e_system_nAP e_system_eaAP
+.implab e_system_sAP
+.impdesc _Nil
+.impdesc _Cons
+.impdesc _Conss
+.implab n_Conss ea_Conss
+.impdesc _Consts
+.implab n_Consts ea_Consts
+.impdesc _Conssts
+.implab n_Conssts ea_Conssts
+.impdesc _Tuple
+.impdesc d_S.1
+.implab n_S.1 ea_S.1
+.impdesc d_S.2
+.implab n_S.2 ea_S.2
+.impdesc d_S.3
+.implab n_S.3 ea_S.3
+.impdesc d_S.4
+.implab n_S.4 ea_S.4
+.impdesc d_S.5
+.implab n_S.5 ea_S.5
+.impdesc d_S.6
+.implab n_S.6 ea_S.6
+.implab _driver
+.export e__SystemBigInt_rBigInt
+.record e__SystemBigInt_rBigInt ia 1 1 "BigInt"
+.descexp e__SystemBigInt_tBigInt e__SystemBigInt_cBigInt _hnf 2 1 "BigInt"
+.n 2 e__SystemBigInt_tBigInt
+.o 1 0
+e__SystemBigInt_cBigInt
+	push_node _cycle_in_spine 2
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.export e__SystemBigInt_dBigInt._sign_or_number
+.export e__SystemBigInt_nBigInt._sign_or_number
+.descs e__SystemBigInt_dBigInt._sign_or_number e__SystemBigInt_nBigInt._sign_or_number INT 2 0 "BigInt._sign_or_number"
+.n -3 e__SystemBigInt_dBigInt._sign_or_number
+.o 1 0
+e__SystemBigInt_nBigInt._sign_or_number
+	push_node _cycle_in_spine 1
+	jsr_eval 0
+	push_r_args_b 0 1 1 1 1
+	pop_a 1
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.export e__SystemBigInt_dBigInt._limbs
+.export e__SystemBigInt_nBigInt._limbs
+.desc e__SystemBigInt_dBigInt._limbs e__SystemBigInt_nBigInt._limbs _hnf 1 0 "BigInt._limbs"
+.n 1 e__SystemBigInt_dBigInt._limbs
+.o 1 0
+e__SystemBigInt_nBigInt._limbs
+	push_node _cycle_in_spine 1
+	jsr_eval 0
+	repl_r_args_a 1 1 1 1
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.export e__SystemBigInt_rtoBigInt;
+.record e__SystemBigInt_rtoBigInt; a 1 0 "toBigInt;"
+.descexp e__SystemBigInt_ttoBigInt; e__SystemBigInt_ctoBigInt; _hnf 1 1 "toBigInt;"
+.n 1 e__SystemBigInt_ttoBigInt;
+.o 1 0
+e__SystemBigInt_ctoBigInt;
+	push_node _cycle_in_spine 1
+	jsr_eval 0
+	fill_r e__SystemBigInt_rtoBigInt; 1 0 1 0 0
+	pop_a 1
+.d 1 0
+	rtn
+.export e__SystemBigInt_dtoBigInt;.toBigInt
+.export e__SystemBigInt_ntoBigInt;.toBigInt
+.export e__SystemBigInt_eatoBigInt;.toBigInt
+.descs e__SystemBigInt_dtoBigInt;.toBigInt e__SystemBigInt_ntoBigInt;.toBigInt _ 1 0 "toBigInt;.toBigInt"
+.n -4 e__SystemBigInt_dtoBigInt;.toBigInt e__SystemBigInt_eatoBigInt;.toBigInt
+.o 1 0
+e__SystemBigInt_ntoBigInt;.toBigInt
+	push_node _cycle_in_spine 1
+.o 2 0
+e__SystemBigInt_eatoBigInt;.toBigInt
+	jsr_eval 0
+	repl_r_args_a 1 0 1 1
+	fill_a 0 1
+	pop_a 1
+.d 1 0
+	rtn
+.export e__SystemBigInt_stoBigInt;9
+.descexp e__SystemBigInt_dtoBigInt;9 e__SystemBigInt_ntoBigInt;9 e__SystemBigInt_ltoBigInt;9 1 0 "toBigInt;9"
+.o 2 0
+e__SystemBigInt_ltoBigInt;9
+	pop_a 1
+.d 1 0
+	jsr ea10
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e__SystemBigInt_dtoBigInt;9
+.o 1 0
+e__SystemBigInt_ntoBigInt;9
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea10
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea10
+	jsr_eval 0
+	pushI_a 0
+	pop_a 1
+.o 0 1 i
+e__SystemBigInt_stoBigInt;9
+.o 0 1 i
+s10
+.inline toBigInt;9
+	build _Nil 0 _hnf
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_s*%;8
+.descexp e__SystemBigInt_d*%;8 e__SystemBigInt_n*%;8 e__SystemBigInt_l*%;8 2 0 "*%;8"
+.a 0 a9
+.o 2 0
+e__SystemBigInt_l*%;8
+	repl_args 1 1
+.o 2 0
+a9
+.d 2 0
+	jsr ea9
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d*%;8
+.o 1 0
+e__SystemBigInt_n*%;8
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea9
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea9
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s*%;8
+.o 1 2 ii
+s9
+.inline *%;8
+.newlocallabel is_small_muli
+.newlocallabel no_overflow_muli
+.newlocallabel end_muli
+	eq_desc _Nil 0 0
+	jmp_true is_small_muli
+.d 1 2 ii
+	jsr e_BigInt_smulBS
+.o 1 1 i
+	jmp end_muli
+is_small_muli
+	push_b 1
+	push_b 1
+	mulIo
+	jmp_false no_overflow_muli
+	pop_b 1
+.d 1 2 ii
+	jsr e_BigInt_shandle_mult_overflow
+.o 1 1 i
+	jmp end_muli
+no_overflow_muli
+	update_b 0 2
+	pop_b 2
+end_muli
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_s%-;7
+.descexp e__SystemBigInt_d%-;7 e__SystemBigInt_n%-;7 e__SystemBigInt_l%-;7 2 0 "%-;7"
+.a 0 a8
+.o 2 0
+e__SystemBigInt_l%-;7
+	repl_args 1 1
+.o 2 0
+a8
+.d 2 0
+	jsr ea8
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d%-;7
+.o 1 0
+e__SystemBigInt_n%-;7
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea8
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea8
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e__SystemBigInt_s%-;7
+.o 1 2 ii
+s8
+.inline %-;7
+.newlocallabel is_small_subi2
+.newlocallabel end_subi2
+	eq_desc _Nil 0 0
+	jmp_true is_small_subi2
+.d 1 2 ii
+	jsr int_min_BigInt_entry
+.o 1 1 i
+	jmp end_subi2
+is_small_subi2
+	subIo
+	jmp_false end_subi2
+.d 1 1 i
+	jsr e_BigInt_shandle_sub_overflow
+.o 1 1 i
+end_subi2
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_s-%;6
+.descexp e__SystemBigInt_d-%;6 e__SystemBigInt_n-%;6 e__SystemBigInt_l-%;6 2 0 "-%;6"
+.a 0 a7
+.o 2 0
+e__SystemBigInt_l-%;6
+	repl_args 1 1
+.o 2 0
+a7
+.d 2 0
+	jsr ea7
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d-%;6
+.o 1 0
+e__SystemBigInt_n-%;6
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea7
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea7
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s-%;6
+.o 1 2 ii
+s7
+.inline -%;6
+.newlocallabel is_small_subi
+.newlocallabel end_subi
+	eq_desc _Nil 0 0
+	jmp_true is_small_subi
+.d 1 2 ii
+	jsr bigInt_min_Int_entry2
+.o 1 1 i
+	jmp end_subi
+is_small_subi
+	subIo
+	jmp_false end_subi
+.d 1 1 i
+	jsr e_BigInt_shandle_sub_overflow
+.o 1 1 i
+end_subi
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_s+%;5
+.descexp e__SystemBigInt_d+%;5 e__SystemBigInt_n+%;5 e__SystemBigInt_l+%;5 2 0 "+%;5"
+.a 0 a6
+.o 2 0
+e__SystemBigInt_l+%;5
+	repl_args 1 1
+.o 2 0
+a6
+.d 2 0
+	jsr ea6
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d+%;5
+.o 1 0
+e__SystemBigInt_n+%;5
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea6
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea6
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s+%;5
+.o 1 2 ii
+s6
+.inline +%;5
+.newlocallabel is_small_addi
+.newlocallabel end_addi
+	eq_desc _Nil 0 0
+	jmp_true is_small_addi
+.d 1 2 ii
+	jsr e_BigInt_saddBS
+.o 1 1 i
+	jmp end_addi
+is_small_addi
+	addIo
+	jmp_false end_addi
+.d 1 1 i
+	jsr e_BigInt_shandle_add_overflow
+.o 1 1 i
+end_addi
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_s>%;4
+.descexp e__SystemBigInt_d>%;4 e__SystemBigInt_n>%;4 e__SystemBigInt_l>%;4 2 0 ">%;4"
+.a 0 a5
+.o 2 0
+e__SystemBigInt_l>%;4
+	repl_args 1 1
+.o 2 0
+a5
+.d 2 0
+	jsr ea5
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d>%;4
+.o 1 0
+e__SystemBigInt_n>%;4
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea5
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea5
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s>%;4
+.o 1 2 ii
+s5
+.inline >%;4
+.newlocallabel small_gti
+	eq_desc _Nil 0 0
+	jmp_true small_gti
+	pushI 0		|| the result only depends on the sign of the big BigInt
+	update_b 0 2
+	pop_b 1
+small_gti
+	pop_a 1
+	gtI
+.end
+
+.d 0 1 b
+	rtn
+.export e__SystemBigInt_s<%;3
+.descexp e__SystemBigInt_d<%;3 e__SystemBigInt_n<%;3 e__SystemBigInt_l<%;3 2 0 "<%;3"
+.a 0 a4
+.o 2 0
+e__SystemBigInt_l<%;3
+	repl_args 1 1
+.o 2 0
+a4
+.d 2 0
+	jsr ea4
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d<%;3
+.o 1 0
+e__SystemBigInt_n<%;3
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea4
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea4
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s<%;3
+.o 1 2 ii
+s4
+.inline <%;3
+.newlocallabel small_lti
+	eq_desc _Nil 0 0
+	jmp_true small_lti
+	pushI 0		|| the result only depends on the sign of the big BigInt
+	update_b 0 2
+	pop_b 1
+small_lti
+	pop_a 1
+	ltI
+.end
+
+.d 0 1 b
+	rtn
+.export e__SystemBigInt_s==%;2
+.descexp e__SystemBigInt_d==%;2 e__SystemBigInt_n==%;2 e__SystemBigInt_l==%;2 2 0 "==%;2"
+.a 0 a3
+.o 2 0
+e__SystemBigInt_l==%;2
+	repl_args 1 1
+.o 2 0
+a3
+.d 2 0
+	jsr ea3
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e__SystemBigInt_d==%;2
+.o 1 0
+e__SystemBigInt_n==%;2
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea3
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea3
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e__SystemBigInt_s==%;2
+.o 1 2 ii
+s3
+.inline ==%;2
+.newlocallabel small_eqi
+.newlocallabel end_eqi
+	eq_desc _Nil 0 0
+	jmp_true small_eqi
+	pop_a 1
+	pop_b 2
+	pushB FALSE
+	jmp end_eqi
+small_eqi
+	pop_a 1
+	eqI
+end_eqi
+.end
+
+.d 0 1 b
+	rtn
+.export e__SystemBigInt_sone;1
+.descexp e__SystemBigInt_done;1 e__SystemBigInt_none;1 e__SystemBigInt_lone;1 0 0 "one;1"
+.o 1 0
+e__SystemBigInt_lone;1
+	halt
+.n 0 e__SystemBigInt_done;1
+.o 1 0
+e__SystemBigInt_none;1
+	push_node _cycle_in_spine 0
+.d 0 0
+	jsr ea2
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 0 0
+ea2
+.o 0 0
+e__SystemBigInt_sone;1
+.o 0 0
+s2
+.inline one;1
+	pushI 1
+	build _Nil 0 _hnf
+.end
+
+.d 1 1 i
+	rtn
+.export e__SystemBigInt_szero;0
+.descexp e__SystemBigInt_dzero;0 e__SystemBigInt_nzero;0 e__SystemBigInt_lzero;0 0 0 "zero;0"
+.o 1 0
+e__SystemBigInt_lzero;0
+	halt
+.n 0 e__SystemBigInt_dzero;0
+.o 1 0
+e__SystemBigInt_nzero;0
+	push_node _cycle_in_spine 0
+.d 0 0
+	jsr ea1
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 0 0
+ea1
+.o 0 0
+e__SystemBigInt_szero;0
+.o 0 0
+s1
+.inline zero;0
+	pushI 0
+	build _Nil 0 _hnf
+.end
+
+.d 1 1 i
+	rtn

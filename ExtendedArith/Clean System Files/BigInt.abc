@@ -1,0 +1,10485 @@
+.comp 920 01011101001
+.start _nostart_
+.depend "_SystemBigInt"
+.depend "ExtendedArithBasics"
+.depend "_SystemEnum"
+.depend "StdEnum"
+.depend "StdMisc"
+.depend "StdFunc"
+.depend "StdCharList"
+.depend "StdTuple"
+.depend "StdOrdList"
+.depend "StdList"
+.depend "StdClass"
+.depend "StdFile"
+.depend "StdString"
+.depend "_SystemArray"
+.depend "StdArray"
+.depend "StdChar"
+.depend "StdReal"
+.depend "StdInt"
+.depend "StdOverloaded"
+.depend "StdBool"
+.depend "StdEnv"
+.depend "BigInt"
+.impobj "gmp.o"
+.endinfo
+.module m_BigInt "BigInt"
+.implab _cycle_in_spine
+.implab _type_error
+.implab _hnf
+.impdesc _ind
+.implab _indirection _eaind
+.impdesc e_system_dif
+.implab e_system_nif e_system_eaif
+.implab e_system_sif
+.impdesc e_system_dAP
+.implab e_system_nAP e_system_eaAP
+.implab e_system_sAP
+.impdesc _Nil
+.impdesc _Cons
+.impdesc _Conss
+.implab n_Conss ea_Conss
+.impdesc _Consts
+.implab n_Consts ea_Consts
+.impdesc _Conssts
+.implab n_Conssts ea_Conssts
+.impdesc _Tuple
+.impdesc d_S.1
+.implab n_S.1 ea_S.1
+.impdesc d_S.2
+.implab n_S.2 ea_S.2
+.impdesc d_S.3
+.implab n_S.3 ea_S.3
+.impdesc d_S.4
+.implab n_S.4 ea_S.4
+.impdesc d_S.5
+.implab n_S.5 ea_S.5
+.impdesc d_S.6
+.implab n_S.6 ea_S.6
+.implab _driver
+.implab e__SystemBigInt_szero;0
+.implab e__SystemBigInt_sone;1
+.implab e__SystemBigInt_stoBigInt;9
+.implab e_StdMisc_sabort
+.implab e_StdString_s==;2
+.implab e_StdString_stoString;5
+.implab e_StdString_s%;10
+.implab e_StdString_s+++;11
+.impdesc e__SystemArray_d_createArray;8
+.implab e__SystemArray_n_createArray;8
+.implab e_StdChar_s+;14
+.implab e_StdChar_s-;15
+.implab e_StdChar_s==;18
+.implab e_StdChar_s<;19
+.implab e_StdChar_stoChar;21
+.implab e_StdReal_s/;5
+.implab e_StdReal_sabs;8
+.implab e_StdReal_s<;12
+.implab e_StdReal_stoReal;13
+.implab e_StdInt_s<<
+.implab e_StdInt_sbitnot
+.implab e_StdInt_s+;6
+.implab e_StdInt_s-;7
+.implab e_StdInt_s*;9
+.implab e_StdInt_s/;10
+.implab e_StdInt_sone;11
+.implab e_StdInt_sabs;13
+.implab e_StdInt_ssign;14
+.implab e_StdInt_s~;15
+.implab e_StdInt_s==;16
+.implab e_StdInt_s<;17
+.implab e_StdInt_sisOdd;19
+.implab e_StdInt_srem;28
+.implab e_StdInt_sgcd;29
+.implab e_StdBool_snot
+.implab e_StdBool_s==;3
+.export e_BigInt_rBigInt2
+.record e_BigInt_rBigInt2 ia 1 1 "BigInt2"
+.descexp e_BigInt_tBigInt2 e_BigInt_cBigInt2 _hnf 2 1 "BigInt2"
+.n 2 e_BigInt_tBigInt2
+.o 1 0
+e_BigInt_cBigInt2
+	push_node _cycle_in_spine 2
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.export e_BigInt_dBigInt2.sign_or_number
+.export e_BigInt_nBigInt2.sign_or_number
+.descs e_BigInt_dBigInt2.sign_or_number e_BigInt_nBigInt2.sign_or_number INT 2 0 "BigInt2.sign_or_number"
+.n -3 e_BigInt_dBigInt2.sign_or_number
+.o 1 0
+e_BigInt_nBigInt2.sign_or_number
+	push_node _cycle_in_spine 1
+	jsr_eval 0
+	push_r_args_b 0 1 1 1 1
+	pop_a 1
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.export e_BigInt_dBigInt2.limbs
+.export e_BigInt_nBigInt2.limbs
+.desc e_BigInt_dBigInt2.limbs e_BigInt_nBigInt2.limbs _hnf 1 0 "BigInt2.limbs"
+.n 1 e_BigInt_dBigInt2.limbs
+.o 1 0
+e_BigInt_nBigInt2.limbs
+	push_node _cycle_in_spine 1
+	jsr_eval 0
+	repl_r_args_a 1 1 1 1
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.export e_BigInt_stoInt;74
+.descexp e_BigInt_dtoInt;74 e_BigInt_ntoInt;74 e_BigInt_ltoInt;74 1 0 "toInt;74"
+.o 2 0
+e_BigInt_ltoInt;74
+	pop_a 1
+.d 1 0
+	jsr ea75
+.o 0 1 i
+	buildI_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dtoInt;74
+.o 1 0
+e_BigInt_ntoInt;74
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea75
+.o 0 1 i
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea75
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_stoInt;74
+.o 1 1 i
+s75
+	eq_desc _Nil 0 0
+	jmp_false truncate
+	pop_a 1
+.d 0 1 i
+	rtn
+truncate
+	pop_a 1
+	pushI 0
+	ltI
+	jmp_true is_positive_toInt
+	pushI -2147483648			|| minInt
+.d 0 1 i
+	rtn
+is_positive_toInt
+	pushI 2147483647			|| maxInt
+
+.d 0 1 i
+	rtn
+.export e_BigInt_stoReal;73
+.descexp e_BigInt_dtoReal;73 e_BigInt_ntoReal;73 e_BigInt_ltoReal;73 1 0 "toReal;73"
+.o 2 0
+e_BigInt_ltoReal;73
+	pop_a 1
+.d 1 0
+	jsr ea74
+.o 0 1 r
+	buildR_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dtoReal;73
+.o 1 0
+e_BigInt_ntoReal;73
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea74
+.o 0 1 r
+	fillR_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea74
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_stoReal;73
+.o 1 1 i
+s74
+	push_a 0
+	push_b 0
+.d 1 1 i
+	jsr s6
+.o 1 1 b
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 42
+	ltI
+	jmp_false else.1
+	push_a 1
+	push_b 1
+	updatepop_b 0 2
+	updatepop_a 0 2
+.d 1 1 i
+	jsr s65
+.o 0 1 i
+	ItoR
+	pushR 0.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divR
+.d 0 1 r
+	rtn
+else.1
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 b
+	jsr s223
+.o 0 1 i
+	push_a 0
+	updatepop_a 0 1
+	ccall bigIntToRealC "IA-R"
+
+	push_b 0
+	absR
+	pushR 1.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	ltR
+	jmp_false else.2
+	push_a 0
+	push_b 1
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.3
+	update_b 0 1
+	pop_a 1
+	pop_b 1
+.d 0 1 r
+	rtn
+else.3
+	push_a 0
+	push_b 1
+	updatepop_b 0 2
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s65
+.o 0 1 i
+	ItoR
+	pushR 0.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divR
+.d 0 1 r
+	rtn
+else.2
+	update_b 0 1
+	pop_a 1
+	pop_b 1
+.d 0 1 r
+	rtn
+.o 0 1 b
+s223
+	eqB_b TRUE 0
+	jmp_true case.4
+	jmp case.5
+case.4
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.5
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.export e_BigInt_stoBigInt;72
+.descexp e_BigInt_dtoBigInt;72 e_BigInt_ntoBigInt;72 e_BigInt_ltoBigInt;72 1 0 "toBigInt;72"
+.o 2 0
+e_BigInt_ltoBigInt;72
+	pop_a 1
+.d 1 0
+	jsr ea73
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dtoBigInt;72
+.o 1 0
+e_BigInt_ntoBigInt;72
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea73
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea73
+	jsr_eval 0
+	push_array 0
+	update_a 0 1
+	pop_a 1
+.o 1 0
+e_BigInt_stoBigInt;72
+.o 1 0
+s73
+	push_a 0
+	eqAC_a ""
+	jmp_true case.6
+	jmp case.7
+case.6
+	pushI 0
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+case.7
+	pushI 0
+	push_a 0
+	select CHAR 0 1
+	pushC '-'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	jmp_false else.8
+	pushI -1
+	pushI 1
+	push_a 0
+	updatepop_a 0 1
+.d 1 2 ii
+	jmp s159
+else.8
+	pushI 0
+	push_a 0
+	select CHAR 0 1
+	pushC '+'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	jmp_false else.9
+	pushI 1
+	pushI 1
+	push_a 0
+	updatepop_a 0 1
+.d 1 2 ii
+	jmp s159
+else.9
+	pushI 1
+	pushI 0
+	push_a 0
+	updatepop_a 0 1
+.d 1 2 ii
+	jmp s159
+.o 1 2 ii
+s159
+	pushI 1
+	push_b 1
+	addI
+	push_b 1
+	push_a 0
+.d 1 2 ii
+	jsr sliceAC
+.o 1 0
+	buildAC "0x"
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+.d 2 0
+	jsr eqAC
+.o 0 1 b	
+	jmp_false else.10
+	pushI 2
+	push_b 1
+	addI
+	push_a 0
+	push_b 2
+	pushI 16
+	push_b 2
+	update_b 2 3
+	update_b 0 2
+	pop_b 1
+	updatepop_a 0 1
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 3 iii
+	jmp s97
+else.10
+	push_b 0
+	push_a 0
+	select CHAR 0 1
+	pushC '0'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	jmp_false else.11
+	pushI 1
+	push_b 1
+	addI
+	push_a 0
+	push_b 2
+	pushI 8
+	push_b 2
+	update_b 2 3
+	update_b 0 2
+	pop_b 1
+	updatepop_a 0 1
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 3 iii
+	jmp s97
+else.11
+	push_a 0
+	push_b 1
+	push_b 1
+	pushI 10
+	updatepop_a 0 1
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 3 iii
+	jmp s97
+.export e_BigInt_stoString;71
+.descexp e_BigInt_dtoString;71 e_BigInt_ntoString;71 e_BigInt_ltoString;71 1 0 "toString;71"
+.o 2 0
+e_BigInt_ltoString;71
+	pop_a 1
+.d 1 0
+	jsr ea72
+.o 1 0
+	push_a 0
+	buildh ARRAY 1
+	updatepop_a 0 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dtoString;71
+.o 1 0
+e_BigInt_ntoString;71
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea72
+.o 1 0
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 1 0
+ea72
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_stoString;71
+.o 1 1 i
+s72
+	push_a 0
+	push_b 0
+	pushB FALSE
+	pushI 10
+	updatepop_a 0 1
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 3 ibi
+	jmp s4
+.export e_BigInt_s^%;70
+.descexp e_BigInt_d^%;70 e_BigInt_n^%;70 e_BigInt_l^%;70 2 0 "^%;70"
+.a 0 a71
+.o 2 0
+e_BigInt_l^%;70
+	repl_args 1 1
+.o 2 0
+a71
+.d 2 0
+	jsr ea71
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d^%;70
+.o 1 0
+e_BigInt_n^%;70
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea71
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea71
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_s^%;70
+.o 1 2 ii
+s71
+	push_b 1
+.d 0 1 i
+	jsr e__SystemBigInt_stoBigInt;9
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s62
+.export e_BigInt_slcm;69
+.descexp e_BigInt_dlcm;69 e_BigInt_nlcm;69 e_BigInt_llcm;69 2 0 "lcm;69"
+.a 0 a70
+.o 2 0
+e_BigInt_llcm;69
+	repl_args 1 1
+.o 2 0
+a70
+.d 2 0
+	jsr ea70
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dlcm;69
+.o 1 0
+e_BigInt_nlcm;69
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea70
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea70
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_slcm;69
+.o 2 2 ii
+s70
+	push_a 0
+	push_b 0
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_true then.12
+	push_a 1
+	push_b 1
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.12
+then.12
+	pop_a 2
+	pop_b 2
+.d 0 0
+	jmp e__SystemBigInt_szero;0
+else.12
+	push_a 1
+	push_b 1
+	push_a 1
+	push_b 1
+.d 2 2 ii
+	jsr s69
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s61
+.o 1 1 i
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s60
+.o 1 1 i
+.d 1 1 i
+	jmp s64
+.export e_BigInt_sgcd;68
+.descexp e_BigInt_dgcd;68 e_BigInt_ngcd;68 e_BigInt_lgcd;68 2 0 "gcd;68"
+.a 0 a69
+.o 2 0
+e_BigInt_lgcd;68
+	repl_args 1 1
+.o 2 0
+a69
+.d 2 0
+	jsr ea69
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dgcd;68
+.o 1 0
+e_BigInt_ngcd;68
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea69
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea69
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sgcd;68
+.o 2 2 ii
+s69
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_gcd
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_gcd
+	pop_a 1
+.d 1 2 ii
+	jsr e_BigInt_sgcdSS
+.o 1 1 i
+.d 1 1 i
+	rtn
+fst_is_big_gcd
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_gcd
+.d 2 2 ii
+	jmp e_BigInt_sgcdBB
+fst_only_is_big_gcd
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sgcdSB 
+snd_only_is_big_gcd
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sgcdSB
+
+.d 1 1 i
+	rtn
+.export e_BigInt_smod;66
+.descexp e_BigInt_dmod;66 e_BigInt_nmod;66 e_BigInt_lmod;66 2 0 "mod;66"
+.a 0 a67
+.o 2 0
+e_BigInt_lmod;66
+	repl_args 1 1
+.o 2 0
+a67
+.d 2 0
+	jsr ea67
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dmod;66
+.o 1 0
+e_BigInt_nmod;66
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea67
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea67
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_smod;66
+.o 2 2 ii
+s67
+	push_a 1
+	push_b 1
+	push_a 1
+	push_b 1
+.d 2 2 ii
+	jsr s68
+.o 1 1 i
+	push_a 0
+	push_b 0
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_true then.14
+	push_a 2
+	push_b 2
+.d 1 1 i
+	jsr s100
+.o 0 1 b
+	push_a 1
+	push_b 2
+	buildh _Nil 0
+	update_a 0 3
+	pop_a 1
+.d 1 1 i
+	jsr s100
+.o 0 1 b
+	eqB
+	jmp_false else.14
+then.14
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.14
+	push_a 2
+	push_b 2
+	push_a 1
+	push_b 1
+	update_a 1 4
+	updatepop_a 0 3
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	jmp s58
+.export e_BigInt_srem;67
+.descexp e_BigInt_drem;67 e_BigInt_nrem;67 e_BigInt_lrem;67 2 0 "rem;67"
+.a 0 a68
+.o 2 0
+e_BigInt_lrem;67
+	repl_args 1 1
+.o 2 0
+a68
+.d 2 0
+	jsr ea68
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_drem;67
+.o 1 0
+e_BigInt_nrem;67
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea68
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea68
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_srem;67
+.o 2 2 ii
+s68
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_rem
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_rem
+	pushI 0							|| B afterwards: denom nom 0
+	push_b 2						|| B afterwards: denom nom 0 denom
+	gtI								|| B afterwards: denom nom (denom>0)
+	jmp_false could_fail_rem		|| B afterwards: denom nom
+cant_fail_rem
+	modI							|| B afterwards: (nom rem denom)
+	pop_a 1
+.d 1 1 i
+	rtn
+could_fail_rem
+	|| reasons why denom rem nom could fail: (division by zero) or (minInt rem -1 (crashes with intel))
+	pushI -1						|| B afterwards: denom nom -1
+	push_b 2						|| B afterwards: denom nom -1 denom
+	ltI								|| B afterwards: denom nom (denom< -1)
+	jmp_true cant_fail_rem			|| B afterwards: denom nom
+	pushI -1						|| B afterwards: denom nom -1 where -1<=denom<=0
+	update_b 0 1					|| B afterwards: denom -1 -1  where -1<=denom<=0
+	pop_b 1							|| B afterwards: denom -1     where -1<=denom<=0
+	eqI								|| B afterwards: (denom== -1) where -1<=denom<=0
+	jmp_false div_zero_rem			|| B afterwards:
+	pushI 0							|| B afterwards: 0    (denom was -1 => remainder is 0)
+	pop_a 1
+.d 1 1 i
+	rtn
+div_zero_rem
+	buildAC "BigInt division by zero"
+.d 1 0
+	jsr e_StdMisc_sabort
+fst_is_big_rem
+	eq_desc _Nil 0 1
+	jmp_false both_are_big_rem
+fst_only_is_big_rem
+	update_a 0 1					|| get rid of the superfluous constructor
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sremBS
+snd_only_is_big_rem
+	pop_a 1							|| get rid of the superfluous constructor
+.d 1 2 ii
+	jmp e_BigInt_sremSB
+both_are_big_rem
+.d 2 2 ii
+	jmp e_BigInt_sremBB
+
+.d 1 1 i
+	rtn
+.export e_BigInt_s~;65
+.descexp e_BigInt_d~;65 e_BigInt_n~;65 e_BigInt_l~;65 1 0 "~;65"
+.o 2 0
+e_BigInt_l~;65
+	pop_a 1
+.d 1 0
+	jsr ea66
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_d~;65
+.o 1 0
+e_BigInt_n~;65
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea66
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea66
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_s~;65
+.o 1 1 i
+s66
+	push_a 0
+	push_b 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	jmp s92
+.export e_BigInt_sabs;63
+.descexp e_BigInt_dabs;63 e_BigInt_nabs;63 e_BigInt_labs;63 1 0 "abs;63"
+.o 2 0
+e_BigInt_labs;63
+	pop_a 1
+.d 1 0
+	jsr ea64
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dabs;63
+.o 1 0
+e_BigInt_nabs;63
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea64
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea64
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sabs;63
+.o 1 1 i
+s64
+	eq_desc _Nil 0 0
+	jmp_false is_big_abs
+	pushI 0
+	push_b 1
+	ltI 
+	jmp_true negate
+.d 1 1 i
+	rtn
+negate
+	push_b 0
+	pushI -2147483648	|| minInt
+	eqI
+	jmp_false can_be_negated_abs
+.d 1 1 i
+	jmp e_BigInt_sneg_minInt
+can_be_negated_abs
+	pushI 0
+	subI
+.d 1 1 i
+	rtn
+is_big_abs
+	pop_b 1
+	pushI 1
+
+.d 1 1 i
+	rtn
+.export e_BigInt_ssqrt;62
+.descexp e_BigInt_dsqrt;62 e_BigInt_nsqrt;62 e_BigInt_lsqrt;62 1 0 "sqrt;62"
+.o 2 0
+e_BigInt_lsqrt;62
+	pop_a 1
+.d 1 0
+	jsr ea63
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dsqrt;62
+.o 1 0
+e_BigInt_nsqrt;62
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea63
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea63
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_ssqrt;62
+.o 1 1 i
+s63
+.d 0 0
+	jsr e__SystemBigInt_sone;1
+.o 1 1 i
+	push_a 1
+	push_b 1
+.d 2 2 ii
+	jsr s55
+.o 0 1 b
+	jmp_false else.16
+	push_a 0
+	push_b 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.17
+.d 0 0
+	jmp e__SystemBigInt_szero;0
+else.17
+	buildAC "squareroot of negative BigInt"
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.16
+	push_a 0
+	push_b 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s105
+.o 1 1 i
+.d 1 1 i
+	jmp s158
+.o 1 1 i
+s158
+	push_a 0
+	pop_b 1
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	addI
+	pushI 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divI
+	push_b 0
+	updatepop_b 0 1
+	create_array_ INT 0 1
+
+	push_b 0
+	push_a 1
+	push_a 1
+	pushI 0
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 3 2 ii
+	jsr s125
+.o 1 1 i
+	pop_b 1
+	pushI 1
+.d 1 1 i
+	jsr s80
+.o 1 1 i
+	pop_a 0
+
+.d 1 1 i
+	rtn
+.export e_BigInt_s^;61
+.descexp e_BigInt_d^;61 e_BigInt_n^;61 e_BigInt_l^;61 2 0 "^;61"
+.a 0 a62
+.o 2 0
+e_BigInt_l^;61
+	repl_args 1 1
+.o 2 0
+a62
+.d 2 0
+	jsr ea62
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d^;61
+.o 1 0
+e_BigInt_n^;61
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea62
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea62
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s^;61
+.o 2 2 ii
+s62
+	eq_desc _Nil 0 0
+	jmp_false base_is_big_pow
+	eq_desc _Nil 0 1
+	jmp_false exp_only_is_big_pow
+	pop_a 1
+	pushI 0					|| B afterwards: e b 0
+	push_b 2				|| B afterwards: e b 0 e
+	ltI						|| B afterwards: e b (e<0)
+	jmp_false parameter_ok	|| B afterwards: e b
+parameter_not_ok
+	buildAC "^ (BigInt) undefined for negative exponents"
+.d 1 0
+	jsr e_StdMisc_sabort
+parameter_ok
+	pushI 2					|| B afterwards: e b 2
+	push_b 2				|| B afterwards: e b 2 e
+	ltI						|| B afterwards: e b (e<2)
+	jmp_false enter_loop	|| B afterwards: e b
+	pushI 0					|| B afterwards: e b 0
+	push_b 2				|| B afterwards: e b 0 e
+	eqI						|| B afterwards: e b (e==0)
+	jmp_true result_is_one	|| B afterwards: e b
+exponent_is_one
+	update_b 0 1			|| B afterwards: b b
+	pop_b 1					|| B afterwards: b
+.d 1 1 i
+	rtn
+result_is_one				|| B           : e b
+	pop_b 2					|| B afterwards:
+	pushI 1					|| B afterwards: 1
+.d 1 1 i
+	rtn
+enter_loop
+	pushI 1					|| B afterwards: e b 1
+	push_b 2				|| B afterwards: e b 1 e
+	subI					|| B afterwards: e b (e-1)
+	update_b 0 2			|| B afterwards: (e-1) b (e-1)
+	update_b 1 0			|| B afterwards: (e-1) b b
+loop						|| B           : e b accu 			(new scope)
+	push_b 2				|| B afterwards: e b accu e
+	pushI 1					|| B afterwards: e b accu e 1
+	eqI						|| B afterwards: e b accu (e==1)			
+	jmp_true return_accu_b	|| B afterwards: e b accu
+	push_b 1				|| B afterwards: e b accu b
+	push_b 0				|| B afterwards: e b accu b b
+	mulIo					|| B afterwards: e b accu (b*b) overflow
+	jmp_true overflow1_pow	|| B afterwards: e b accu (b*b)
+	push_b 3				|| B afterwards: e b accu (b*b) e
+	pushI 1					|| B afterwards: e b accu (b*b) e 1
+	and% 					|| B afterwards: e b accu (b*b) (e bitand 1) 
+	pushI 0					|| B afterwards: e b accu (b*b) (e bitand 1) 0
+	eqI						|| B afterwards: e b accu (b*b) (isEven e)
+	jmp_true is_even		|| B afterwards: e b accu (b*b)
+is_odd
+	push_b 2				|| B afterwards: e b accu (b*b) b
+	push_b 2				|| B afterwards: e b accu (b*b) b accu
+	mulI					|| B afterwards: e b accu (b*b) (accu*b)     (can't overflow)
+	update_b 0 2			|| B afterwards: e b (accu*b) (b*b) (accu*b)
+	pop_b 1					|| B afterwards: e b (accu*b) (b*b)
+is_even					|| B           : e b (if (isOdd e) (accu*b) accu) (b*b)
+	update_b 0 2			|| B afterwards: e (b*b) (if (isOdd e) (accu*b) accu) (b*b)
+	pushI 1					|| B afterwards: e (b*b) (if (isOdd e) (accu*b) accu) (b*b) 1
+	update_b 0 1			|| B afterwards: e (b*b) (if (isOdd e) (accu*b) accu) 1 1
+	update_b 4 0			|| B afterwards: e (b*b) (if (isOdd e) (accu*b) accu) 1 e
+	shiftr%					|| B afterwards: e (b*b) (if (isOdd e) (accu*b) accu) (e>>1)
+	update_b 0 3			|| B afterwards: (e>>1) (b*b) (if (isOdd e) (accu*b) accu) (e>>1)
+	pop_b 1					|| B afterwards: (e>>1) (b*b) (if (isOdd e) (accu*b) accu)
+	jmp loop
+return_accu_b				|| B           : e b accu
+	update_b 0 2			|| B afterwards: accu b accu
+	push_b 1				|| B afterwards: accu b accu b
+	mulIo					|| B afterwards: accu b (accu*b) overflow
+	jmp_true overflow2_pow	|| B afterwards: accu b (b*accu)
+	update_b 0 2			|| B afterwards: (b*accu) b (b*accu)
+	pop_b 2					|| B afterwards: (b*accu)
+.d 1 1 i
+	rtn
+base_is_big_pow
+	eq_desc _Nil 0 1
+	jmp_false too_big_pow
+base_only_is_big_pow
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_spowBS
+too_big_pow
+	buildAC "^ (BigInt) with too big exponent"
+.d 1 0
+	jsr e_StdMisc_sabort
+exp_only_is_big_pow
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_spowSB
+overflow1_pow				|| B           : e b accu trash		(result should be accu*(b^e))
+	pop_b 1					|| B afterwards: e b accu
+	pop_a 1
+.d 0 3 iii
+	jmp e_BigInt_shandle_pow_overflow1
+.d 1 0
+	jsr e_StdMisc_sabort
+overflow2_pow				|| B           : accu b trash
+	pop_b 1					|| B afterwards: accu b
+	pop_a 1
+.d 0 2 ii
+	jmp e_BigInt_shandle_mult_overflow
+
+.d 1 1 i
+	rtn
+.export e_BigInt_s/;60
+.descexp e_BigInt_d/;60 e_BigInt_n/;60 e_BigInt_l/;60 2 0 "/;60"
+.a 0 a61
+.o 2 0
+e_BigInt_l/;60
+	repl_args 1 1
+.o 2 0
+a61
+.d 2 0
+	jsr ea61
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d/;60
+.o 1 0
+e_BigInt_n/;60
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea61
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea61
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s/;60
+.o 2 2 ii
+s61
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_div
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_div
+	pop_a 1
+	pushI 1							|| B afterwards: denom nom 1
+	push_b 2						|| B afterwards: denom nom 1 denom
+	ltI								|| B afterwards: denom nom (denom<1)
+	jmp_false cant_overflow_div		|| B afterwards: denom nom
+	pushI -1						|| B afterwards: denom nom -1
+	push_b 2						|| B afterwards: denom nom -1 denom
+	ltI								|| B afterwards: denom nom (denom< -1)
+	jmp_true cant_overflow_div		|| B afterwards: denom nom
+	|| -1<=denom<=0, check for division by zero or overflow (minInt/-1)
+	pushI -1						|| B afterwards: denom nom -1
+	push_b 2						|| B afterwards: denom nom -1 denom
+	eqI								|| B afterwards: denom nom (denom== -1)
+	jmp_true check_overflow_div		|| B afterwards: denom nom
+div_by_zero_div
+	pop_b 2
+	buildAC "BigInt division by zero"
+.d 1 0
+	jsr e_StdMisc_sabort
+check_overflow_div					|| B           : -1 nom
+	pushI -2147483648				|| B afterwards: -1 nom minInt
+	push_b 1						|| B afterwards: -1 nom minInt nom
+	eqI								|| B afterwards: -1 nom (nom==minInt)
+	jmp_true is_overflown_div		|| B afterwards: -1 nom
+	pushI 0 						|| B afterwards: -1 nom 0
+	update_b 1 2					|| B afterwards: nom nom 0
+	update_b 0 1					|| B afterwards: nom 0 0
+	pop_b 1							|| B afterwards: nom 0
+	subI							|| B afterwards: (nom/denom) where denom== -1
+.d 1 1 i
+	rtn
+is_overflown_div					|| B           : -1 nom
+	pop_b 2							|| B afterwards:
+	pop_a 1
+.d 0 0
+	jmp e_BigInt_sneg_minInt_0
+cant_overflow_div					|| B           : denom nom
+	divI							|| B afterwards: (nom/denom)
+.d 1 1 i
+	rtn
+fst_is_big_div
+	eq_desc _Nil 0 1
+	jmp_false both_are_big_div
+fst_only_is_big_div				|| B           : denom nom
+	update_a 0 1					|| get rid of the superfluous constructor
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_squotBS
+snd_only_is_big_div
+	pop_a 1							|| get rid of the superfluous constructor
+.d 1 2 ii
+	jmp e_BigInt_squotSB
+both_are_big_div
+.d 2 2 ii
+	jmp e_BigInt_squotBB
+
+.d 1 1 i
+	rtn
+.export e_BigInt_s-;58
+.descexp e_BigInt_d-;58 e_BigInt_n-;58 e_BigInt_l-;58 2 0 "-;58"
+.a 0 a59
+.o 2 0
+e_BigInt_l-;58
+	repl_args 1 1
+.o 2 0
+a59
+.d 2 0
+	jsr ea59
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d-;58
+.o 1 0
+e_BigInt_n-;58
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea59
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea59
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s-;58
+.o 2 2 ii
+s59
+.export int_min_BigInt_entry
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_sub
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_sub
+	pop_a 1
+	subIo
+	jmp_false no_overflow_sub
+.d 1 1 i
+	jmp e_BigInt_shandle_sub_overflow
+no_overflow_sub
+.d 1 1 i
+	rtn
+fst_is_big_sub
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_sub
+both_are_big_add					|| so negate the second argument and add the numbers
+	push_b 1
+	pushI 0
+	subI
+	update_b 0 2
+	pop_b 1
+.d 2 2 ii
+	jmp e_BigInt_saddBB
+snd_only_is_big_sub				|| so negate the second argument and add the numbers
+	pop_a 1
+.o 1 2 ii
+int_min_BigInt_entry
+	push_b 1
+	pushI 0
+	subI
+	update_b 0 2
+	pop_b 1
+.d 1 2 ii
+	jmp e_BigInt_saddSB
+fst_only_is_big_sub				|| check out whether the small argument can be negated easily
+	update_a 0 1						|| get rid of one superfluous constructor
+	pop_a 1
+bigInt_min_Int_entry
+	push_b 1							|| B afterwards: x sign x
+	pushI -2147483648					|| B afterwards: x sign x minInt
+	eqI									|| B afterwards: x sign (x==minInt)
+	jmp_false can_be_negated_sub		|| B afterwards: x sign
+.d 1 2 ii
+	jmp e_BigInt_ssubBMinInt
+can_be_negated_sub
+	push_b 1							|| B afterwards: x sign x
+	pushI 0								|| B afterwards: x sign x 0
+	subI								|| B afterwards: x sign -x
+	update_b 1 2						|| B afterwards: sign sign -x
+	update_b 0 1						|| B afterwards: sign -x -x
+	pop_b 1								|| B afterwards: sign -x
+.d 1 2 ii
+	jmp e_BigInt_saddSB 
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sisOdd;56
+.descexp e_BigInt_disOdd;56 e_BigInt_nisOdd;56 e_BigInt_lisOdd;56 1 0 "isOdd;56"
+.o 2 0
+e_BigInt_lisOdd;56
+	pop_a 1
+.d 1 0
+	jsr ea57
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_disOdd;56
+.o 1 0
+e_BigInt_nisOdd;56
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea57
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea57
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sisOdd;56
+.o 1 1 i
+s57
+	push_a 0
+	push_b 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s56
+.o 0 1 b
+	notB
+.d 0 1 b
+	rtn
+.export e_BigInt_sisEven;55
+.descexp e_BigInt_disEven;55 e_BigInt_nisEven;55 e_BigInt_lisEven;55 1 0 "isEven;55"
+.o 2 0
+e_BigInt_lisEven;55
+	pop_a 1
+.d 1 0
+	jsr ea56
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_disEven;55
+.o 1 0
+e_BigInt_nisEven;55
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea56
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea56
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sisEven;55
+.o 1 1 i
+s56
+	eq_desc _Nil 0 0
+	jmp_false is_big_ie
+	pop_a 1
+is_on_b_stack
+	pushI 1
+	and%
+	pushI 0
+	eqI
+.d 0 1 b
+	rtn
+is_big_ie
+	pop_b 1							|| push the least significant limb 
+	pushI 0
+	select INT 0 0
+	jmp is_on_b_stack
+
+.d 0 1 b
+	rtn
+.export e_BigInt_s<;54
+.descexp e_BigInt_d<;54 e_BigInt_n<;54 e_BigInt_l<;54 2 0 "<;54"
+.a 0 a55
+.o 2 0
+e_BigInt_l<;54
+	repl_args 1 1
+.o 2 0
+a55
+.d 2 0
+	jsr ea55
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d<;54
+.o 1 0
+e_BigInt_n<;54
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea55
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea55
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s<;54
+.o 2 2 ii
+s55
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_lt
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_lt
+	pop_a 2
+	ltI
+.d 0 1 b
+	rtn
+fst_is_big_lt
+	eq_desc _Nil 0 1
+	jmp_false both_are_big_lt
+fst_only_is_big_lt				|| the result only depends on the sign of the big BigInt
+	pop_a 2
+	pushI 0
+	update_b 0 2
+	pop_b 1
+	ltI
+.d 0 1 b
+	rtn
+snd_only_is_big_lt				|| the result only depends on the sign of the big BigInt
+	pop_a 2
+	pushI 0
+	update_b 0 1
+	pop_b 1
+	ltI
+.d 0 1 b
+	rtn
+both_are_big_lt
+.d 2 2 ii
+	jmp e_BigInt_slessBB
+
+.d 0 1 b
+	rtn
+.export e_BigInt_s==;53
+.descexp e_BigInt_d==;53 e_BigInt_n==;53 e_BigInt_l==;53 2 0 "==;53"
+.a 0 a54
+.o 2 0
+e_BigInt_l==;53
+	repl_args 1 1
+.o 2 0
+a54
+.d 2 0
+	jsr ea54
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d==;53
+.o 1 0
+e_BigInt_n==;53
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea54
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea54
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s==;53
+.o 2 2 ii
+s54
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_eq
+	eq_desc _Nil 0 1
+	jmp_false not_eq
+	pop_a 2
+	eqI
+.d 0 1 b
+	rtn
+fst_is_big_eq
+	eq_desc _Nil 0 1
+	jmp_true not_eq
+.d 2 2 ii
+	jmp e_BigInt_sequalBB
+not_eq
+	pop_a 2
+	pop_b 2
+	pushB FALSE
+
+.d 0 1 b
+	rtn
+.o 1 1 i
+s136
+.inline bigIntToRealC
+	ccall bigIntToRealC "IA-R"
+.end
+
+.d 0 1 r
+	rtn
+.o 3 2 ii
+s125
+	ccall __gmpn_sqrtrem "AIAI:I:A"
+
+.d 1 1 i
+	rtn
+.export e_BigInt_smin_Int_entry2
+.descexp e_BigInt_dmin_Int_entry2 e_BigInt_nmin_Int_entry2 e_BigInt_lmin_Int_entry2 1 0 "min_Int_entry2"
+.o 2 0
+e_BigInt_lmin_Int_entry2
+	pop_a 1
+.d 1 0
+	jsr ea53
+.o 0 1 i
+	buildI_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dmin_Int_entry2
+.o 1 0
+e_BigInt_nmin_Int_entry2
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea53
+.o 0 1 i
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea53
+	jsr_eval 0
+	pushI_a 0
+	pop_a 1
+.o 0 1 i
+e_BigInt_smin_Int_entry2
+.o 0 1 i
+s53
+.d 0 1 i
+	rtn
+.export bigInt_min_Int_entry2
+.o 1 2 ii
+bigInt_min_Int_entry2
+	push_b 1							|| B afterwards: x sign x
+	pushI -2147483648					|| B afterwards: x sign x minInt
+	eqI									|| B afterwards: x sign (x==minInt)
+	jmp_false can_be_negated_subi		|| B afterwards: x sign
+.d 1 2 ii
+	jmp e_BigInt_ssubBMinInt
+can_be_negated_subi
+	push_b 1							|| B afterwards: x sign x
+	pushI 0								|| B afterwards: x sign x 0
+	subI								|| B afterwards: x sign -x
+	update_b 1 2						|| B afterwards: sign sign -x
+	update_b 0 1						|| B afterwards: sign -x -x
+	pop_b 1								|| B afterwards: sign -x
+.d 1 2 ii
+	jmp e_BigInt_saddSB
+
+.d 0 1 i
+	rtn
+.export e_BigInt_ssubBMinInt
+.descexp e_BigInt_dsubBMinInt e_BigInt_nsubBMinInt e_BigInt_lsubBMinInt 2 0 "subBMinInt"
+.a 0 a52
+.o 2 0
+e_BigInt_lsubBMinInt
+	repl_args 1 1
+.o 2 0
+a52
+.d 2 0
+	jsr ea52
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dsubBMinInt
+.o 1 0
+e_BigInt_nsubBMinInt
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea52
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea52
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_ssubBMinInt
+.o 1 2 ii
+s52
+	push_b 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+.d 1 1 i
+	jsr s93
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s17
+.o 1 1 i
+s93
+	eq_desc _Nil 0 0
+	jmp_false just_negate_sign2
+	push_b 0
+	pushI -2147483648 		|| == 0x800000 == minInt
+	eqI
+	jmp_false just_negate_sign2
+.d 1 1 i
+	jmp e_BigInt_sneg_minInt
+just_negate_sign2
+	pushI 0					|| just negate the sign
+	subI
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sremSB
+.descexp e_BigInt_dremSB e_BigInt_nremSB e_BigInt_lremSB 2 0 "remSB"
+.a 0 a50
+.o 2 0
+e_BigInt_lremSB
+	repl_args 1 1
+.o 2 0
+a50
+.d 2 0
+	jsr ea50
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dremSB
+.o 1 0
+e_BigInt_nremSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea50
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea50
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_sremSB
+.o 1 2 ii
+s50
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.18
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.18
+	pushI 0
+	push_a 0
+	updatepop_a 0 1
+	select INT 0 1
+	pushI 2147483648
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	buildh _Nil 0
+	jmp_false else.18
+	pushI 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.18
+	push_b 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+.export e_BigInt_sremBS
+.descexp e_BigInt_dremBS e_BigInt_nremBS e_BigInt_lremBS 2 0 "remBS"
+.a 0 a49
+.o 2 0
+e_BigInt_lremBS
+	repl_args 1 1
+.o 2 0
+a49
+.d 2 0
+	jsr ea49
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dremBS
+.o 1 0
+e_BigInt_nremBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea49
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea49
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_sremBS
+.o 1 2 ii
+s49
+	pushI 0
+	push_b 2
+	eqI
+	jmp_false else.21
+	buildAC "BigInt division by zero"
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.21
+	push_b 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s48
+.export e_BigInt_sremBB
+.descexp e_BigInt_dremBB e_BigInt_nremBB e_BigInt_lremBB 2 0 "remBB"
+.a 0 a48
+.o 2 0
+e_BigInt_lremBB
+	repl_args 1 1
+.o 2 0
+a48
+.d 2 0
+	jsr ea48
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dremBB
+.o 1 0
+e_BigInt_nremBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea48
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea48
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sremBB
+.o 2 2 ii
+s48
+	push_a 1
+	push_a 1
+	buildB FALSE
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 3 0
+	jsr s233
+.o 2 0
+	push_a 1
+	push_b 0
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 1 1 i
+	jmp s80
+.o 2 2 ii
+s222
+	eqI_b 0 0
+	jmp_true case.22
+	jmp case.23
+case.22
+	pop_a 1
+	pop_b 2
+.d 1 0
+	rtn
+case.23
+	push_a 1
+	push_b 1
+	push_a 0
+	push_a 1
+	push_b 1
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_rshift "AAII:I:A"
+
+	pop_b 1
+.d 1 0
+	rtn
+.export e_BigInt_squotSB
+.descexp e_BigInt_dquotSB e_BigInt_nquotSB e_BigInt_lquotSB 2 0 "quotSB"
+.a 0 a47
+.o 2 0
+e_BigInt_lquotSB
+	repl_args 1 1
+.o 2 0
+a47
+.d 2 0
+	jsr ea47
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotSB
+.o 1 0
+e_BigInt_nquotSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea47
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea47
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_squotSB
+.o 1 2 ii
+s47
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s43
+.o 2 2 ii
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.export e_BigInt_squotRemSB
+.descexp e_BigInt_dquotRemSB e_BigInt_nquotRemSB e_BigInt_lquotRemSB 2 0 "quotRemSB"
+.a 0 a46
+.o 2 0
+e_BigInt_lquotRemSB
+	repl_args 1 1
+.o 2 0
+a46
+.d 2 0
+	jsr ea46
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotRemSB
+.o 1 0
+e_BigInt_nquotRemSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea46
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea46
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_squotRemSB
+.o 1 2 ii
+s46
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 2 ii
+	jmp s43
+.export e_BigInt_squotRemI
+.descexp e_BigInt_dquotRemI e_BigInt_nquotRemI e_BigInt_lquotRemI 2 0 "quotRemI"
+.a 0 a45
+.o 2 0
+e_BigInt_lquotRemI
+	repl_args 1 1
+.o 2 0
+a45
+.d 2 0
+	jsr ea45
+.o 0 2 ii
+	buildI_b 1
+	buildI_b 0
+	buildh _Tuple 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotRemI
+.o 1 0
+e_BigInt_nquotRemI
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea45
+.o 0 2 ii
+	buildI_b 1
+	buildI_b 0
+	fillh _Tuple 2 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea45
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	pushI_a 0
+	pop_a 2
+.o 0 2 ii
+e_BigInt_squotRemI
+.o 0 2 ii
+s45
+	push_b 1
+	push_b 1
+	divI
+	push_b 2
+	push_b 1
+	mulI
+	push_b 2
+	subI
+	push_b 0
+	push_b 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 0 2 ii
+	rtn
+.export e_BigInt_squotRemBS
+.descexp e_BigInt_dquotRemBS e_BigInt_nquotRemBS e_BigInt_lquotRemBS 2 0 "quotRemBS"
+.a 0 a44
+.o 2 0
+e_BigInt_lquotRemBS
+	repl_args 1 1
+.o 2 0
+a44
+.d 2 0
+	jsr ea44
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotRemBS
+.o 1 0
+e_BigInt_nquotRemBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea44
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea44
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_squotRemBS
+.o 1 2 ii
+s44
+	push_b 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s43
+.export e_BigInt_squotBS
+.descexp e_BigInt_dquotBS e_BigInt_nquotBS e_BigInt_lquotBS 2 0 "quotBS"
+.a 0 a42
+.o 2 0
+e_BigInt_lquotBS
+	repl_args 1 1
+.o 2 0
+a42
+.d 2 0
+	jsr ea42
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotBS
+.o 1 0
+e_BigInt_nquotBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea42
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea42
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_squotBS
+.o 1 2 ii
+s42
+	push_b 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s43
+.o 2 2 ii
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.export e_BigInt_squotBB
+.descexp e_BigInt_dquotBB e_BigInt_nquotBB e_BigInt_lquotBB 2 0 "quotBB"
+.a 0 a41
+.o 2 0
+e_BigInt_lquotBB
+	repl_args 1 1
+.o 2 0
+a41
+.d 2 0
+	jsr ea41
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotBB
+.o 1 0
+e_BigInt_nquotBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea41
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea41
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_squotBB
+.o 2 2 ii
+s41
+	push_a 1
+	push_b 1
+	push_a 1
+	push_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s43
+.o 2 2 ii
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.export e_BigInt_squotRemBB
+.descexp e_BigInt_dquotRemBB e_BigInt_nquotRemBB e_BigInt_lquotRemBB 2 0 "quotRemBB"
+.a 0 a43
+.o 2 0
+e_BigInt_lquotRemBB
+	repl_args 1 1
+.o 2 0
+a43
+.d 2 0
+	jsr ea43
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotRemBB
+.o 1 0
+e_BigInt_nquotRemBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea43
+.o 2 2 ii
+	build_r e_BigInt_rBigInt2 1 1 1 1
+	build_r e_BigInt_rBigInt2 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea43
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_squotRemBB
+.o 2 2 ii
+s43
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 0
+	jsr s230
+.o 2 0
+	push_a 1
+	push_b 0
+	update_a 1 2
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s80
+.o 1 1 i
+	push_b 2
+	push_b 2
+.d 0 2 ii
+	jsr s206
+.o 0 1 i
+	push_a 1
+	buildh _Nil 0
+	update_a 0 3
+	pop_a 1
+.d 1 1 i
+	jsr s80
+.o 1 1 i
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	rtn
+.o 2 2 ii
+s221
+	eqI_b 0 0
+	jmp_true case.24
+	jmp case.25
+case.24
+	pop_a 1
+	pop_b 2
+.d 1 0
+	rtn
+case.25
+	push_a 1
+	push_b 1
+	push_a 0
+	push_a 1
+	push_b 1
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_rshift "AAII:I:A"
+
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 _ _
+.o 1 0
+n138
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea138
+.o 1 0
+	fill_a 0 1
+	pop_a 1
+.d 1 0
+	rtn
+.o 1 0
+ea138
+	jsr_eval 0
+.o 1 0
+s138
+.inline Cast
+	pop_a 0
+.end
+
+.d 1 0
+	rtn
+.o 4 3 iii
+s118
+.inline mpn_divremC
+	ccall __gmpn_divrem "AIAIAI:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 3 2 ii
+s119
+.inline remainderC
+	ccall remainderC "AIAI:V:A"
+.end
+
+.d 1 0
+	rtn
+.o 2 2 ii
+s208
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.26
+	push_b 0
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	push_a 0
+	select INT 0 1
+	pushI 1
+	push_b 2
+	addI
+	push_b 1
+	push_b 3
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	update INT 0 1
+	push_a 1
+	push_b 3
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	jmp s208
+else.26
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 2 ii
+s122
+	push_a 0
+	push_b 1
+	push_b 1
+	push_a 2
+	push_a 2
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+	ccall __gmpn_lshift "AAII:I:A"
+
+.d 1 1 i
+	rtn
+.o 3 2 ii
+s123
+.inline mpn_lshiftC
+	ccall __gmpn_lshift "AAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 1 2 ii
+s121
+.inline mpn_mod_1
+	ccall __gmpn_mod_1 "AII-I"
+.end
+
+.d 0 1 i
+	rtn
+.n 1 _
+.o 1 0
+n107
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea107
+.o 1 0
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 1 0
+ea107
+.o 1 0
+s107
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 0
+	push_a 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	jmp s108
+.o 1 1 i
+s108
+	pushI 1
+	push_b 1
+	eqI
+	jmp_false else.27
+	push_a 0
+	pushI 1
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	updatepop_b 0 1
+	ccall setSizeC "AI:V:A"
+
+.d 1 0
+	rtn
+else.27
+	pushI 1
+	push_b 1
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.28
+	push_b 0
+	push_a 0
+	updatepop_a 0 1
+	updatepop_b 0 2
+.d 1 1 i
+	jmp s108
+else.28
+	push_a 0
+	push_b 1
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	updatepop_b 0 2
+	ccall setSizeC "AI:V:A"
+
+.d 1 0
+	rtn
+.o 3 3 iii
+s120
+.inline mpn_divrem_1C
+	ccall __gmpn_divrem_1 "AIAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 3 2 ii
+s124
+.inline mpn_rshiftC
+	ccall __gmpn_rshift "AAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.export e_BigInt_spowSB
+.descexp e_BigInt_dpowSB e_BigInt_npowSB e_BigInt_lpowSB 2 0 "powSB"
+.a 0 a40
+.o 2 0
+e_BigInt_lpowSB
+	repl_args 1 1
+.o 2 0
+a40
+.d 2 0
+	jsr ea40
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dpowSB
+.o 1 0
+e_BigInt_npowSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea40
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea40
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_spowSB
+.o 1 2 ii
+s40
+	eqI_b 0 0
+	jmp_true case.29
+	eqI_b 1 0
+	jmp_true case.30
+	eqI_b -1 0
+	jmp_true case.31
+	jmp case.32
+case.29
+	pushI 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+case.30
+	pushI 1
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+case.31
+	pushI 0
+	push_a 0
+	updatepop_b 0 2
+	updatepop_a 0 1
+	select INT 0 1
+	pushI 1
+	and%
+	pushI 0
+	eqI
+	notB
+	jmp_false else.33
+	pushI -1
+.d 0 1 i
+	jmp s98
+else.33
+	pushI 1
+.d 0 1 i
+	jmp s98
+case.32
+	buildAC "^ (BigInt) exponent too big"
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+.export e_BigInt_sneg_minInt
+.descexp e_BigInt_dneg_minInt e_BigInt_nneg_minInt e_BigInt_lneg_minInt 1 0 "neg_minInt"
+.o 2 0
+e_BigInt_lneg_minInt
+	pop_a 1
+.d 1 0
+	jsr ea37
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dneg_minInt
+.o 1 0
+e_BigInt_nneg_minInt
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea37
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea37
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sneg_minInt
+.o 1 1 i
+s37
+	pushI 1
+	updatepop_b 0 1
+	pop_a 1
+	create_array_ INT 0 1
+	pushI 2147483648
+	pushI 0
+	update INT 0 1
+	pushI 1
+.d 1 1 i
+	rtn
+.export e_BigInt_slessBB
+.descexp e_BigInt_dlessBB e_BigInt_nlessBB e_BigInt_llessBB 2 0 "lessBB"
+.a 0 a34
+.o 2 0
+e_BigInt_llessBB
+	repl_args 1 1
+.o 2 0
+a34
+.d 2 0
+	jsr ea34
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dlessBB
+.o 1 0
+e_BigInt_nlessBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea34
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea34
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_slessBB
+.o 2 2 ii
+s34
+	push_b 1
+	push_b 1
+	eqI
+	notB
+	jmp_false else.34
+	push_b 1
+	pushI 0
+	update_b 1 3
+	updatepop_b 0 2
+	pop_a 2
+	ltI
+.d 0 1 b
+	rtn
+else.34
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.35
+	push_b 1
+	push_a 1
+	push_a 1
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_cmp "AAI-I"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.36
+	pop_b 3
+	pushB FALSE
+.d 0 1 b
+	rtn
+else.36
+	push_b 1
+	push_b 1
+	eqI
+	updatepop_b 0 3
+	notB
+.d 0 1 b
+	rtn
+else.35
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.37
+	push_b 2
+	pushI 0
+	update_b 1 5
+	updatepop_b 0 4
+	pop_a 2
+	ltI
+.d 0 1 b
+	rtn
+else.37
+	pushI 0
+	push_b 3
+	update_b 1 5
+	updatepop_b 0 4
+	pop_a 2
+	ltI
+.d 0 1 b
+	rtn
+.export e_BigInt_sintToString
+.descexp e_BigInt_dintToString e_BigInt_nintToString e_BigInt_lintToString 3 0 "intToString"
+.a 0 a33
+.o 2 0
+e_BigInt_lintToString
+	repl_args 2 2
+.o 3 0
+a33
+.d 3 0
+	jsr ea33
+.o 1 0
+	push_a 0
+	buildh ARRAY 1
+	updatepop_a 0 1
+.d 1 0
+	rtn
+.n 3 e_BigInt_dintToString
+.o 1 0
+e_BigInt_nintToString
+	push_node _cycle_in_spine 3
+.d 3 0
+	jsr ea33
+.o 1 0
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 3 0
+ea33
+	jsr_eval 2
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 2
+	pushB_a 1
+	pushI_a 0
+	pop_a 3
+.o 0 3 ibi
+e_BigInt_sintToString
+.o 0 3 ibi
+s33
+	pushI 10
+	push_b 1
+	eqI
+	jmp_false else.38
+	push_b 2
+	updatepop_b 0 3
+.d 0 1 i
+	jsr ItoAC
+.o 1 0
+.d 1 0
+	rtn
+else.38
+	push_b 2
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	update INT 0 1
+	pushI 0
+	push_b 3
+	ltI
+.d 0 1 b
+	jsr s220
+.o 0 1 i
+	push_b 2
+	push_b 2
+	update_b 2 5
+	update_b 1 4
+	updatepop_b 0 3
+.d 1 3 ibi
+	jmp s23
+.o 0 1 b
+s220
+	eqB_b TRUE 0
+	jmp_true case.39
+	jmp case.40
+case.39
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+case.40
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+.export e_BigInt_shandle_sub_overflow
+.descexp e_BigInt_dhandle_sub_overflow e_BigInt_nhandle_sub_overflow e_BigInt_lhandle_sub_overflow 1 0 "handle_sub_overflow"
+.o 2 0
+e_BigInt_lhandle_sub_overflow
+	pop_a 1
+.d 1 0
+	jsr ea32
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dhandle_sub_overflow
+.o 1 0
+e_BigInt_nhandle_sub_overflow
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea32
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea32
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_shandle_sub_overflow
+.o 1 1 i
+s32
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.41
+	pushI 1
+	pop_a 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI 1
+.d 1 1 i
+	rtn
+else.41
+	push_b 0
+	negI
+	pushI 1
+	pop_a 1
+	create_array_ INT 0 1
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI -1
+.d 1 1 i
+	rtn
+.export e_BigInt_shandle_pow_overflow1
+.descexp e_BigInt_dhandle_pow_overflow1 e_BigInt_nhandle_pow_overflow1 e_BigInt_lhandle_pow_overflow1 3 0 "handle_pow_overflow1"
+.a 0 a31
+.o 2 0
+e_BigInt_lhandle_pow_overflow1
+	repl_args 2 2
+.o 3 0
+a31
+.d 3 0
+	jsr ea31
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 3 e_BigInt_dhandle_pow_overflow1
+.o 1 0
+e_BigInt_nhandle_pow_overflow1
+	push_node _cycle_in_spine 3
+.d 3 0
+	jsr ea31
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 3 0
+ea31
+	jsr_eval 2
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 2
+	pushI_a 1
+	pushI_a 0
+	pop_a 3
+.o 0 3 iii
+e_BigInt_shandle_pow_overflow1
+.o 0 3 iii
+s31
+	push_b 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_b 3
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+.d 1 2 ii
+	jsr s39
+.o 1 1 i
+	push_b 1
+.d 0 1 i
+	jsr e__SystemBigInt_stoBigInt;9
+.o 1 1 i
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	jmp s60
+.export e_BigInt_s*;59
+.descexp e_BigInt_d*;59 e_BigInt_n*;59 e_BigInt_l*;59 2 0 "*;59"
+.a 0 a60
+.o 2 0
+e_BigInt_l*;59
+	repl_args 1 1
+.o 2 0
+a60
+.d 2 0
+	jsr ea60
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d*;59
+.o 1 0
+e_BigInt_n*;59
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea60
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea60
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s*;59
+.o 2 2 ii
+s60
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_mul
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_mul
+	pop_a 1
+	push_b 1
+	push_b 1
+	mulIo
+	jmp_true mult_overflow
+.d 1 1 i
+	update_b 0 2
+	pop_b 2
+	rtn
+mult_overflow
+	pop_b 1
+	pop_a 1
+.d 0 2 ii
+	jmp e_BigInt_shandle_mult_overflow
+fst_is_big_mul
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_mul
+.d 2 2 ii
+	jmp e_BigInt_smulBB
+fst_only_is_big_mul
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_smulBS
+snd_only_is_big_mul
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_smulBS
+
+.d 1 1 i
+	rtn
+.export e_BigInt_spowBS
+.descexp e_BigInt_dpowBS e_BigInt_npowBS e_BigInt_lpowBS 2 0 "powBS"
+.a 0 a39
+.o 2 0
+e_BigInt_lpowBS
+	repl_args 1 1
+.o 2 0
+a39
+.d 2 0
+	jsr ea39
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dpowBS
+.o 1 0
+e_BigInt_npowBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea39
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea39
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_spowBS
+.o 1 2 ii
+s39
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.42
+	buildAC "^ (BigInt) undefined for negative exponents"
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.42
+	pushI 0
+	push_b 2
+	eqI
+	jmp_false else.43
+	pushI 1
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.43
+	push_b 1
+	push_a 0
+	push_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	updatepop_a 0 1
+	ccall pow_uiC "IAI-II"
+
+	push_b 0
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	push_b 0
+	create_array_ INT 0 1
+
+	push_a 0
+	push_b 0
+	push_b 3
+	push_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+	ccall transferGMPNumberToCleanC "AII:V:A"
+
+	pushI 0
+	push_b 1
+	ltI
+	notB
+.d 0 1 b
+	jsr s219
+.o 0 1 i
+	push_a 0
+	updatepop_a 0 1
+	updatepop_b 0 2
+	pop_a 0
+
+.d 1 1 i
+	rtn
+.o 0 1 b
+s219
+	eqB_b TRUE 0
+	jmp_true case.44
+	jmp case.45
+case.44
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.45
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.o 1 2 ii
+s132
+.inline pow_uiC
+	ccall pow_uiC "IAI-II"
+.end
+
+.d 0 2 ii
+	rtn
+.o 2 2 ii
+s133
+.inline transferGMPNumberToCleanC
+	ccall transferGMPNumberToCleanC "AII:V:A"
+.end
+
+.d 1 0
+	rtn
+.export e_BigInt_shandle_mult_overflow
+.descexp e_BigInt_dhandle_mult_overflow e_BigInt_nhandle_mult_overflow e_BigInt_lhandle_mult_overflow 2 0 "handle_mult_overflow"
+.a 0 a30
+.o 2 0
+e_BigInt_lhandle_mult_overflow
+	repl_args 1 1
+.o 2 0
+a30
+.d 2 0
+	jsr ea30
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dhandle_mult_overflow
+.o 1 0
+e_BigInt_nhandle_mult_overflow
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea30
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea30
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	pushI_a 0
+	pop_a 2
+.o 0 2 ii
+e_BigInt_shandle_mult_overflow
+.o 0 2 ii
+s30
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_b 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 2 ii
+	jmp s36
+.export e_BigInt_smulBS
+.descexp e_BigInt_dmulBS e_BigInt_nmulBS e_BigInt_lmulBS 2 0 "mulBS"
+.a 0 a36
+.o 2 0
+e_BigInt_lmulBS
+	repl_args 1 1
+.o 2 0
+a36
+.d 2 0
+	jsr ea36
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dmulBS
+.o 1 0
+e_BigInt_nmulBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea36
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea36
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_smulBS
+.o 1 2 ii
+s36
+	pushI 0
+	push_b 2
+	eqI
+	jmp_false else.46
+	pushI 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.46
+	pushI 2147483648
+	push_b 2
+	eqI
+	jmp_false else.47
+	pushI 1
+	create_array_ INT 0 1
+	pushI 2147483648
+	pushI 0
+	update INT 0 1
+	pushI -1
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s35
+else.47
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+
+	pushI 0
+	push_b 3
+	ltI
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+.d 0 2 bi
+	jsr s218
+.o 0 1 i
+	pushI 0
+	push_b 4
+	ltI
+	push_b 4
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+.d 0 2 bi
+	jsr s217
+.o 0 1 i
+	push_b 2
+	push_a 1
+	push_a 1
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_mul_1 "AAII:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	notB
+	jmp_false else.48
+	push_b 0
+	push_b 3
+	push_a 0
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 1
+	updatepop_b 0 5
+.d 1 1 i
+	rtn
+else.48
+	push_a 0
+	push_a 0
+	push_b 2
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	ccall setSizeC "AI:V:A"
+
+	push_b 1
+	updatepop_b 0 5
+.d 1 1 i
+	rtn
+.o 0 2 bi
+s218
+	eqB_b TRUE 0
+	jmp_true case.49
+	jmp case.50
+case.49
+	push_b 1
+	updatepop_b 0 2
+	negI
+.d 0 1 i
+	rtn
+case.50
+	pop_b 1
+.d 0 1 i
+	rtn
+.o 0 2 bi
+s217
+	eqB_b TRUE 0
+	jmp_true case.51
+	jmp case.52
+case.51
+	push_b 1
+	updatepop_b 0 2
+	negI
+.d 0 1 i
+	rtn
+case.52
+	pop_b 1
+.d 0 1 i
+	rtn
+.export e_BigInt_smulBB
+.descexp e_BigInt_dmulBB e_BigInt_nmulBB e_BigInt_lmulBB 2 0 "mulBB"
+.a 0 a35
+.o 2 0
+e_BigInt_lmulBB
+	repl_args 1 1
+.o 2 0
+a35
+.d 2 0
+	jsr ea35
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dmulBB
+.o 1 0
+e_BigInt_nmulBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea35
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea35
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_smulBB
+.o 2 2 ii
+s35
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 0
+	jsr s90
+.o 1 0
+	push_b 1
+	push_b 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 0 2 ii
+	jsr s206
+.o 0 1 i
+.d 1 1 i
+	rtn
+.o 0 2 ii
+s206
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.53
+	pop_b 2
+	pushI 1
+.d 0 1 i
+	rtn
+else.53
+	pop_b 2
+	pushI -1
+.d 0 1 i
+	rtn
+.o 2 0
+s90
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 0
+	push_b 2
+	addI
+	push_b 0
+	create_array_ INT 0 1
+
+	push_b 1
+	push_b 3
+	ltI
+	notB
+	push_b 2
+	push_a 2
+	push_b 4
+	push_a 2
+	push_b 2
+	update_b 2 3
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 3 bii
+	jsr s229
+.o 2 2 ii
+	push_a 2
+	push_b 1
+	push_a 2
+	push_b 1
+	push_a 2
+	push_a 5
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_mul "AAIAI:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.54
+	push_a 0
+	pushI 1
+	push_b 2
+	subI
+	push_a 0
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+	ccall setSizeC "AI:V:A"
+
+.d 1 0
+	rtn
+else.54
+	pop_b 4
+.d 1 0
+	rtn
+.o 4 2 ii
+s116
+.inline mpn_mulC
+	ccall __gmpn_mul "AAIAI:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 3 2 ii
+s117
+.inline mpn_mul_1C
+	ccall __gmpn_mul_1 "AAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.export e_BigInt_shandle_add_overflow
+.descexp e_BigInt_dhandle_add_overflow e_BigInt_nhandle_add_overflow e_BigInt_lhandle_add_overflow 1 0 "handle_add_overflow"
+.o 2 0
+e_BigInt_lhandle_add_overflow
+	pop_a 1
+.d 1 0
+	jsr ea29
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dhandle_add_overflow
+.o 1 0
+e_BigInt_nhandle_add_overflow
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea29
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea29
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_shandle_add_overflow
+.o 1 1 i
+s29
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.55
+	pushI 1
+	pop_a 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI 1
+.d 1 1 i
+	rtn
+else.55
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.56
+	pushI 2
+	updatepop_b 0 1
+	pop_a 1
+	create_array_ INT 0 1
+	pushI 1
+	pushI 1
+	update INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+	pushI -1
+.d 1 1 i
+	rtn
+else.56
+	push_b 0
+	negI
+	pushI 1
+	pop_a 1
+	create_array_ INT 0 1
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI -1
+.d 1 1 i
+	rtn
+.export e_BigInt_sgcdSS
+.descexp e_BigInt_dgcdSS e_BigInt_ngcdSS e_BigInt_lgcdSS 2 0 "gcdSS"
+.a 0 a28
+.o 2 0
+e_BigInt_lgcdSS
+	repl_args 1 1
+.o 2 0
+a28
+.d 2 0
+	jsr ea28
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dgcdSS
+.o 1 0
+e_BigInt_ngcdSS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea28
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea28
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_sgcdSS
+.o 1 2 ii
+s28
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.57
+	pushI 0
+	push_b 2
+	eqI
+	jmp_false else.58
+	pushI 0
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_b 1 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+else.58
+	pushI 2147483648
+	push_b 2
+	eqI
+	jmp_false else.59
+	pop_a 1
+	pop_b 2
+.d 0 0
+	jmp s38
+else.59
+	push_b 1
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_b 1 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+else.57
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.60
+	pushI 2147483648
+	push_b 2
+	eqI
+	jmp_true then.61
+	pushI 0
+	push_b 2
+	eqI
+	jmp_false else.61
+then.61
+	pop_a 1
+	pop_b 2
+.d 0 0
+	jmp s38
+else.61
+	push_b 1
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	push_b 0
+	pushI 2147483648
+	remI
+	negI
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 0 2 ii
+	jsr e_StdInt_sgcd;29
+.o 0 1 i
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_b 1 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+else.60
+	pushI 2147483648
+	push_b 2
+	eqI
+	jmp_false else.63
+	push_b 0
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	push_b 0
+	pushI 2147483648
+	remI
+	negI
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 0 2 ii
+	jsr e_StdInt_sgcd;29
+.o 0 1 i
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_b 1 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+else.63
+	push_b 1
+	push_b 1
+.d 0 2 ii
+	jsr e_StdInt_sgcd;29
+.o 0 1 i
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_b 1 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.export e_BigInt_sneg_minInt_0
+.descexp e_BigInt_dneg_minInt_0 e_BigInt_nneg_minInt_0 e_BigInt_lneg_minInt_0 0 0 "neg_minInt_0"
+.o 1 0
+e_BigInt_lneg_minInt_0
+	halt
+.n 0 e_BigInt_dneg_minInt_0
+.o 1 0
+e_BigInt_nneg_minInt_0
+	push_node _cycle_in_spine 0
+.d 0 0
+	jsr ea38
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 0 0
+ea38
+.o 0 0
+e_BigInt_sneg_minInt_0
+.o 0 0
+s38
+	pushI 1
+	create_array_ INT 0 1
+	pushI 2147483648
+	pushI 0
+	update INT 0 1
+	pushI 1
+.d 1 1 i
+	rtn
+.export e_BigInt_sgcdSB
+.descexp e_BigInt_dgcdSB e_BigInt_ngcdSB e_BigInt_lgcdSB 2 0 "gcdSB"
+.a 0 a27
+.o 2 0
+e_BigInt_lgcdSB
+	repl_args 1 1
+.o 2 0
+a27
+.d 2 0
+	jsr ea27
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dgcdSB
+.o 1 0
+e_BigInt_ngcdSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea27
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea27
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_sgcdSB
+.o 1 2 ii
+s27
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 i
+	jsr s51
+.o 1 1 i
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 2 ii
+	jmp s26
+.export e_BigInt_ssmall_to_big2
+.descexp e_BigInt_dsmall_to_big2 e_BigInt_nsmall_to_big2 e_BigInt_lsmall_to_big2 1 0 "small_to_big2"
+.o 2 0
+e_BigInt_lsmall_to_big2
+	pop_a 1
+.d 1 0
+	jsr ea51
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dsmall_to_big2
+.o 1 0
+e_BigInt_nsmall_to_big2
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea51
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea51
+	jsr_eval 0
+	pushI_a 0
+	pop_a 1
+.o 0 1 i
+e_BigInt_ssmall_to_big2
+.o 0 1 i
+s51
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.64
+	push_b 0
+	negI
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI -1
+.d 1 1 i
+	rtn
+else.64
+	pushI 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI 1
+.d 1 1 i
+	rtn
+.export e_BigInt_sgcdBB
+.descexp e_BigInt_dgcdBB e_BigInt_ngcdBB e_BigInt_lgcdBB 2 0 "gcdBB"
+.a 0 a26
+.o 2 0
+e_BigInt_lgcdBB
+	repl_args 1 1
+.o 2 0
+a26
+.d 2 0
+	jsr ea26
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dgcdBB
+.o 1 0
+e_BigInt_ngcdBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea26
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea26
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sgcdBB
+.o 2 2 ii
+s26
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 0
+	push_b 1
+	push_a 0
+	buildh ARRAY 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 2 ii
+	jsr s205
+.o 0 1 i
+	push_a 1
+	push_arraysize INT 0 1
+	pushI 0
+	push_b 1
+	push_a 1
+	buildh ARRAY 1
+.d 1 2 ii
+	jsr s205
+.o 0 1 i
+	push_b 0
+	push_b 3
+	ltI
+	push_b 3
+	push_b 2
+	push_b 2
+	update_b 2 3
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+.d 0 3 bii
+	jsr s215
+.o 0 1 i
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	addI
+	push_b 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	subI
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 4
+	updatepop_b 0 3
+	addI
+	push_b 0
+	updatepop_b 0 1
+	create_array_ INT 0 1
+
+	push_a 0
+	push_a 3
+	push_b 1
+	push_a 3
+	push_b 1
+	push_a 3
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall gmp_gcdC "AIAIA:I:A"
+
+.d 1 1 i
+	jmp s94
+.o 0 3 bii
+s215
+	eqB_b TRUE 0
+	jmp_true case.65
+	jmp case.66
+case.65
+	update_b 1 2
+	pop_b 2
+.d 0 1 i
+	rtn
+case.66
+	pop_b 2
+.d 0 1 i
+	rtn
+.o 1 2 ii
+s205
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.67
+	pushI 1
+	push_b 2
+	eqI
+	jmp_false else.68
+	pop_a 1
+	pop_b 2
+	pushI 0
+.d 0 1 i
+	rtn
+else.68
+	buildAC "BigInt: violation of internal constraint"
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	pushI_a 0
+	pop_a 1
+.d 0 1 i
+	rtn
+else.67
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	notB
+	jmp_false else.69
+	pushI 1
+	push_b 2
+	update_b 1 3
+	updatepop_b 0 2
+	pop_a 1
+	addI
+.d 0 1 i
+	rtn
+else.69
+	pushI 1
+	push_b 2
+	addI
+	push_b 1
+	push_a 0
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s205
+.o 4 2 ii
+s131
+.inline gmp_gcdC
+	ccall gmp_gcdC "AIAIA:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sequalBB
+.descexp e_BigInt_dequalBB e_BigInt_nequalBB e_BigInt_lequalBB 2 0 "equalBB"
+.a 0 a25
+.o 2 0
+e_BigInt_lequalBB
+	repl_args 1 1
+.o 2 0
+a25
+.d 2 0
+	jsr ea25
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dequalBB
+.o 1 0
+e_BigInt_nequalBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea25
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea25
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sequalBB
+.o 2 2 ii
+s25
+	push_b 1
+	push_b 1
+	eqI
+	notB
+	jmp_false else.70
+	pop_a 2
+	pop_b 2
+	pushB FALSE
+.d 0 1 b
+	rtn
+else.70
+	push_a 0
+	pop_b 2
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.71
+	push_b 1
+	push_a 1
+	push_a 1
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_cmp "AAI-I"
+
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+.d 0 1 b
+	rtn
+else.71
+	pop_a 2
+	pop_b 2
+	pushB FALSE
+.d 0 1 b
+	rtn
+.o 2 1 i
+s115
+.inline mpn_cmp
+	ccall __gmpn_cmp "AAI-I"
+.end
+
+.d 0 1 i
+	rtn
+.export e_BigInt_scopyB
+.descexp e_BigInt_dcopyB e_BigInt_ncopyB e_BigInt_lcopyB 1 0 "copyB"
+.o 2 0
+e_BigInt_lcopyB
+	pop_a 1
+.d 1 0
+	jsr ea24
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 1 e_BigInt_dcopyB
+.o 1 0
+e_BigInt_ncopyB
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea24
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 1 0
+ea24
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_scopyB
+.o 1 1 i
+s24
+	push_a 0
+	push_b 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s6
+.o 1 1 b
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 0
+	create_array_ INT 0 1
+
+	push_b 0
+	push_a 1
+	push_a 1
+	updatepop_b 0 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 1 i
+	jsr s146
+.o 2 0
+	push_a 1
+	push_b 0
+	update_a 1 2
+	updatepop_a 0 1
+.d 1 1 b
+	jsr s7
+.o 1 1 i
+	push_a 1
+	push_b 1
+	buildh _Nil 0
+	update_a 0 3
+	pop_a 1
+.d 1 1 b
+	jsr s7
+.o 1 1 i
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 2 ii
+	rtn
+.o 2 1 i
+s146
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.72
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	pop_b 1
+.d 2 0
+	rtn
+else.72
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	push_b 0
+	push_a 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	push_a 0
+	update_b 1 2
+	updatepop_b 0 1
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 2 1 i
+	jmp s146
+.export e_BigInt_sbigIntToStringB
+.descexp e_BigInt_dbigIntToStringB e_BigInt_nbigIntToStringB e_BigInt_lbigIntToStringB 3 0 "bigIntToStringB"
+.a 0 a23
+.o 2 0
+e_BigInt_lbigIntToStringB
+	repl_args 2 2
+.o 3 0
+a23
+.d 3 0
+	jsr ea23
+.o 1 0
+	push_a 0
+	buildh ARRAY 1
+	updatepop_a 0 1
+.d 1 0
+	rtn
+.n 3 e_BigInt_dbigIntToStringB
+.o 1 0
+e_BigInt_nbigIntToStringB
+	push_node _cycle_in_spine 3
+.d 3 0
+	jsr ea23
+.o 1 0
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 3 0
+ea23
+	jsr_eval 2
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 2 1 1
+	pushB_a 2
+	pushI_a 1
+	update_a 0 3
+	pop_a 3
+.o 1 3 ibi
+e_BigInt_sbigIntToStringB
+.o 1 3 ibi
+s23
+	pushI 2
+	push_b 1
+	ltI
+	jmp_true then.73
+	push_b 0
+	pushI 36
+	ltI
+	jmp_false else.73
+then.73
+	push_b 0
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jsr ItoAC
+.o 1 0
+	buildAC " out of range"
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+.d 2 0
+	jsr catAC
+.o 1 0
+	buildAC "integerToString: base value "
+.d 2 0
+	jsr catAC
+.o 1 0
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	push_array 0
+	updatepop_a 0 1
+.d 1 0
+	rtn
+else.73
+	pushI 0
+	push_b 3
+	ltI
+	push_b 0
+.d 0 1 b
+	jsr s213
+.o 0 1 i
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 3
+	ccall get_max_string_sizeC "II-I"
+
+	push_b 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	addI
+	pushC ' '
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	create_array CHAR 0 1
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+	push_a 1
+	push_b 0
+	pushI 0
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s204
+.o 1 0
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_a 1
+	push_b 3
+	push_a 3
+	push_b 2
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 3 3 iii
+	jsr s126
+.o 1 1 i
+	push_b 1
+	push_b 1
+	addI
+	push_a 0
+	push_b 0
+	push_b 3
+.d 1 2 ii
+	jsr s150
+.o 0 1 i
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.75
+	pop_a 1
+	pop_b 8
+	buildAC "0"
+.d 1 0
+	rtn
+else.75
+	push_b 3
+	push_b 1
+	subI
+	push_b 0
+	push_b 4
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	push_b 7
+.d 0 1 b
+	jsr s214
+.o 0 1 c
+	push_a 0
+	push_b 0
+	push_b 2
+	push_b 4
+	push_b 8
+	update_b 3 4
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 4 iiic
+	jsr s151
+.o 1 0
+	push_b 4
+	push_b 1
+	addI
+	push_a 0
+	push_a 1
+	updatepop_b 0 3
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setStringSizeC "SI:V:S"
+
+	push_b 2
+	jmp_false else.76
+	pushC '-'
+	pushI 0
+	push_a 0
+	updatepop_a 0 1
+	update_b 1 7
+	updatepop_b 0 6
+	update CHAR 0 1
+.d 1 0
+	rtn
+else.76
+	pop_b 6
+.d 1 0
+	rtn
+.o 0 1 b
+s214
+	eqB_b TRUE 0
+	jmp_true case.77
+	jmp case.78
+case.77
+	pushC '\n'
+	pushC 'A'
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	ItoC
+.d 0 1 c
+	rtn
+case.78
+	pushC '\n'
+	pushC 'a'
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	ItoC
+.d 0 1 c
+	rtn
+.o 0 1 b
+s213
+	eqB_b TRUE 0
+	jmp_true case.79
+	jmp case.80
+case.79
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.80
+	pop_b 1
+	pushI 0
+.d 0 1 i
+	rtn
+.o 2 2 ii
+s204
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.81
+	push_b 0
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	push_a 0
+	select INT 0 1
+	pushI 1
+	push_b 2
+	addI
+	push_b 1
+	push_b 3
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	update INT 0 1
+	push_a 1
+	push_b 3
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	jmp s204
+else.81
+	updatepop_a 0 1
+	pop_b 2
+.d 1 0
+	rtn
+.o 1 4 iiic
+s151
+	pushI 0
+	push_b 3
+	eqI
+	jmp_false else.82
+	pop_b 4
+.d 1 0
+	rtn
+else.82
+	push_b 1
+	push_a 0
+	select CHAR 0 1
+	push_b 0
+	push_b 5
+	update_b 1 2
+	updatepop_b 0 1
+.d 0 2 cc
+	jsr s149
+.o 0 1 c
+	push_b 1
+	push_a 0
+	updatepop_a 0 1
+	update CHAR 0 1
+	pushI 1
+	push_b 3
+	subI
+	pushI 1
+	push_b 3
+	addI
+	pushI 1
+	push_b 3
+	addI
+	push_b 6
+	push_b 3
+	update_b 1 4
+	update_b 2 1
+	update_b 3 2
+	update_b 0 3
+	pop_b 1
+	update_b 3 7
+	update_b 2 6
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 4 iiic
+	jmp s151
+.o 0 2 cc
+s149
+	pushC '\n'
+	push_b 2
+	ltC
+	jmp_false else.83
+	pushC '0'
+	push_b 2
+	update_b 1 3
+	updatepop_b 0 2
+	addI
+	ItoC
+.d 0 1 c
+	rtn
+else.83
+	push_b 0
+	push_b 2
+	update_b 1 3
+	updatepop_b 0 2
+	addI
+	ItoC
+.d 0 1 c
+	rtn
+.o 1 2 ii
+s150
+	push_b 1
+	push_b 1
+	ltI
+	notB
+	jmp_false else.84
+	pop_a 1
+	pop_b 1
+.d 0 1 i
+	rtn
+else.84
+	push_b 0
+	push_a 0
+	select CHAR 0 1
+	pushC '\000'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	notB
+	jmp_false else.85
+	update_b 0 1
+	pop_a 1
+	pop_b 1
+.d 0 1 i
+	rtn
+else.85
+	pushI 1
+	push_b 1
+	addI
+	push_a 0
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s150
+.o 0 2 ii
+s134
+.inline get_max_string_sizeC
+	ccall get_max_string_sizeC "II-I"
+.end
+
+.d 0 1 i
+	rtn
+.o 3 3 iii
+s126
+	ccall call_mpn_get_str "ISIAI:I:A"
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sadd_inplace_UB_UB
+.descexp e_BigInt_dadd_inplace_UB_UB e_BigInt_nadd_inplace_UB_UB e_BigInt_ladd_inplace_UB_UB 2 0 "add_inplace_UB_UB"
+.a 0 a22
+.o 2 0
+e_BigInt_ladd_inplace_UB_UB
+	repl_args 1 1
+.o 2 0
+a22
+.d 2 0
+	jsr ea22
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dadd_inplace_UB_UB
+.o 1 0
+e_BigInt_nadd_inplace_UB_UB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea22
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea22
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sadd_inplace_UB_UB
+.o 2 2 ii
+s22
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 3
+	push_b 3
+	eqI
+	jmp_false else.86
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.87
+	push_b 0
+	push_a 1
+	push_b 2
+	push_a 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s82
+.o 1 0
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.87
+	push_b 1
+	push_a 0
+	push_b 1
+	push_a 2
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s82
+.o 1 0
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.86
+	push_b 3
+	pushI 0
+	ltI
+	jmp_false else.88
+	push_b 1
+	push_a 0
+	buildh ARRAY 1
+	push_b 1
+	push_a 2
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s199
+else.88
+	push_b 0
+	push_a 1
+	buildh ARRAY 1
+	push_b 2
+	push_a 1
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s201
+.o 2 2 ii
+s201
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.89
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s202
+else.89
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.90
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+else.90
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+.o 2 1 i
+s202
+	eqI_b 0 0
+	jmp_true case.91
+	jmp case.92
+case.91
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.92
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.93
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s202
+else.93
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.94
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s85
+else.94
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s85
+.o 2 2 ii
+s199
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.95
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s200
+else.95
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.96
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+else.96
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+.o 2 1 i
+s200
+	eqI_b 0 0
+	jmp_true case.97
+	jmp case.98
+case.97
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.98
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.99
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s200
+else.99
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.100
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s85
+else.100
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s85
+.export e_BigInt_sadd_inplace_UB_B
+.descexp e_BigInt_dadd_inplace_UB_B e_BigInt_nadd_inplace_UB_B e_BigInt_ladd_inplace_UB_B 2 0 "add_inplace_UB_B"
+.a 0 a21
+.o 2 0
+e_BigInt_ladd_inplace_UB_B
+	repl_args 1 1
+.o 2 0
+a21
+.d 2 0
+	jsr ea21
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dadd_inplace_UB_B
+.o 1 0
+e_BigInt_nadd_inplace_UB_B
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea21
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea21
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sadd_inplace_UB_B
+.o 2 2 ii
+s21
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 3
+	push_b 3
+	eqI
+	jmp_false else.101
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.102
+	push_b 0
+	push_a 1
+	push_b 2
+	push_a 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s82
+.o 1 0
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.102
+	push_b 1
+	push_a 0
+	push_b 1
+	push_a 2
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s81
+.o 1 0
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.101
+	push_b 3
+	pushI 0
+	ltI
+	jmp_false else.103
+	push_b 1
+	push_a 0
+	push_b 1
+	push_a 2
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s86
+else.103
+	push_b 0
+	push_a 1
+	push_b 2
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s87
+.o 2 2 ii
+s87
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.104
+	push_b 0
+	push_a 0
+	push_a 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s88
+else.104
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.105
+	push_b 1
+	push_a 1
+	push_b 1
+	push_a 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+else.105
+	push_b 1
+	push_a 1
+	buildh ARRAY 1
+	push_b 1
+	push_a 1
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s193
+.o 2 2 ii
+s193
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.106
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s194
+else.106
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.107
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+else.107
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+.o 2 1 i
+s194
+	eqI_b 0 0
+	jmp_true case.108
+	jmp case.109
+case.108
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.109
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.110
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s194
+else.110
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.111
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+else.111
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+.o 2 2 ii
+s86
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.112
+	push_b 0
+	push_a 1
+	push_a 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s88
+else.112
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.113
+	push_b 1
+	push_a 1
+	buildh ARRAY 1
+	push_b 1
+	push_a 1
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s189
+else.113
+	push_b 0
+	push_a 0
+	push_b 2
+	push_a 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+.o 2 2 ii
+s189
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.114
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s190
+else.114
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.115
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+else.115
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+.o 2 1 i
+s190
+	eqI_b 0 0
+	jmp_true case.116
+	jmp case.117
+case.116
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.117
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.118
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s190
+else.118
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.119
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+else.119
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+.o 2 2 ii
+s88
+	eqI_b 0 1
+	jmp_true case.120
+	jmp case.121
+case.120
+	pushI 0
+	updatepop_b 0 2
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.121
+	pushI 1
+	push_b 2
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	push_b 1
+	push_a 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.122
+	push_b 2
+	push_a 1
+	push_a 1
+	push_b 4
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 6
+	updatepop_b 0 5
+.d 2 2 ii
+	jmp s88
+else.122
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.123
+	push_b 1
+	push_a 1
+	push_a 1
+	push_b 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s89
+else.123
+	push_b 1
+	push_a 0
+	push_b 2
+	push_a 2
+	push_b 2
+	negI
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s85
+.o 2 3 iii
+s85
+	push_b 1
+	push_a 0
+	push_a 1
+	push_b 3
+	push_a 3
+	push_a 3
+	push_a 3
+	update_a 3 4
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 3 5
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_sub "AAIAI:I:A"
+
+	push_b 2
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 2 ii
+	jmp s79
+.o 2 2 ii
+s89
+	push_b 1
+	push_a 0
+	push_b 2
+	push_a 2
+	push_a 3
+	push_a 4
+	push_a 3
+	update_a 2 4
+	update_a 3 2
+	update_a 0 3
+	pop_a 1
+	update_a 3 5
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_sub "AAIAI:I:A"
+
+	push_b 2
+	push_a 0
+	updatepop_b 0 1
+.d 1 1 i
+	jsr s144
+.o 0 1 i
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.124
+	push_b 1
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.124
+	push_b 0
+	push_a 0
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s145
+.o 1 0
+	push_b 0
+	push_a 0
+	push_a 1
+	pushI 1
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 3
+	update_a 1 2
+	updatepop_a 0 1
+	ccall __gmpn_add_1 "AAII:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.125
+	push_a 0
+	push_a 0
+	push_b 1
+	push_a 1
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	jmp s80
+else.125
+	pushI 1
+	push_b 2
+	push_a 0
+	update_b 1 2
+	updatepop_b 0 1
+	updatepop_a 0 1
+	update INT 0 1
+	pushI 1
+	push_b 1
+	addI
+	push_a 0
+	push_a 1
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+.o 1 1 i
+s80
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.126
+	pushI 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.127
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.128
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.128
+	pushI 2147483648
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.128
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.127
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.130
+	push_b 0
+	negI
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.130
+	push_b 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.126
+	push_a 0
+	push_b 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.o 1 1 i
+s145
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.131
+	pop_b 1
+.d 1 0
+	rtn
+else.131
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	push_b 0
+	not%
+	push_b 2
+	push_a 0
+	update_b 1 2
+	updatepop_b 0 1
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 0
+	updatepop_b 0 1
+.d 1 1 i
+	jmp s145
+.o 1 1 i
+s144
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.132
+	pop_a 1
+	pop_b 1
+	pushI 0
+.d 0 1 i
+	rtn
+else.132
+	pushI 1
+	push_b 1
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	pushI -1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.133
+	push_b 0
+	push_a 0
+	updatepop_a 0 1
+	updatepop_b 0 2
+.d 1 1 i
+	jmp s144
+else.133
+	pop_a 1
+	pop_b 1
+.d 0 1 i
+	rtn
+.o 2 2 ii
+s82
+	push_b 0
+	push_a 0
+	push_a 1
+	push_b 2
+	push_a 3
+	push_a 3
+	push_a 3
+	update_a 3 4
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 3 5
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_add "AAIAI:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.134
+	pop_b 3
+.d 1 0
+	rtn
+else.134
+	push_b 1
+	push_a 0
+	push_b 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+	update_b 1 4
+	updatepop_b 0 3
+.d 1 2 ii
+	jmp s83
+.export e_BigInt_sadd_inplace_S_UB
+.descexp e_BigInt_dadd_inplace_S_UB e_BigInt_nadd_inplace_S_UB e_BigInt_ladd_inplace_S_UB 2 0 "add_inplace_S_UB"
+.a 0 a20
+.o 2 0
+e_BigInt_ladd_inplace_S_UB
+	repl_args 1 1
+.o 2 0
+a20
+.d 2 0
+	jsr ea20
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dadd_inplace_S_UB
+.o 1 0
+e_BigInt_nadd_inplace_S_UB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea20
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea20
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_sadd_inplace_S_UB
+.o 1 2 ii
+s20
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.135
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.136
+	push_b 0
+	negI
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s140
+else.136
+	push_b 0
+	negI
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s141
+else.135
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.137
+	push_b 0
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s141
+else.137
+	push_b 0
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s140
+.o 1 2 ii
+s141
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 0
+	push_a 0
+	push_a 1
+	push_b 3
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 3
+	update_a 1 2
+	updatepop_a 0 1
+	ccall __gmpn_sub_1 "AAII:I:A"
+
+	push_b 1
+	push_a 0
+	push_b 3
+	updatepop_a 0 1
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 2 ii
+	jmp s79
+.o 1 2 ii
+s140
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 0
+	push_a 0
+	push_a 1
+	push_b 3
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 3
+	update_a 1 2
+	updatepop_a 0 1
+	ccall __gmpn_add_1 "AAII:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.138
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	updatepop_b 0 4
+.d 1 1 i
+	rtn
+else.138
+	push_b 1
+	push_a 0
+	push_b 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+.d 1 2 ii
+	jsr s83
+.o 1 0
+	push_b 2
+	updatepop_b 0 4
+.d 1 1 i
+	rtn
+.o 1 2 ii
+s83
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 1 i
+	jsr s143
+.o 1 0
+	push_b 1
+	push_b 1
+	push_a 0
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update INT 0 1
+.d 1 0
+	rtn
+.o 2 1 i
+s143
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.139
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+else.139
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	push_b 0
+	push_a 1
+	select INT 0 1
+	push_b 1
+	push_a 0
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 2 1 i
+	jmp s143
+.o 3 2 ii
+s111
+.inline mpn_add_1C
+	ccall __gmpn_add_1 "AAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.export e_BigInt_saddBS
+.descexp e_BigInt_daddBS e_BigInt_naddBS e_BigInt_laddBS 2 0 "addBS"
+.a 0 a18
+.o 2 0
+e_BigInt_laddBS
+	repl_args 1 1
+.o 2 0
+a18
+.d 2 0
+	jsr ea18
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_daddBS
+.o 1 0
+e_BigInt_naddBS
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea18
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea18
+	jsr_eval 1
+	jsr_eval 0
+	pushI_a 1
+	repl_r_args 1 1
+	update_a 0 1
+	pop_a 1
+.o 1 2 ii
+e_BigInt_saddBS
+.o 1 2 ii
+s18
+	push_a 0
+	push_b 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s19
+.export e_BigInt_saddSB
+.descexp e_BigInt_daddSB e_BigInt_naddSB e_BigInt_laddSB 2 0 "addSB"
+.a 0 a19
+.o 2 0
+e_BigInt_laddSB
+	repl_args 1 1
+.o 2 0
+a19
+.d 2 0
+	jsr ea19
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_daddSB
+.o 1 0
+e_BigInt_naddSB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea19
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea19
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 2 ii
+e_BigInt_saddSB
+.o 1 2 ii
+s19
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.140
+	pop_b 1
+.d 1 1 i
+	rtn
+else.140
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.141
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.142
+	push_b 0
+	negI
+	push_a 0
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s77
+else.142
+	push_b 0
+	negI
+	push_a 0
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s78
+else.141
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.143
+	push_a 0
+	push_b 1
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s78
+else.143
+	push_a 0
+	push_b 1
+	push_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 1 2 ii
+	jmp s77
+.o 1 2 ii
+s78
+	push_a 0
+	push_arraysize INT 0 1
+	push_b 0
+	create_array_ INT 0 1
+
+	push_b 0
+	push_a 1
+	push_a 1
+	push_b 2
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall __gmpn_sub_1 "AAII:I:A"
+
+	push_b 1
+	push_a 0
+	push_b 4
+	updatepop_a 0 1
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 2 ii
+	jmp s79
+.o 3 2 ii
+s113
+.inline mpn_sub_1C
+	ccall __gmpn_sub_1 "AAII:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 1 2 ii
+s77
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+
+	push_b 0
+	push_a 1
+	push_a 1
+	push_b 2
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall add_1C "AAII:V:A"
+
+	push_b 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+.o 3 2 ii
+s112
+.inline add_1C
+	ccall add_1C "AAII:V:A"
+.end
+
+.d 1 0
+	rtn
+.export e_BigInt_saddBB
+.descexp e_BigInt_daddBB e_BigInt_naddBB e_BigInt_laddBB 2 0 "addBB"
+.a 0 a17
+.o 2 0
+e_BigInt_laddBB
+	repl_args 1 1
+.o 2 0
+a17
+.d 2 0
+	jsr ea17
+.o 1 1 i
+	build_r e_BigInt_rBigInt2 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_daddBB
+.o 1 0
+e_BigInt_naddBB
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea17
+.o 1 1 i
+	fill_r e_BigInt_rBigInt2 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea17
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_saddBB
+.o 2 2 ii
+s17
+	push_a 0
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	push_b 3
+	push_b 3
+	eqI
+	jmp_false else.144
+	push_b 0
+	push_a 1
+	push_b 2
+	push_a 1
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s81
+.o 1 0
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.144
+	push_b 3
+	pushI 0
+	ltI
+	jmp_false else.145
+	push_b 1
+	push_a 0
+	buildh ARRAY 1
+	push_b 1
+	push_a 2
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s183
+else.145
+	push_b 0
+	push_a 1
+	buildh ARRAY 1
+	push_b 2
+	push_a 1
+	buildh ARRAY 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 2 ii
+	jmp s185
+.o 2 2 ii
+s185
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.146
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s186
+else.146
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.147
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+else.147
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+.o 2 1 i
+s186
+	eqI_b 0 0
+	jmp_true case.148
+	jmp case.149
+case.148
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.149
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.150
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s186
+else.150
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.151
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+else.151
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+.o 2 2 ii
+s183
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.152
+	push_b 0
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 2
+.d 2 1 i
+	jmp s184
+else.152
+	push_b 0
+	push_b 2
+	ltI
+	jmp_false else.153
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+else.153
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	push_a 2
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 3 iii
+	jmp s84
+.o 2 1 i
+s184
+	eqI_b 0 0
+	jmp_true case.154
+	jmp case.155
+case.154
+	pushI 0
+	updatepop_b 0 1
+	pop_a 2
+.d 0 1 i
+	jmp s98
+case.155
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 0
+	select INT 0 1
+	push_a 1
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 1
+	select INT 0 1
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.156
+	push_b 2
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 4
+.d 2 1 i
+	jmp s184
+else.156
+	push_b 0
+	push_b 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.157
+	push_b 0
+	push_array 1
+	push_b 1
+	push_array 1
+	pushI 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+else.157
+	push_b 0
+	push_array 0
+	push_b 1
+	push_array 2
+	pushI -1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 2 3 iii
+	jmp s84
+.o 2 3 iii
+s84
+	push_b 1
+	create_array_ INT 0 1
+
+	push_a 0
+	push_b 2
+	push_a 3
+	push_b 2
+	push_a 3
+	push_a 3
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_sub "AAIAI:I:A"
+
+	push_b 2
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 2 ii
+	jmp s79
+.o 4 2 ii
+s114
+.inline mpn_subC
+	ccall __gmpn_sub "AAIAI:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 2 2 ii
+s81
+	push_b 1
+	push_b 1
+	ltI
+	notB
+	jmp_false else.158
+	push_b 1
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s142
+else.158
+	push_b 0
+	push_a 0
+	push_b 2
+	push_a 2
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s142
+.o 2 2 ii
+s142
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+
+	push_a 0
+	push_b 1
+	push_a 3
+	push_b 1
+	push_a 3
+	push_a 3
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_add "AAIAI:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	notB
+	jmp_false else.159
+	push_b 0
+	push_b 2
+	push_a 0
+	updatepop_a 0 1
+	update_b 1 4
+	updatepop_b 0 3
+	update INT 0 1
+.d 1 0
+	rtn
+else.159
+	push_a 0
+	push_a 0
+	push_b 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 3
+	ccall setSizeC "AI:V:A"
+
+.d 1 0
+	rtn
+.o 4 2 ii
+s110
+.inline mpn_addC
+	ccall __gmpn_add "AAIAI:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 0 2 ii
+s76
+	push_b 1
+.d 0 1 i
+	jsr s139
+.o 0 1 i
+	push_b 1
+.d 0 1 i
+	jsr s139
+.o 0 1 i
+	eqI
+	jmp_false else.160
+	push_b 0
+	push_b 2
+	update_b 1 3
+	updatepop_b 0 2
+	ltI
+.d 0 1 b
+	rtn
+else.160
+	pushI 0
+	push_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	ltI
+.d 0 1 b
+	rtn
+.o 0 1 i
+s139
+	pushI 0
+	push_b 1
+	ltI
+	notB
+	jmp_false else.161
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+else.161
+	pop_b 1
+	pushI 0
+.d 0 1 i
+	rtn
+.export e_BigInt_sfitsIntoInt
+.descexp e_BigInt_dfitsIntoInt e_BigInt_nfitsIntoInt e_BigInt_lfitsIntoInt 1 0 "fitsIntoInt"
+.o 2 0
+e_BigInt_lfitsIntoInt
+	pop_a 1
+.d 1 0
+	jsr ea16
+.o 0 1 b
+	buildB_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dfitsIntoInt
+.o 1 0
+e_BigInt_nfitsIntoInt
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea16
+.o 0 1 b
+	fillB_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea16
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sfitsIntoInt
+.o 1 1 i
+s16
+	eq_desc _Nil 0 0
+	updatepop_b 0 1
+	pop_a 1
+
+.d 0 1 b
+	rtn
+.export e_BigInt_snrOfBits
+.descexp e_BigInt_dnrOfBits e_BigInt_nnrOfBits e_BigInt_lnrOfBits 1 0 "nrOfBits"
+.o 2 0
+e_BigInt_lnrOfBits
+	pop_a 1
+.d 1 0
+	jsr ea15
+.o 0 1 i
+	buildI_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dnrOfBits
+.o 1 0
+e_BigInt_nnrOfBits
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea15
+.o 0 1 i
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea15
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_snrOfBits
+.o 1 1 i
+s15
+	push_a 0
+	push_b 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s6
+.o 1 1 b
+	pop_b 1
+	pushI 1
+	push_a 0
+	push_arraysize INT 0 1
+	subI
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.162
+	push_b 0
+	push_a 0
+	updatepop_b 0 1
+	updatepop_a 0 1
+	select INT 0 1
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.163
+	pop_b 1
+	pushI 0
+.d 0 1 i
+	rtn
+else.163
+	push_b 0
+	updatepop_b 0 1
+	ccall countLeadingZeros "I:VI"
+
+	pushI 32
+	subI
+.d 0 1 i
+	rtn
+else.162
+	pushI 5
+	push_b 1
+	shiftl%
+	push_b 1
+	push_a 0
+	updatepop_a 0 1
+	select INT 0 1
+	ccall countLeadingZeros "I:VI"
+
+	pushI 32
+	subI
+	update_b 1 2
+	updatepop_b 0 1
+	addI
+.d 0 1 i
+	rtn
+.o 0 1 i
+s130
+.inline countLeadingZeros
+	ccall countLeadingZeros "I:VI"
+.end
+
+.d 0 1 i
+	rtn
+.export e_BigInt_scopyBigInt
+.descexp e_BigInt_dcopyBigInt e_BigInt_ncopyBigInt e_BigInt_lcopyBigInt 1 0 "copyBigInt"
+.o 2 0
+e_BigInt_lcopyBigInt
+	pop_a 1
+.d 1 0
+	jsr ea14
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 1 e_BigInt_dcopyBigInt
+.o 1 0
+e_BigInt_ncopyBigInt
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea14
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 1 0
+ea14
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_scopyBigInt
+.o 1 1 i
+s14
+	eq_desc _Nil 0 0
+	jmp_false is_big_copy
+	push_a 0
+	push_b 0
+.d 2 2 ii
+	rtn
+is_big_copy
+.d 1 1 i
+	jmp e_BigInt_scopyB
+
+.d 2 2 ii
+	rtn
+.export e_BigInt_s-.
+.descexp e_BigInt_d-. e_BigInt_n-. e_BigInt_l-. 2 0 "-"
+.a 0 a13
+.o 2 0
+e_BigInt_l-.
+	repl_args 1 1
+.o 2 0
+a13
+.d 2 0
+	jsr ea13
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d-.
+.o 1 0
+e_BigInt_n-.
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea13
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea13
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s-.
+.o 2 2 ii
+s13
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s92
+.o 1 1 i
+	push_a 1
+	push_b 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s10
+.export e_BigInt_s.-.
+.descexp e_BigInt_d.-. e_BigInt_n.-. e_BigInt_l.-. 2 0 "-"
+.a 0 a11
+.o 2 0
+e_BigInt_l.-.
+	repl_args 1 1
+.o 2 0
+a11
+.d 2 0
+	jsr ea11
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d.-.
+.o 1 0
+e_BigInt_n.-.
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea11
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea11
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s.-.
+.o 2 2 ii
+s11
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s92
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s9
+.export e_BigInt_s.+.
+.descexp e_BigInt_d.+. e_BigInt_n.+. e_BigInt_l.+. 2 0 "+"
+.a 0 a9
+.o 2 0
+e_BigInt_l.+.
+	repl_args 1 1
+.o 2 0
+a9
+.d 2 0
+	jsr ea9
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d.+.
+.o 1 0
+e_BigInt_n.+.
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea9
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea9
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s.+.
+.o 2 2 ii
+s9
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_addiuu
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_addiuu
+	pop_a 1
+	addIo
+	jmp_false no_overflow_addiuu
+.d 1 1 i
+	jmp e_BigInt_shandle_add_overflow
+no_overflow_addiuu
+.d 1 1 i
+	rtn
+fst_is_big_addiuu
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_addiuu
+.d 2 2 ii
+	jmp e_BigInt_sadd_inplace_UB_UB
+fst_only_is_big_addiuu
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sadd_inplace_S_UB
+snd_only_is_big_addiuu
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sadd_inplace_S_UB
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sratioToReal
+.descexp e_BigInt_dratioToReal e_BigInt_nratioToReal e_BigInt_lratioToReal 2 0 "ratioToReal"
+.a 0 a8
+.o 2 0
+e_BigInt_lratioToReal
+	repl_args 1 1
+.o 2 0
+a8
+.d 2 0
+	jsr ea8
+.o 0 1 r
+	buildR_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dratioToReal
+.o 1 0
+e_BigInt_nratioToReal
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea8
+.o 0 1 r
+	fillR_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea8
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sratioToReal
+.o 2 2 ii
+s8
+	push_a 1
+	push_b 1
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.164
+	push_a 0
+	push_b 0
+	updatepop_b 0 2
+	updatepop_a 0 2
+.d 1 1 i
+	jsr s65
+.o 0 1 i
+	ItoR
+	pushR 0.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divR
+.d 0 1 r
+	rtn
+else.164
+	push_a 0
+	push_b 0
+.d 1 1 i
+	jsr s6
+.o 1 1 b
+	push_a 2
+	push_b 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s6
+.o 1 1 b
+	push_b 0
+	updatepop_b 0 1
+.d 0 1 b
+	jsr s211
+.o 0 1 i
+	push_a 0
+	push_b 1
+.d 0 1 b
+	jsr s212
+.o 0 1 i
+	push_a 2
+	update_b 1 2
+	updatepop_b 0 1
+	ccall ratioToRealC "IAIA-R"
+
+	push_b 0
+	absR
+	pushR 1.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	ltR
+	jmp_false else.165
+	push_a 1
+	update_a 3 4
+	update_a 1 3
+	updatepop_a 0 2
+	push_arraysize INT 0 1
+	push_a 0
+	updatepop_a 0 1
+	push_arraysize INT 0 1
+	ltI
+	notB
+	jmp_false else.166
+	update_b 0 2
+	pop_a 1
+	pop_b 2
+.d 0 1 r
+	rtn
+else.166
+	push_a 0
+	push_b 1
+	updatepop_b 0 3
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s65
+.o 0 1 i
+	ItoR
+	pushR 0.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divR
+.d 0 1 r
+	rtn
+else.165
+	push_a 0
+	updatepop_a 0 1
+	push_arraysize INT 0 1
+	push_a 0
+	update_a 2 3
+	updatepop_a 0 2
+	push_arraysize INT 0 1
+	ltI
+	jmp_false else.167
+	push_a 0
+	push_b 1
+	updatepop_b 0 3
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s65
+.o 0 1 i
+	ItoR
+	pushR 0.0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	divR
+.d 0 1 r
+	rtn
+else.167
+	update_b 0 2
+	pop_a 1
+	pop_b 2
+.d 0 1 r
+	rtn
+.o 0 1 b
+s212
+	eqB_b TRUE 0
+	jmp_true case.168
+	jmp case.169
+case.168
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.169
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.o 0 1 b
+s211
+	eqB_b TRUE 0
+	jmp_true case.170
+	jmp case.171
+case.170
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.171
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.export e_BigInt_ssign;64
+.descexp e_BigInt_dsign;64 e_BigInt_nsign;64 e_BigInt_lsign;64 1 0 "sign;64"
+.o 2 0
+e_BigInt_lsign;64
+	pop_a 1
+.d 1 0
+	jsr ea65
+.o 0 1 i
+	buildI_b 0
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dsign;64
+.o 1 0
+e_BigInt_nsign;64
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea65
+.o 0 1 i
+	fillI_b 0 0
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea65
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_ssign;64
+.o 1 1 i
+s65
+	eq_desc _Nil 0 0
+	jmp_false is_big_sign
+	pop_a 1
+	push_b 0
+	pushI 0
+	eqI
+	jmp_true is_small_zero_sign
+	pushI 0
+	gtI
+	jmp_true is_negative_sign
+is_positive_sign
+	pushI 1
+.d 0 1 i
+	rtn
+is_negative_sign
+	pushI -1
+.d 0 1 i
+	rtn
+is_small_zero_sign
+	pushI 0
+	update_b 0 1
+	pop_b 1
+.d 0 1 i
+	rtn
+is_big_sign
+	pop_a 1
+
+.d 0 1 i
+	rtn
+.o 2 2 ii
+s135
+.inline ratioToRealC
+	ccall ratioToRealC "IAIA-R"
+.end
+
+.d 0 1 r
+	rtn
+.export e_BigInt_spackBigInt
+.descexp e_BigInt_dpackBigInt e_BigInt_npackBigInt e_BigInt_lpackBigInt 2 0 "packBigInt"
+.a 0 a7
+.o 2 0
+e_BigInt_lpackBigInt
+	repl_args 1 1
+.o 2 0
+a7
+.d 2 0
+	jsr ea7
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dpackBigInt
+.o 1 0
+e_BigInt_npackBigInt
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea7
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea7
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	pushB_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 1 b
+e_BigInt_spackBigInt
+.o 1 1 b
+s7
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.172
+	pushI 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.172
+	pushI 1
+	push_b 1
+	eqI
+	jmp_false else.173
+	pushI 0
+	push_a 0
+	updatepop_b 0 1
+	select INT 0 1
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.174
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.175
+	push_b 1
+	notB
+	jmp_false else.175
+	pushI 2147483648
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.175
+	push_b 1
+	updatepop_b 0 2
+.d 0 1 b
+	jsr s209
+.o 0 1 i
+	push_a 0
+	push_b 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+	pop_a 0
+
+.d 1 1 i
+	rtn
+else.174
+	push_b 1
+	jmp_false else.177
+	push_b 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.177
+	push_b 0
+	negI
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.173
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.178
+	push_b 0
+	push_a 0
+	updatepop_b 0 1
+.d 1 1 i
+	jsr s176
+.o 0 1 i
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	push_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s178
+.o 1 0
+	push_b 0
+	updatepop_b 0 1
+.d 1 1 b
+	jmp s7
+else.178
+	push_b 1
+	updatepop_b 0 2
+.d 0 1 b
+	jsr s210
+.o 0 1 i
+	push_a 0
+	push_b 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+	pop_a 0
+
+.d 1 1 i
+	rtn
+.o 0 1 b
+s210
+	eqB_b TRUE 0
+	jmp_true case.179
+	jmp case.180
+case.179
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.180
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.o 0 1 b
+s209
+	eqB_b TRUE 0
+	jmp_true case.181
+	jmp case.182
+case.181
+	pop_b 1
+	pushI 1
+.d 0 1 i
+	rtn
+case.182
+	pop_b 1
+	pushI -1
+.d 0 1 i
+	rtn
+.o 2 2 ii
+s178
+	push_b 0
+	push_b 2
+	ltI
+	notB
+	jmp_false else.183
+	pushI 1
+	push_b 1
+	addI
+	push_b 1
+	push_a 0
+	select INT 0 1
+	push_b 2
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 2
+	push_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s178
+else.183
+	pop_a 1
+	pop_b 2
+.d 1 0
+	rtn
+.o 1 1 i
+s176
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	pushI 0
+	push_b 1
+	eqI
+	jmp_true then.184
+	push_b 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	notB
+	jmp_false else.184
+then.184
+	pop_a 1
+.d 0 1 i
+	rtn
+else.184
+	push_b 0
+	push_a 0
+	updatepop_a 0 1
+	updatepop_b 0 1
+.d 1 1 i
+	jmp s176
+.export e_BigInt_sunpackBigInt
+.descexp e_BigInt_dunpackBigInt e_BigInt_nunpackBigInt e_BigInt_lunpackBigInt 1 0 "unpackBigInt"
+.o 2 0
+e_BigInt_lunpackBigInt
+	pop_a 1
+.d 1 0
+	jsr ea6
+.o 1 1 b
+	push_a 0
+	buildh ARRAY 1
+	buildB_b 0
+	buildh _Tuple 2
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 1 e_BigInt_dunpackBigInt
+.o 1 0
+e_BigInt_nunpackBigInt
+	push_node _cycle_in_spine 1
+.d 1 0
+	jsr ea6
+.o 1 1 b
+	push_a 0
+	buildh ARRAY 1
+	buildB_b 0
+	fillh _Tuple 2 3
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 1 0
+ea6
+	jsr_eval 0
+	repl_r_args 1 1
+.o 1 1 i
+e_BigInt_sunpackBigInt
+.o 1 1 i
+s6
+	eq_desc _Nil 0 0
+	jmp_false is_big_unpack
+	pop_a 1
+	push_b 0					
+	pushI 0
+	gtI
+	notB						|| B afterwards: i, is_non_negative i
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1						|| B afterwards: is_non_negative i, i
+	push_b 1					|| calculate (abs i)
+	jmp_true create_the_array
+	pushI 0
+	subI
+create_the_array				|| B: is_non_negative i, abs i
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	update INT 0 1				|| B afterwards: is_non_negative i
+.d 1 1 b
+	rtn
+is_big_unpack
+	pushI 1
+	eqI
+
+.d 1 1 b
+	rtn
+.export e_BigInt_sstringToBigInt
+.descexp e_BigInt_dstringToBigInt e_BigInt_nstringToBigInt e_BigInt_lstringToBigInt 2 0 "stringToBigInt"
+.a 0 a5
+.o 2 0
+e_BigInt_lstringToBigInt
+	repl_args 1 1
+.o 2 0
+a5
+.d 2 0
+	jsr ea5
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_dstringToBigInt
+.o 1 0
+e_BigInt_nstringToBigInt
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea5
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea5
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	pushI_a 1
+	update_a 0 2
+	pop_a 2
+.o 1 1 i
+e_BigInt_sstringToBigInt
+.o 1 1 i
+s5
+	push_a 0
+	eqAC_a ""
+	jmp_true case.186
+	jmp case.187
+case.186
+	pushI 0
+	updatepop_b 0 1
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+case.187
+	pushI 0
+	push_a 0
+	select CHAR 0 1
+	pushC '-'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	jmp_false else.188
+	push_a 0
+	pushI -1
+	pushI 1
+	push_b 2
+	updatepop_a 0 1
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 3 iii
+	jmp s97
+else.188
+	pushI 0
+	push_a 0
+	select CHAR 0 1
+	pushC '+'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqC
+	jmp_false else.189
+	push_a 0
+	pushI 1
+	pushI 1
+	push_b 2
+	updatepop_a 0 1
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 3 iii
+	jmp s97
+else.189
+	push_a 0
+	pushI 1
+	pushI 0
+	push_b 2
+	updatepop_a 0 1
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+.d 1 3 iii
+	jmp s97
+.o 1 3 iii
+s97
+	pushI 2
+	push_b 1
+	ltI
+	jmp_true then.190
+	push_b 0
+	pushI 36
+	ltI
+	jmp_false else.190
+then.190
+	push_b 0
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jsr ItoAC
+.o 1 0
+	buildAC " out of range"
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+.d 2 0
+	jsr catAC
+.o 1 0
+	buildAC "stringToBigInt: error: base value "
+.d 2 0
+	jsr catAC
+.o 1 0
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.190
+	push_a 0
+	push_arraysize CHAR 0 1
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	subI
+	pushC ' '
+	push_b 1
+	create_array CHAR 0 1
+	push_a 0
+	push_a 2
+	push_b 0
+	push_b 3
+	pushI 0
+	push_b 4
+	update_b 3 4
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 4 iiii
+	jsr s174
+.o 1 0
+	push_a 0
+	push_arraysize CHAR 0 1
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.192
+	pushI 0
+	updatepop_b 0 4
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.192
+.d 0 0
+	jsr s95
+.o 1 0
+	push_b 1
+	select INT 0 1
+	push_b 1
+	mulI
+	pushI 32
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+.d 0 2 ii
+	jsr s153
+.o 0 1 i
+	push_b 0
+	updatepop_b 0 1
+	create_array_ INT 0 1
+
+	push_a 0
+	push_b 0
+	push_a 2
+	push_a 2
+	updatepop_b 0 2
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 3 1 i
+	jsr s127
+.o 1 1 i
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.193
+	pushI 0
+	updatepop_b 0 2
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.193
+	push_b 0
+	push_a 0
+	push_b 2
+	updatepop_a 0 1
+.d 1 2 ii
+	jsr s79
+.o 1 1 i
+	updatepop_b 0 2
+	pop_a 0
+
+.d 1 1 i
+	rtn
+.o 2 4 iiii
+s174
+	push_b 3
+	push_b 2
+	eqI
+	jmp_false else.194
+	pop_a 1
+	pop_b 4
+.d 1 0
+	rtn
+else.194
+	push_b 2
+	push_a 0
+	select CHAR 0 1
+	push_b 1
+.d 0 2 ic
+	jsr s175
+.o 0 1 c
+	push_b 1
+	ItoC
+	push_b 1
+	ltC
+	notB
+	jmp_false else.195
+	push_a 1
+	push_b 2
+	push_a 2
+	update_a 1 3
+	updatepop_a 0 2
+	updatepop_b 0 5
+	ccall setStringSizeC "SI:V:S"
+
+.d 1 0
+	rtn
+else.195
+	push_b 0
+	push_b 3
+	push_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+	update CHAR 0 1
+	pushI 1
+	push_b 3
+	addI
+	pushI 1
+	push_b 3
+	addI
+	push_a 1
+	push_b 5
+	push_b 3
+	push_b 3
+	update_b 2 4
+	update_b 3 2
+	update_b 0 3
+	pop_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 3 7
+	update_b 2 6
+	update_b 1 5
+	updatepop_b 0 4
+.d 2 4 iiii
+	jmp s174
+.o 0 2 ic
+s175
+	pushC '0'
+	push_b 2
+	ltC
+	notB
+	jmp_false else.196
+	push_b 1
+	pushC '9'
+	ltC
+	notB
+	jmp_false else.196
+	pushC '0'
+	push_b 2
+	update_b 1 3
+	updatepop_b 0 2
+	subI
+	ItoC
+.d 0 1 c
+	rtn
+else.196
+	pushC 'A'
+	push_b 2
+	ltC
+	notB
+	jmp_false else.198
+	push_b 1
+	pushC 'Z'
+	ltC
+	notB
+	jmp_false else.198
+	pushC 'A'
+	push_b 2
+	subI
+	ItoC
+	pushC '\n'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	addI
+	ItoC
+.d 0 1 c
+	rtn
+else.198
+	pushC 'a'
+	push_b 2
+	ltC
+	notB
+	jmp_false else.200
+	push_b 1
+	pushC 'z'
+	ltC
+	notB
+	jmp_false else.200
+	pushC 'a'
+	push_b 2
+	subI
+	ItoC
+	pushC '\n'
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	addI
+	ItoC
+.d 0 1 c
+	rtn
+else.200
+	push_b 0
+	updatepop_b 0 2
+	ItoC
+.d 0 1 c
+	rtn
+.o 1 2 ii
+s79
+	pushI 1
+	push_b 2
+	eqI
+	jmp_false else.202
+	pushI 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.203
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.204
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.204
+	pushI 2147483648
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.204
+	push_a 0
+	pushI 1
+	push_a 1
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.203
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.206
+	push_b 0
+	negI
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.206
+	push_b 0
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp s98
+else.202
+	pushI 1
+	push_b 2
+	subI
+	push_b 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.207
+	push_b 1
+	push_a 0
+	push_b 3
+	updatepop_a 0 1
+	update_b 1 5
+	updatepop_b 0 4
+.d 1 2 ii
+	jmp s79
+else.207
+	push_a 0
+	push_b 3
+	push_a 1
+	updatepop_b 0 2
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+.o 0 1 i
+s98
+	build _Nil 0 _hnf
+
+.d 1 1 i
+	rtn
+.o 0 2 ii
+s153
+	push_b 1
+	push_b 1
+	addI
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	subI
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 3
+	updatepop_b 0 2
+	divI
+.d 0 1 i
+	rtn
+.o 0 0
+s95
+	testcaf c95
+	jmp_false m.208
+	pushcaf c95 1 0
+.d 1 0
+	rtn
+.caf c95 1 0
+m.208
+.d 0 0
+	jsr s95.1
+.o 1 0
+	fillcaf c95 1 0
+.d 1 0
+	rtn
+.o 0 0
+s95.1
+	pushI 37
+	create_array_ INT 0 1
+	pushI 6
+	pushI 36
+	update INT 0 1
+	pushI 6
+	pushI 35
+	update INT 0 1
+	pushI 6
+	pushI 34
+	update INT 0 1
+	pushI 6
+	pushI 33
+	update INT 0 1
+	pushI 5
+	pushI 32
+	update INT 0 1
+	pushI 5
+	pushI 31
+	update INT 0 1
+	pushI 5
+	pushI 30
+	update INT 0 1
+	pushI 5
+	pushI 29
+	update INT 0 1
+	pushI 5
+	pushI 28
+	update INT 0 1
+	pushI 5
+	pushI 27
+	update INT 0 1
+	pushI 5
+	pushI 26
+	update INT 0 1
+	pushI 5
+	pushI 25
+	update INT 0 1
+	pushI 5
+	pushI 24
+	update INT 0 1
+	pushI 5
+	pushI 23
+	update INT 0 1
+	pushI 5
+	pushI 22
+	update INT 0 1
+	pushI 5
+	pushI 21
+	update INT 0 1
+	pushI 5
+	pushI 20
+	update INT 0 1
+	pushI 5
+	pushI 19
+	update INT 0 1
+	pushI 5
+	pushI 18
+	update INT 0 1
+	pushI 5
+	pushI 17
+	update INT 0 1
+	pushI 4
+	pushI 16
+	update INT 0 1
+	pushI 4
+	pushI 15
+	update INT 0 1
+	pushI 4
+	pushI 14
+	update INT 0 1
+	pushI 4
+	pushI 13
+	update INT 0 1
+	pushI 4
+	pushI 12
+	update INT 0 1
+	pushI 4
+	pushI 11
+	update INT 0 1
+	pushI 4
+	pushI 10
+	update INT 0 1
+	pushI 4
+	pushI 9
+	update INT 0 1
+	pushI 3
+	pushI 8
+	update INT 0 1
+	pushI 3
+	pushI 7
+	update INT 0 1
+	pushI 3
+	pushI 6
+	update INT 0 1
+	pushI 3
+	pushI 5
+	update INT 0 1
+	pushI 2
+	pushI 4
+	update INT 0 1
+	pushI 2
+	pushI 3
+	update INT 0 1
+	pushI 1
+	pushI 2
+	update INT 0 1
+	pushI 0
+	pushI 1
+	update INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+.d 1 0
+	rtn
+.o 2 1 i
+s128
+.inline setStringSizeC
+	ccall setStringSizeC "SI:V:S"
+.end
+
+.d 1 0
+	rtn
+.o 3 1 i
+s127
+	ccall set_strC "ASI:I:A"
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sbigIntToString
+.descexp e_BigInt_dbigIntToString e_BigInt_nbigIntToString e_BigInt_lbigIntToString 3 0 "bigIntToString"
+.a 0 a4
+.o 2 0
+e_BigInt_lbigIntToString
+	repl_args 2 2
+.o 3 0
+a4
+.d 3 0
+	jsr ea4
+.o 1 0
+	push_a 0
+	buildh ARRAY 1
+	updatepop_a 0 1
+.d 1 0
+	rtn
+.n 3 e_BigInt_dbigIntToString
+.o 1 0
+e_BigInt_nbigIntToString
+	push_node _cycle_in_spine 3
+.d 3 0
+	jsr ea4
+.o 1 0
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 3 0
+ea4
+	jsr_eval 2
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 2 1 1
+	pushB_a 2
+	pushI_a 1
+	update_a 0 3
+	pop_a 3
+.o 1 3 ibi
+e_BigInt_sbigIntToString
+.o 1 3 ibi
+s4
+	eq_desc _Nil 0 0
+	jmp_true fst_is_small_bitswb
+.d 1 3 ibi
+	jmp e_BigInt_sbigIntToStringB
+fst_is_small_bitswb
+	pop_a 1
+.d 0 3 ibi
+	jmp e_BigInt_sintToString
+
+.d 1 0
+	rtn
+.export e_BigInt_spowMod
+.descexp e_BigInt_dpowMod e_BigInt_npowMod e_BigInt_lpowMod 3 0 "powMod"
+.a 0 a3
+.o 2 0
+e_BigInt_lpowMod
+	repl_args 2 2
+.o 3 0
+a3
+.d 3 0
+	jsr ea3
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 3 e_BigInt_dpowMod
+.o 1 0
+e_BigInt_npowMod
+	push_node _cycle_in_spine 3
+.d 3 0
+	jsr ea3
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 3 0
+ea3
+	jsr_eval 2
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 2 1 1
+	push_r_args 2 1 1
+	push_r_args 2 1 1
+	update_a 2 5
+	update_a 1 4
+	update_a 0 3
+	pop_a 3
+.o 3 3 iii
+e_BigInt_spowMod
+.o 3 3 iii
+s3
+	push_a 2
+	push_b 2
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.209
+	buildAC "powMod undefined for modulus==0"
+	updatepop_a 0 3
+	pop_b 3
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.209
+	push_a 1
+	push_b 1
+.d 1 1 i
+	jsr s100
+.o 0 1 b
+	notB
+	jmp_false else.210
+	buildAC "powMod undefined for exponent<0"
+	updatepop_a 0 3
+	pop_b 3
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_r_args 1 1
+.d 1 1 i
+	rtn
+else.210
+	push_a 2
+	push_b 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s105
+.o 1 1 i
+	push_a 2
+	push_b 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s105
+.o 1 1 i
+	push_a 2
+	push_b 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s105
+.o 1 1 i
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	update_b 2 5
+	update_b 1 4
+	updatepop_b 0 3
+.d 3 3 iii
+	jmp s106
+.o 3 3 iii
+s106
+	push_a 2
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	shiftl%
+	create_array_ INT 0 1
+
+	push_a 0
+	push_a 4
+	push_b 2
+	push_a 4
+	push_b 2
+	push_a 4
+	push_b 2
+	push_a 4
+	update_b 2 5
+	update_b 1 4
+	updatepop_b 0 3
+	update_a 4 8
+	update_a 3 7
+	update_a 2 6
+	update_a 1 5
+	updatepop_a 0 4
+	ccall powmC "AIAIAIA:I:A"
+
+.d 1 1 i
+	jmp s94
+.o 1 1 i
+s94
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.211
+	pushI 0
+	updatepop_b 0 1
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.211
+	push_b 0
+.d 0 1 i
+	jsr e_StdInt_ssign;14
+.o 0 1 i
+	push_b 0
+	push_b 2
+	eqI
+	jmp_false else.212
+	pushI 0
+	push_a 0
+	select INT 0 1
+	pushI 0
+	push_b 1
+	ltI
+	jmp_false else.213
+	pushI 2147483648
+	push_b 1
+	eqI
+	jmp_false else.214
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.214
+	pushI 2147483648
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.214
+	push_a 0
+	pushI 1
+	push_a 1
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+	pop_a 0
+
+.d 1 1 i
+	rtn
+else.213
+	pushI 0
+	push_b 2
+	ltI
+	jmp_false else.216
+	push_b 0
+	negI
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.216
+	push_b 0
+	updatepop_b 0 3
+	pop_a 1
+.d 0 1 i
+	jmp e__SystemBigInt_stoBigInt;9
+else.212
+	push_b 1
+.d 0 1 i
+	jsr e_StdInt_sabs;13
+.o 0 1 i
+	push_a 0
+	push_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_b 0
+	updatepop_b 0 2
+	pop_a 0
+
+.d 1 1 i
+	rtn
+.o 1 1 i
+s96
+.inline bigInt2ToBigInt
+	pop_a 0
+.end
+
+.d 1 1 i
+	rtn
+.o 2 1 i
+s129
+.inline setSizeC
+	ccall setSizeC "AI:V:A"
+.end
+
+.d 1 0
+	rtn
+.o 0 1 i
+s137
+.inline create_uninitialized_int_array
+	create_array_ INT 0 1
+.end
+
+.d 1 0
+	rtn
+.o 5 3 iii
+s109
+.inline powmC
+	ccall powmC "AIAIAIA:I:A"
+.end
+
+.d 1 1 i
+	rtn
+.o 1 1 i
+s105
+	eq_desc _Nil 0 0
+	jmp_false is_big
+	pop_a 1
+.d 0 1 i
+	jsr e_BigInt_ssmall_to_big2
+.o 1 1 i
+is_big
+
+.d 1 1 i
+	rtn
+.export e_BigInt_sdivMod
+.descexp e_BigInt_ddivMod e_BigInt_ndivMod e_BigInt_ldivMod 2 0 "divMod"
+.a 0 a2
+.o 2 0
+e_BigInt_ldivMod
+	repl_args 1 1
+.o 2 0
+a2
+.d 2 0
+	jsr ea2
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_ddivMod
+.o 1 0
+e_BigInt_ndivMod
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea2
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea2
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_sdivMod
+.o 2 2 ii
+s2
+	push_a 1
+	push_b 1
+.d 1 1 i
+	jsr s100
+.o 0 1 b
+	push_a 0
+	push_b 1
+.d 1 1 i
+	jsr s100
+.o 0 1 b
+	eqB
+	push_a 1
+	push_b 2
+	push_a 1
+	push_b 2
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s1
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	push_b 2
+	jmp_true then.217
+	push_r_args 0 1 1
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s99
+.o 0 1 b
+	jmp_false else.217
+then.217
+	push_r_args 0 1 1
+	push_a 2
+	push_b 1
+	update_a 1 5
+	updatepop_a 0 4
+	update_b 1 6
+	updatepop_b 0 5
+.d 2 2 ii
+	rtn
+else.217
+	push_r_args 0 1 1
+	push_a 4
+	push_b 5
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 3 5
+	update_a 1 4
+	updatepop_a 0 3
+.d 2 2 ii
+	jsr s58
+.o 1 1 i
+	pushI 1
+.d 0 1 i
+	jsr e__SystemBigInt_stoBigInt;9
+.o 1 1 i
+	push_a 2
+	push_b 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 2 2 ii
+	jsr s12
+.o 1 1 i
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 6
+	updatepop_b 0 5
+.d 2 2 ii
+	rtn
+.export e_BigInt_s+;57
+.descexp e_BigInt_d+;57 e_BigInt_n+;57 e_BigInt_l+;57 2 0 "+;57"
+.a 0 a58
+.o 2 0
+e_BigInt_l+;57
+	repl_args 1 1
+.o 2 0
+a58
+.d 2 0
+	jsr ea58
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d+;57
+.o 1 0
+e_BigInt_n+;57
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea58
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea58
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s+;57
+.o 2 2 ii
+s58
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_add
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_add
+	pop_a 1
+	addIo
+	jmp_false no_overflow_add
+.d 1 1 i
+	jmp e_BigInt_shandle_add_overflow
+no_overflow_add
+.d 1 1 i
+	rtn
+fst_is_big_add
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_add
+.d 2 2 ii
+	jmp e_BigInt_saddBB
+fst_only_is_big_add
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_saddSB
+snd_only_is_big_add
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_saddSB
+
+.d 1 1 i
+	rtn
+.export e_BigInt_s.-
+.descexp e_BigInt_d.- e_BigInt_n.- e_BigInt_l.- 2 0 "-"
+.a 0 a12
+.o 2 0
+e_BigInt_l.-
+	repl_args 1 1
+.o 2 0
+a12
+.d 2 0
+	jsr ea12
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d.-
+.o 1 0
+e_BigInt_n.-
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea12
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea12
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s.-
+.o 2 2 ii
+s12
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s92
+.o 1 1 i
+	push_a 1
+	push_b 1
+	update_a 1 2
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+.d 2 2 ii
+	jmp s10
+.export e_BigInt_s.+
+.descexp e_BigInt_d.+ e_BigInt_n.+ e_BigInt_l.+ 2 0 "+"
+.a 0 a10
+.o 2 0
+e_BigInt_l.+
+	repl_args 1 1
+.o 2 0
+a10
+.d 2 0
+	jsr ea10
+.o 1 1 i
+	build_r e__SystemBigInt_rBigInt 1 1 0 0
+	updatepop_a 0 1
+	pop_b 1
+.d 1 0
+	rtn
+.n 2 e_BigInt_d.+
+.o 1 0
+e_BigInt_n.+
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea10
+.o 1 1 i
+	fill_r e__SystemBigInt_rBigInt 1 1 1 0 0
+	pop_a 1
+	pop_b 1
+.d 1 0
+	rtn
+.o 2 0
+ea10
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_s.+
+.o 2 2 ii
+s10
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_addiu
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_addiu
+	pop_a 1
+	addIo
+	jmp_false no_overflow_addiu
+.d 1 1 i
+	jmp e_BigInt_shandle_add_overflow
+no_overflow_addiu
+.d 1 1 i
+	rtn
+fst_is_big_addiu
+	eq_desc _Nil 0 1
+	jmp_true fst_only_is_big_addiu
+.d 2 2 ii
+	jmp e_BigInt_sadd_inplace_UB_B
+fst_only_is_big_addiu
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 0 1
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_sadd_inplace_S_UB
+snd_only_is_big_addiu
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_saddSB
+
+.d 1 1 i
+	rtn
+.o 1 1 i
+s92
+	eq_desc _Nil 0 0
+	jmp_false just_negate_sign
+	push_b 0
+	pushI -2147483648 		|| == 0x800000 == minInt
+	eqI
+	jmp_false just_negate_sign
+.d 1 1 i
+	jmp e_BigInt_sneg_minInt
+just_negate_sign
+	pushI 0					|| just negate the sign
+	subI
+
+.d 1 1 i
+	rtn
+.o 1 1 i
+s99
+	eq_desc _Nil 0 0
+	jmp_false is_not_zero
+	pop_a 1
+	pushI 0
+	eqI
+.d 0 1 b
+	rtn
+is_not_zero
+	pop_a 1
+	pop_b 1
+	pushB FALSE
+
+.d 0 1 b
+	rtn
+.o 1 1 i
+s100
+	pop_a 1
+	pushI -1
+	ltI
+
+.d 0 1 b
+	rtn
+.export e_BigInt_squotRem
+.descexp e_BigInt_dquotRem e_BigInt_nquotRem e_BigInt_lquotRem 2 0 "quotRem"
+.a 0 a1
+.o 2 0
+e_BigInt_lquotRem
+	repl_args 1 1
+.o 2 0
+a1
+.d 2 0
+	jsr ea1
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	buildh _Tuple 2
+	updatepop_a 0 2
+	pop_b 2
+.d 1 0
+	rtn
+.n 2 e_BigInt_dquotRem
+.o 1 0
+e_BigInt_nquotRem
+	push_node _cycle_in_spine 2
+.d 2 0
+	jsr ea1
+.o 2 2 ii
+	build_r e__SystemBigInt_rBigInt 1 1 1 1
+	build_r e__SystemBigInt_rBigInt 1 1 1 0
+	fillh _Tuple 2 4
+	pop_a 2
+	pop_b 2
+.d 1 0
+	rtn
+.o 2 0
+ea1
+	jsr_eval 1
+	jsr_eval 0
+	push_r_args 1 1 1
+	push_r_args 1 1 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.o 2 2 ii
+e_BigInt_squotRem
+.o 2 2 ii
+s1
+	eq_desc _Nil 0 0
+	jmp_false fst_is_big_quotrem
+	eq_desc _Nil 0 1
+	jmp_false snd_only_is_big_quotrem
+	pushI 1							|| B afterwards: denom nom 1
+	push_b 2						|| B afterwards: denom nom 1 denom
+	ltI								|| B afterwards: denom nom (denom<1)
+	jmp_false cant_overflow_quotrem	|| B afterwards: denom nom
+	pushI -1						|| B afterwards: denom nom -1
+	push_b 2						|| B afterwards: denom nom -1 denom
+	ltI								|| B afterwards: denom nom (denom< -1)
+	jmp_true cant_overflow_quotrem	|| B afterwards: denom nom
+	|| -1<=denom<=0, check for division by zero or overflow (minInt/-1)
+	pushI -1						|| B afterwards: denom nom -1
+	push_b 2						|| B afterwards: denom nom -1 denom
+	eqI								|| B afterwards: denom nom (denom== -1)
+	jmp_true check_overflow_quotrem	|| B afterwards: denom nom
+div_by_zero_quotrem
+	pop_b 2
+	buildAC "BigInt division by zero"
+.d 1 0
+	jsr e_StdMisc_sabort
+check_overflow_quotrem				|| B           : -1 nom
+	pushI -2147483648				|| B afterwards: -1 nom minInt
+	push_b 1						|| B afterwards: -1 nom minInt nom
+	eqI								|| B afterwards: -1 nom (nom==minInt)
+	jmp_true is_overflown_quotrem	|| B afterwards: -1 nom
+	pushI 0 						|| B afterwards: -1 nom 0
+	update_b 0 2					|| B afterwards: 0 nom 0
+	subI							|| B afterwards: 0 (nom/denom) where denom== -1
+.d 2 2 ii
+	rtn
+cant_overflow_quotrem				|| B           : denom nom
+.d 0 2 ii
+	jsr e_BigInt_squotRemI			|| B afterwards: (denom rem nom) (denom quot nom)
+.o 0 2 ii
+.d 2 2 ii
+	rtn
+is_overflown_quotrem				|| B           : -1 minInt
+	pushI 0							|| B afterwards: -1 minInt 0
+	update_b 0 2					|| B afterwards: 0 minInt 0
+	pop_b 2							|| B afterwards: 0
+	pop_a 1
+.d 0 0
+	jsr e_BigInt_sneg_minInt_0
+.o 1 1 i
+.d 2 2 ii
+	rtn
+fst_is_big_quotrem
+	eq_desc _Nil 0 1
+	jmp_false both_are_big_quotrem
+fst_only_is_big_quotrem			|| B           : denom nom
+	update_a 0 1					|| get rid of the superfluous constructor
+	pop_a 1
+.d 1 2 ii
+	jmp e_BigInt_squotRemBS
+snd_only_is_big_quotrem
+	pop_a 1							|| get rid of the superfluous constructor
+.d 1 2 ii
+	jmp e_BigInt_squotRemSB
+both_are_big_quotrem
+.d 2 2 ii
+	jmp e_BigInt_squotRemBB
+
+.d 2 2 ii
+	rtn
+.o 2 3 bii
+s229
+	eqB_b TRUE 0
+	jmp_true case.219
+	jmp case.220
+case.219
+	push_b 2
+	push_a 1
+	push_b 2
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	rtn
+case.220
+	push_b 1
+	push_a 0
+	push_b 3
+	push_a 2
+	update_a 1 3
+	updatepop_a 0 2
+	update_b 1 4
+	updatepop_b 0 3
+.d 2 2 ii
+	rtn
+.o 2 0
+s230
+	push_a 1
+	push_a 1
+	buildB TRUE
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 3 0
+	jmp s236
+.o 2 3 bii
+s232
+	push_b 0
+	jmp_false else.221
+	push_b 2
+	push_b 2
+	subI
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	addI
+	push_b 0
+	create_array_ INT 0 1
+
+	push_a 1
+	buildh ARRAY 1
+	build _ 1 n138
+	push_a 1
+	buildh ARRAY 1
+	build _ 1 n138
+	buildh _Tuple 2
+	push_b 1
+	push_a 2
+	push_b 3
+	push_a 4
+	pushI 0
+	push_a 3
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 2
+	update_b 2 3
+	update_b 0 2
+	pop_b 1
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_divrem "AIAIAI:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	notB
+	jmp_false else.222
+	push_args 0 2 2
+	jsr_eval 1
+	push_array 1
+	update_a 0 2
+	pop_a 1
+	push_b 0
+	push_b 2
+	push_a 0
+	build_u _ 1 2 n240
+	push_a 2
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 4
+	updatepop_a 0 3
+	pop_b 4
+.d 2 0
+	rtn
+else.222
+	push_args 0 2 2
+	jsr_eval 1
+	push_array 1
+	update_a 0 2
+	pop_a 1
+	push_b 1
+	push_a 0
+	build_u _ 1 1 n241
+	push_a 2
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 4
+	updatepop_a 0 3
+	pop_b 4
+.d 2 0
+	rtn
+else.221
+	push_b 1
+	push_a 0
+	push_a 1
+	push_b 3
+	push_a 3
+	push_a 2
+	update_a 2 3
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 4
+	updatepop_b 0 3
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall remainderC "AIAI:V:A"
+
+	buildI 0
+	build e__SystemArray_d_createArray;8 1 e__SystemArray_n_createArray;8
+.d 2 0
+	rtn
+.nu 1 1 _ _
+.o 1 0
+n241
+	push_node_u _cycle_in_spine 1 1
+.o 2 1 i
+ea241
+.o 2 1 i
+s241
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	pushI 1
+	push_b 1
+	subI
+	push_array 1
+	update_a 1 2
+	updatepop_a 0 1
+	updatepop_b 0 1
+	ccall setSizeC "AI:V:A"
+
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.nu 1 2 _ _
+.o 1 0
+n240
+	push_node_u _cycle_in_spine 1 2
+.o 2 2 ii
+ea240
+.o 2 2 ii
+s240
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	jsr_eval 0
+	push_array 0
+	updatepop_a 0 1
+	push_b 2
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	updatepop_a 0 1
+	update_b 1 3
+	updatepop_b 0 2
+	update INT 0 1
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 3 0
+s233
+	push_a 2
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 2
+	eqI
+	jmp_false else.223
+	pushI 0
+	push_a 2
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.224
+	buildAC "BigInt division by zero"
+	updatepop_a 0 3
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_args 2 2
+	jsr_eval 1
+	push_array 1
+	update_a 0 2
+	pop_a 1
+.d 2 0
+	rtn
+else.224
+	pushB_a 0
+	jmp_false else.225
+	push_b 0
+	pop_a 1
+	create_array_ INT 0 1
+
+	pushI 0
+	push_a 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+	select INT 0 1
+	push_b 1
+	push_a 1
+	push_a 1
+	pushI 0
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_divrem_1 "AIAII:I:A"
+
+	pushI 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	push_a 1
+	build _ 1 n107
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 0
+	rtn
+else.225
+	pushI 0
+	push_a 2
+	update_a 2 3
+	updatepop_a 0 2
+	select INT 0 1
+	push_b 1
+	push_a 0
+	update_b 1 3
+	updatepop_b 0 2
+	updatepop_a 0 1
+	ccall __gmpn_mod_1 "AII-I"
+
+	pushI 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	build _ 0 n238
+.d 2 0
+	rtn
+else.223
+	push_b 1
+	push_b 1
+	ltI
+	jmp_true then.226
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.226
+	pushI 1
+	push_b 1
+	subI
+	push_a 1
+	select INT 0 1
+	pushI 1
+	push_b 2
+	subI
+	push_a 2
+	select INT 0 1
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.226
+then.226
+	build _ 0 n239
+	push_a 2
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 4
+	updatepop_a 0 3
+	pop_b 2
+.d 2 0
+	rtn
+else.226
+	push_b 1
+	push_a 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s234
+.o 1 1 i
+	push_b 1
+	push_a 2
+	push_b 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 1 2 ii
+	jsr s235
+.o 1 1 i
+	push_b 3
+	push_a 1
+	push_b 1
+	push_a 1
+	pushB_a 4
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 4
+	updatepop_a 0 3
+.d 2 3 bii
+	jsr s232
+.o 2 0
+	push_b 2
+	push_a 1
+	push_a 1
+	push_b 1
+.d 2 2 ii
+	jsr s222
+.o 1 0
+	push_b 2
+	push_a 0
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s108
+.o 1 0
+	push_a 1
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 4
+	updatepop_a 0 3
+	pop_b 3
+.d 2 0
+	rtn
+.n 0 _ ea239
+.o 1 0
+n239
+	push_node _cycle_in_spine 0
+.o 1 0
+ea239
+.o 1 0
+s239
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.n 0 _ ea238
+.o 1 0
+n238
+	push_node _cycle_in_spine 0
+.o 1 0
+ea238
+.o 1 0
+s238
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+	push_a 0
+	fillh ARRAY 1 2
+	pop_a 1
+.d 1 0
+	rtn
+.o 1 1 i
+s234
+	pushI 1
+	push_b 1
+	subI
+	push_a 0
+	select INT 0 1
+	ccall countLeadingZeros "I:VI"
+
+	pushI 0
+	push_b 1
+	eqI
+	jmp_false else.229
+	push_a 0
+	push_b 0
+	updatepop_a 0 1
+	updatepop_b 0 2
+.d 1 1 i
+	rtn
+else.229
+	push_b 1
+	create_array_ INT 0 1
+
+	push_b 1
+	push_a 1
+	push_b 1
+	push_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s122
+.o 1 1 i
+	push_a 0
+	push_b 1
+	updatepop_a 0 1
+	updatepop_b 0 3
+.d 1 1 i
+	rtn
+.o 1 2 ii
+s235
+	eqI_b 0 0
+	jmp_true case.230
+	jmp case.231
+case.230
+	push_a 0
+	pop_b 1
+	updatepop_a 0 1
+	push_a 0
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	subI
+	pushI 1
+	push_b 1
+	addI
+	create_array_ INT 0 1
+	push_a 1
+	push_b 0
+	pushI 0
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 2 ii
+	jsr s208
+.o 1 0
+	push_b 0
+	updatepop_b 0 1
+.d 1 1 i
+	rtn
+case.231
+	pushI 1
+	push_b 2
+	addI
+	push_b 0
+	create_array_ INT 0 1
+
+	push_b 1
+	push_b 3
+	push_a 1
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+.d 2 2 ii
+	jsr s122
+.o 1 1 i
+	pushI 0
+	push_b 1
+	eqI
+	notB
+	jmp_false else.232
+	push_b 0
+	push_b 4
+	push_a 0
+	updatepop_a 0 1
+	update INT 0 1
+	push_b 1
+	updatepop_b 0 4
+.d 1 1 i
+	rtn
+else.232
+	push_a 0
+	push_a 0
+	push_b 3
+	push_a 1
+	update_a 1 3
+	updatepop_a 0 2
+	ccall setSizeC "AI:V:A"
+
+	push_b 3
+	updatepop_b 0 4
+.d 1 1 i
+	rtn
+.o 3 0
+s236
+	push_a 2
+	push_arraysize INT 0 1
+	push_a 1
+	push_arraysize INT 0 1
+	pushI 1
+	push_b 2
+	eqI
+	jmp_false else.233
+	pushI 0
+	push_a 2
+	select INT 0 1
+	pushI 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	eqI
+	jmp_false else.234
+	buildAC "BigInt division by zero"
+	updatepop_a 0 3
+	pop_b 2
+.d 1 0
+	jsr print_string_
+.o 0 0
+	halt
+	repl_args 2 2
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	push_array 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+.d 2 0
+	rtn
+else.234
+	pushB_a 0
+	jmp_false else.235
+	push_b 0
+	pop_a 1
+	create_array_ INT 0 1
+
+	pushI 0
+	push_a 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+	select INT 0 1
+	push_b 1
+	push_a 1
+	push_a 1
+	pushI 0
+	push_a 2
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	update_b 2 4
+	update_b 1 3
+	updatepop_b 0 2
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_divrem_1 "AIAII:I:A"
+
+	pushI 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	push_a 1
+	buildh _Nil 0
+	update_a 0 3
+	pop_a 1
+.d 1 0
+	jsr s107
+.o 1 0
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 0
+	rtn
+else.235
+	pushI 0
+	push_a 2
+	update_a 2 3
+	updatepop_a 0 2
+	select INT 0 1
+	push_b 1
+	push_a 0
+	update_b 1 3
+	updatepop_b 0 2
+	updatepop_a 0 1
+	ccall __gmpn_mod_1 "AII-I"
+
+	pushI 1
+	create_array_ INT 0 1
+	push_b 0
+	pushI 0
+	update_b 1 2
+	updatepop_b 0 1
+	update INT 0 1
+	pushI 1
+	create_array_ INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+.d 2 0
+	rtn
+else.233
+	push_b 1
+	push_b 1
+	ltI
+	jmp_true then.236
+	push_b 1
+	push_b 1
+	eqI
+	jmp_false else.236
+	pushI 1
+	push_b 1
+	subI
+	push_a 1
+	select INT 0 1
+	pushI 1
+	push_b 2
+	subI
+	push_a 2
+	select INT 0 1
+.d 0 2 ii
+	jsr s76
+.o 0 1 b
+	jmp_false else.236
+then.236
+	pushI 1
+	updatepop_b 0 2
+	update_a 1 2
+	pop_a 2
+	create_array_ INT 0 1
+	pushI 0
+	pushI 0
+	update INT 0 1
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 2
+	updatepop_a 0 1
+.d 2 0
+	rtn
+else.236
+	push_b 1
+	push_a 2
+	buildh _Nil 0
+	update_a 0 4
+	pop_a 1
+.d 1 1 i
+	jsr s234
+.o 1 1 i
+	push_b 1
+	push_a 2
+	push_b 1
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+.d 1 2 ii
+	jsr s235
+.o 1 1 i
+	push_b 3
+	push_a 1
+	push_b 1
+	push_a 1
+	pushB_a 4
+	update_b 2 3
+	update_b 1 2
+	updatepop_b 0 1
+	update_a 1 4
+	updatepop_a 0 3
+.d 2 3 bii
+	jsr s237
+.o 2 0
+	push_b 2
+	push_a 1
+	push_a 1
+	buildh ARRAY 1
+	push_b 1
+.d 2 2 ii
+	jsr s221
+.o 1 0
+	push_b 2
+	push_a 0
+	updatepop_a 0 1
+.d 1 1 i
+	jsr s108
+.o 1 0
+	push_a 1
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 4
+	updatepop_a 0 3
+	pop_b 3
+.d 2 0
+	rtn
+.o 2 3 bii
+s237
+	push_b 0
+	jmp_false else.239
+	push_b 2
+	push_b 2
+	subI
+	pushI 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 2
+	updatepop_b 0 1
+	addI
+	push_b 0
+	create_array_ INT 0 1
+
+	push_a 1
+	buildh ARRAY 1
+	build _ 1 n138
+	push_a 1
+	buildh ARRAY 1
+	build _ 1 n138
+	buildh _Tuple 2
+	push_b 1
+	push_a 2
+	push_b 3
+	push_a 4
+	pushI 0
+	push_a 3
+	push_a 2
+	update_a 2 3
+	update_a 0 2
+	pop_a 1
+	push_b 2
+	update_b 2 3
+	update_b 0 2
+	pop_b 1
+	update_a 3 6
+	update_a 2 5
+	update_a 1 4
+	updatepop_a 0 3
+	ccall __gmpn_divrem "AIAIAI:I:A"
+
+	pushI 0
+	push_b 1
+	eqI
+	notB
+	jmp_false else.240
+	push_args 0 2 2
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	push_array 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+	pushI 1
+	push_b 2
+	subI
+	push_b 1
+	push_a 0
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_a 2 3
+	updatepop_a 0 2
+	update INT 0 1
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	pop_b 4
+.d 2 0
+	rtn
+else.240
+	push_args 0 2 2
+	jsr_eval 1
+	jsr_eval 0
+	push_array 1
+	push_array 1
+	update_a 1 3
+	update_a 0 2
+	pop_a 2
+	pushI 1
+	push_b 2
+	subI
+	push_a 0
+	push_a 1
+	update_a 3 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall setSizeC "AI:V:A"
+
+	push_a 1
+	push_a 1
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	update_a 1 2
+	updatepop_a 0 1
+	pop_b 4
+.d 2 0
+	rtn
+else.239
+	push_b 1
+	push_a 0
+	push_a 1
+	push_b 3
+	push_a 3
+	push_a 2
+	update_a 2 3
+	update_a 1 2
+	update_a 0 1
+	pop_a 1
+	push_b 1
+	update_b 1 2
+	update_b 0 1
+	pop_b 1
+	update_b 1 4
+	updatepop_b 0 3
+	update_a 2 4
+	update_a 1 3
+	updatepop_a 0 2
+	ccall remainderC "AIAI:V:A"
+
+	pushI 0
+	create_array_ INT 0 1
+.d 2 0
+	rtn

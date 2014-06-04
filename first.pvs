@@ -1,0 +1,37 @@
+first : THEORY
+BEGIN
+  
+  f(x:rat) :rat = x
+  g(x:int, y:rat):rat =  x + y
+  
+  a:int = f(1)
+  
+  a:boolean = true
+  
+  adda(i:int):int = a + i
+
+  foo(x:int):int =
+    1 + if x = 0 and true and (true or false) then
+          7 * if x+1 > 3 then 0 else 8 endif
+        else
+  	  8 - if 1 < 1 then 6 else 3 endif
+        endif
+  
+  
+  add2(a:int):int =
+    let (c,d) = ( a + if a = 1 then 1 else 0 endif , 2)
+    in c+d+1
+  
+  factorial(n:nat): RECURSIVE nat =
+    if n = 0 then 1 else n * factorial(n-1) endif
+  MEASURE n
+
+  binomial(a:nat ,b:nat):RECURSIVE nat =
+    if b = 0 then 1
+    else if a = 0 then 0
+    else binomial(a-1, b-1) + binomial(a-1, b) endif endif
+  MEASURE a
+  
+
+
+END first

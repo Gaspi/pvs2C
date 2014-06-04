@@ -1,0 +1,103 @@
+\documentclass[12pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+% \usepackage[francais]{babel}
+
+\usepackage[left=1.5cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\usepackage[space]{grffile} % Celui-là je sais plus à quoi il sert...
+
+% --- Partie code
+\usepackage{listings}
+\lstset{language=Java} % Changer eventuellement le nom du langage
+\newcommand{\class}[1]{\texttt{#1}}
+
+% --- Parti math. (app.)
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{remark}[theorem]{Remark}
+
+
+% Mathematic abbreviations
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Esp}{\mathbb{E}}
+%\newcommand{\E}{\mathbb{E}} % Si tu l'utilise beaucoup
+\newcommand{\Prob}{\mathbb{P}}
+%\newcommand{\P}{\mathbb{P}} % Si tu l'utilise beaucoup
+
+
+\begin{document}
+
+
+pvs2C functions:
+\begin{lstlisting}
+
+
+
+defmethod pvs2C* ((expr number-expr) bindings livevars result
+
+defmacro pvs2C_tuple (args)
+
+defmethod pvs2C* ((expr tuple-expr) bindings livevars result)
+
+defmethod pvs2C* ((expr record-expr) bindings livevars result)
+
+defmethod pvs2C* ((expr projection-application) bindings livevars result)
+
+defmethod pvs2C*  ((expr field-application) bindings livevars result)
+
+defmethod pvs2C* ((expr list) bindings livevars result)
+
+defmethod pvs2C* ((expr application) bindings livevars result)
+
+defun pvs2C-primitive-app (expr bindings livevars)
+defun pvs2C-defn-application (expr bindings livevars)
+defun pvs2C-resolution (op)
+defun pvs2C-declaration (op-decl)
+defun pvs2C-resolution-nondestructive (op-decl formals body range-type)
+defun pvs2C-resolution-destructive (op-decl formals body range-type)
+
+defmethod pvs2C* ((expr name-expr) bindings livevars result)
+
+defun pvs2C-constant (expr op-decl bindings livevars)
+
+defun pvs2C-lambda (bind-decls expr bindings) 
+defmethod pvs2C* ((expr lambda-expr) bindings livevars result)
+
+defmethod pvs2C* ((expr cases-expr) bindings livevars result)
+defun pvs2C-cases (selections else-part bindings livevars)
+
+defmethod pvs2C* ((expr update-expr) bindings livevars result)
+
+defmethod pvs2C-type ((type recordtype) &optional tbindings)
+defmethod pvs2C-type ((type tupletype) &optional tbindings)
+defmethod pvs2C-type ((type funtype) &optional tbindings)
+defmethod pvs2C-type ((type subtype) &optional tbindings)
+defmethod pvs2C-type ((type type-name) &optional tbindings)
+
+
+defun pvs2C-theory (theory)
+defun pvs2C-datatype (dt)
+defun pvs2C-datatype-formal (formal dt)
+
+defun generate-C-for-pvs-file (filename &optional force?)
+\end{lstlisting}
+
+
+
+
+
+
+\end{document}

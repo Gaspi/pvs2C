@@ -1,0 +1,4 @@
+foo : THEORY
+BEGIN
+ a:int = 2+3
+END foo
