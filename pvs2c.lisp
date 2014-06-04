@@ -55,10 +55,12 @@
 
 
 (defun getConstantName (expr bindings)
-  (if (name-expr? expr)
-      (cdr (assoc (declaration expr) bindings :key #'declaration))
-    nil))
+  (when (name-expr? expr)
+      (cdr (assoc (declaration expr) bindings :key #'declaration))))
 
+
+(defun apply-argument (instructions arg)
+  (mapcar #'(lambda (x) (format nil x arg)) instructions))
 
 
 (defmethod pvs2C ((expr list) bindings livevars exp-type)
@@ -81,7 +83,7 @@
 
 
 
-
+;;;; ---------  Needs refactoring using pvs2C2  !!!
 (defmethod pvs2C-if ((expr if-expr) bindings livevars exp-type need-malloc)  ;result
   (cond ((branch? expr)   ;; What is this condition ? Does it mean (not-trivillay-false?)  ?
      (let* ((condition (condition expr))
@@ -129,9 +131,6 @@
        (add-instruction "}")
        ))))
      (t (call-next-method))))
-
-(defun apply-argument (instructions arg)
-  (mapcar #'(lambda (x) (format nil x arg)) instructions))
 
 
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
@@ -450,8 +449,8 @@
 	 (id-map (pairlis formals bind-ids))
 	 (cl-type-out (pvs-type-2-C-type range-type))
 	 (pointer-out (pointer? cl-type-out))
-	 (result-var (make-C-var :name "result" :type cl-type-out))
-	 (cl-body (pvs2C* body id-map nil result-var))
+	 (result-var (C-var cl-type-out "result"))
+	 (cl-body (pvs2C2 body id-map nil cl-type-out "result"))
 	 (cl-type-arg (format nil "~{~a~^, ~}"
 	      (append (when pointer-out (list (format nil "~a result" cl-type-out)))
 		      (loop for var in formals
@@ -476,8 +475,8 @@
 	 (id-map (pairlis formals bind-ids))
 	 (cl-type-out (pvs-type-2-C-type range-type))
 	 (pointer-out (pointer? cl-type-out))
-	 (result-var (make-C-var :name "result" :type cl-type-out))
-	 (cl-body (pvs2C* body id-map nil result-var))
+	 (result-var (C-var cl-type-out "result"))
+	 (cl-body (pvs2C2 body id-map nil cl-type-out "result"))
 	 (cl-type-arg (format nil "~{~a~^, ~}"
 	      (append (when pointer-out (list (format nil "~a result" cl-type-out)))
 		      (loop for var in formals
@@ -500,25 +499,23 @@
       (pvs2C-resolution-destructive op-decl formals body range-type))))
 
 
-(defmethod pvs2C* ((expr name-expr) bindings livevars result)
-  (let* ((decl (declaration expr))
+(defmethod pvs2C* ((expr name-expr) bindings livevars)
+  (let* ((type-e (pvs-type-2-C-type expr))
+	 (decl (declaration expr))
 	 (bnd (assoc decl bindings :key #'declaration))
 	 (prim (pvs2cl-primitive? expr)))
     (assert (not (and bnd (const-decl? decl))))
-    (cond (bnd
-	   (if (pointer? result)
-	       (set-C-pointer "copy" result (list (cdr bnd)))   ;; This should be replaced by a proper copy function...
-	     (set-C-nonpointer result (cdr bnd))))
-	  (prim
-	     (pvs2C*-primitive-cste expr bindings livevars result))
+    (cond (bnd  (cons type-e (cdr bnd)))
+	  (prim (pvs2C*-primitive-cste expr bindings livevars))
 	  ((const-decl? decl)
-	     (pvs2C-constant expr decl bindings livevars result))
+	        (pvs2C*-constant expr decl bindings livevars))
 	  (t
-	     (let ((undef (undefined expr "Hit untranslateable expression ~a")))
-	       `(funcall ',undef))))))
+	        (let ((undef (undefined expr "Hit untranslateable expression ~a")))
+		  `(funcall ',undef))))))
 
-(defun pvs2C-constant (expr op-decl bindings livevars result)
-  (let* ((defns (def-axiom op-decl))
+(defun pvs2C*-constant (expr op-decl bindings livevars)
+  (let* ((type-e (pvs-type-2-C-type expr))
+	 (defns (def-axiom op-decl))
 	 (defn (when defns (args2 (car (last (def-axiom op-decl))))))
 	 (def-formals (when (lambda-expr? defn)
 			(bindings defn))))
@@ -529,24 +526,30 @@
 		    (make!-application* expr
 		       (loop for bd in def-formals
 			     collect (mk-name-expr bd))))))
-	  (pvs2C* eta-expansion bindings livevars result))
+	  (pvs2C* eta-expansion bindings livevars))
 	(let* ((actuals (expr-actuals (module-instance expr)))
 	       (C-actuals (pvs2C actuals bindings livevars)))
-	  (if (pointer? result)
-	      (set-C-pointer (C_nondestructive_id expr) result C-actuals)
-	    (set-C-nonpointer result (mk-C-funcall (C_nondestructive_id expr) C-actuals)))))))
+	  (cons type-e
+		(if (pointer? type-e)
+		    (list (set-C-pointer (C_nondestructive_id expr) "~a" C-actuals))
+		  (mk-C-funcall (C_nondestructive_id expr) C-actuals)))))))
 
 
-;; Saved pvs2c-lambda  (do not touch !)
-;;(defun pvs2C-lambda (bind-decls expr bindings) ;;removed livevars (why ?)
-;;  (format t "~2%~{~a~%~}" (free-variables expr))
-;;  (let* ((*destructive?* nil)
-;;	 (bind-ids (pvs2cl-make-bindings bind-decls bindings))
-;;	 (cl-body (pvs2C* expr
-;;			   (append (pairlis bind-decls bind-ids)
-;;				   bindings)
-;;			   nil)))
-;;  (format nil "(~a ~{~a ~} -> ~a)" "\\" bind-ids cl-body)))
+
+
+
+
+
+
+
+;; ---------------  Refactoring point ---------------------
+
+
+
+
+
+
+
 
 (defun range-arr (max &key (min 0) (step 1))
    (loop for n from min below max by step
