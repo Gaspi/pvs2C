@@ -91,8 +91,8 @@
 (defmethod C-type ((arg C-var)) (slot-value arg 'type))
 
 (defgeneric gen-C-var (expr prefix))
-(defmethod gen-C-var ((expr C-type) prefix)
-  (C-var expr (gentemp prefix)))
+(defmethod gen-C-var ((type C-type) prefix)
+  (C-var type (gentemp prefix)))
 (defmethod gen-C-var ((expr expr) prefix)
   (let* ((type (type expr))
 	 (name (gentemp prefix))
@@ -172,3 +172,42 @@
 ;	((subtype-of? type *number*) (list
 ;				      (format nil "mpq_clear(~a);" name)))
 ;	 (t (list (format nil "free(~a);" name)))))
+
+
+
+
+
+
+;(defmethod pvs2C-type ((type recordtype) &optional tbindings)
+;  (with-slots (print-type) type
+;    (if (type-name? print-type)
+;	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
+;	  (if entry (cadr entry) ;return the C-rectype-name
+;	      (let* ((formatted-fields (loop for fld in (fields type)
+;				  collect
+;				  (format nil "~a :: !~a" (id fld)
+;						(pvs2C-type (type fld)))))
+;		    (C-rectype (format nil "{ ~{~a~^, ~} }" formatted-fields))
+;		    (C-rectype-name (gentemp (format nil "pvs~a" (id print-type)))))
+;		(push (list (declaration print-type) C-rectype-name C-rectype)
+;		      *C-record-defns*)
+;		C-rectype-name)))
+;	(pvs2C-error "~%Record type ~a must be declared." type))))
+;
+;(defmethod pvs2C-type ((type tupletype) &optional tbindings)
+;  (format nil "(~{!~a~^, ~})" (loop for elemtype in (types type)
+;				   collect (pvs2C-type elemtype))))
+;
+;(defmethod pvs2C-type ((type funtype) &optional tbindings)
+;  (if (C-updateable? type)
+;      (format nil "~a*" (pvs2C-type (range type)))
+;      (format nil "~aClosure" (pvs2C-type (range type)))))
+;
+;(defmethod pvs2C-type ((type subtype) &optional tbindings)
+;  (cond ((subtype-of? type *integer*) "BigInt"  )
+;	((subtype-of? type *real*   ) "Rational")
+;	(t (pvs2C-type (find-supertype type)))))
+;
+;(defmethod pvs2C-type ((type type-name) &optional tbindings)
+;  (or (cdr (assoc type tbindings :test #'tc-eq))
+;      (id type)))

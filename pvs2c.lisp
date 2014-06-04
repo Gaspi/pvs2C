@@ -135,19 +135,18 @@
 
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
   (let* ((type (pvs-type-2-C-type expr))
-	 (C-expr (pvs2C-if expr bindings livevars type nil)))
+	 (if-bloc (pvs2C-if expr bindings livevars type nil)))
     (cons type
-	  (if (pointer? type)
-	      (cdr C-expr)
+	  (if (pointer? type) if-bloc
 	    (let ((if-name (gentemp "if")))
-	      (add-instructions (apply-argument (cdr C-expr) if-name))
-	      (list if-name))))))
+	      (add-instructions (apply-argument if-bloc if-name))
+	      if-name)))))
 
 (defmethod pvs2C ((expr if-expr) bindings livevars exp-type)
   (let* ((type (pvs-type-2-C-type expr))
-	 (C-expr (pvs2C-if expr bindings livevars type t))
+	 (if-bloc (pvs2C-if expr bindings livevars type t))
 	 (if-name (gentemp "if")))
-    (add-instructions (apply-argument (cdr C-expr) if-name))
+    (add-instructions (apply-argument if-bloc if-name))
     (convert exp-type type if-name)))
 
 
@@ -207,9 +206,6 @@
 
 
 
-
-
-
 ; --- set and conversion functions need to be implemented correctly here ---
 
 (defun convert (typeA typeB e)
@@ -224,10 +220,14 @@
 (defun set (typeA nameA typeB nameB)
   (if (pointer? typeA)
       (format nil "~a(~a, ~a);" (convertor typeA typeB) nameA nameB)
-    (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB)))
+    (if (eq typeA typeB)
+	(format nil "~a = ~a;" nameA nameB)
+      (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB))))
 
 (defun convertor (typeA typeB)
-  (format nil "~a_from_~a" typeA typeB))
+  (if (eq typeA typeB)
+      (format nil "copy_~a" typeA)
+    (format nil "~a_from_~a" typeA typeB)))
 
 
 
@@ -263,12 +263,13 @@
 (defmethod pvs2C* ((expr number-expr) bindings livevars)
   (declare (ignore bindings livevars))
   (let ((type (pvs-type-2-C-type expr)))
-    (if (pointer? type)
-	(let (op (cond ((eq (type-of type) 'C-mpz) "mpz_set_str")
-		       ((eq (type-of type) 'C-mpq) "mpq_set_str")
-		       (t "setUnknown")))
-	  (list (format nil "~a(~~a, \"~a\");" op (number expr))))
-      (list (format nil "~a ~~a = ~a" type (number expr))))))
+    (cons type
+       (if (pointer? type)
+	   (let (op (cond ((eq (type-of type) 'C-mpz) "mpz_set_str")
+			  ((eq (type-of type) 'C-mpq) "mpq_set_str")
+			  (t "setUnknown")))
+	     (list (format nil "~a(~~a, \"~a\");" op (number expr))))
+	 (format nil "~a" (number expr))))))
 
 (defmacro pvs2C_tuple (args)
   `(format nil "(~{~a~^, ~})" ,args))
@@ -288,9 +289,8 @@
 			  (caar (arguments entry))
 			  (pvs2C (expression entry)
 				 bindings livevars)))))
-    (cons
-     (format nil "struct record ~~a;"
-	     formatted-fields))))
+    (cons (pvs-type-2-C-type expr)
+	  (format nil "struct record ~~a;" formatted-fields))))
 
 (defun matchlist (index length dummy)
   (if (eql index 0)
@@ -318,9 +318,10 @@
 	 (id (id expr))
 	 (e (format nil "~a.~a" clarg id))
 	 (type (pvs-type-2-C-type expr)))
-    (if (pointer? type)
-	(set type "~a" type e)
-      (list e))))
+    (cons type
+	  (if (pointer? type)
+	      (set type "~a" type e)
+	    e))))
 
 ;; When is this function called ??  (not working)
 (defmethod pvs2C* ((expr list) bindings livevars)
@@ -342,8 +343,9 @@
       (if (pvs2cl-primitive? operator)
 	    (pvs2C*-primitive-app expr bindings livevars)
 	  (if (datatype-constant? operator)
-	      (mk-C-funcall (pvs2C-resolution operator)
-			    (pvs2C (arguments expr) bindings livevars))
+	      (cons (pvs-type-2-C-type (range (type operator)))
+		    (mk-C-funcall (pvs2C-resolution operator)
+				  (pvs2C (arguments expr) bindings livevars)))
 	    (pvs2C-defn-application expr bindings livevars)))
       (if (lambda? operator)
 	  (let* ((bind-decls (bindings operator))
@@ -362,7 +364,7 @@
 						     (cadr x)
 						     (caddr x)))
 			       (pair3lis type-args (bindings operator) C-arg))) ; process name
-	    (pvs2C* (expression operator) newbind nil result))
+	    (pvs2C* (expression operator) newbind nil))
 	 (let ((type (pvs-type-2-C-type (range (type operator))))
 	       (C-arg (pvs2C argument bindings
 			     (append (updateable-free-formal-vars operator) livevars) ))
@@ -555,7 +557,7 @@
    (loop for n from min below max by step
       collect n))
 
-(defun pvs2C-lambda (bind-decls expr bindings result) ;;removed livevars
+(defun pvs2C-lambda (bind-decls expr bindings) ;;removed livevars
   (let ((previous-instr *C-instructions*))
     (reset-instructions)
     (let* ((*destructive?* nil)
@@ -583,30 +585,30 @@
       (add-instruction (format nil "void args[~d];" nb-args))
       (let ((assign (loop for x in bindings when (assoc (cdr x) var-ind
 							:test #'(lambda (x y) (eq x (id y)) )) collect it)))
-	(add-instructions (mapcar #'(lambda (x) (format nil "args[~d] = ~a;"
-						      (cdr x) (id (car x))))
-				assign))
-	(format nil "makeClosure(~a, ~a, args)" result name)))))
+	(add-instructions (mapcar #'(lambda (x)
+				      (format nil "args[~d] = ~a;" (cdr x) (id (car x))))
+				  assign))
+	(cons (make-instance 'C-closure)
+	      (list (format nil "makeClosure(~~a, ~a, args);" name)))))))
 
 
 
-(defmethod pvs2C* ((expr lambda-expr) bindings livevars result)
+(defmethod pvs2C* ((expr lambda-expr) bindings livevars)
   (declare (ignore livevars))
   (let ((type (type expr))
 	(C-expr (pvs2C-lambda (bindings expr)
 			      (expression expr)
-			      bindings result)))
-    (if (and (C-updateable? type)
-	     (funtype? type))
-	(format nil "(Function ~a ~a);" (array-bound type) C-expr)
+			      bindings)))
+    (if (and (C-updateable? type) (funtype? type))
+	(format nil "(Function ~a ~a);" (array-bound type) C-expr)    ;; not working
       C-expr)))
 
 
 
-(defmethod pvs2C* ((expr cases-expr) bindings livevars result)
+(defmethod pvs2C* ((expr cases-expr) bindings livevars)
   (format nil "case ~a of ~{~%~a~}"
     (pvs2C (expression expr) bindings livevars)
-    (pvs2C-cases (selections expr)(else-part expr) bindings livevars)))
+    (pvs2C-cases (selections expr) (else-part expr) bindings livevars)))
 
 (defun pvs2C-cases (selections else-part bindings livevars)
   (let ((selections-C
@@ -626,7 +628,7 @@
 	  (pvs2C (expression else-part) bindings livevars))
 	selections-C)))
 
-(defmethod pvs2C* ((expr update-expr) bindings livevars result)
+(defmethod pvs2C* ((expr update-expr) bindings livevars)
   (if (C-updateable? (type (expression expr)))
       (if (and *destructive?*
 	       (not (some #'maplet? (assignments expr))))
@@ -640,20 +642,17 @@
 	    (cond (*livevars-table* ;; check-assign-types
 		   (push-output-vars (car *livevars-table*)
 				     (cdr *livevars-table*))
-		   (pvs2C-update expr
-				  bindings livevars))
+		   (pvs2C-update expr bindings livevars))
 		  (t
 		   (when (and *eval-verbose* (not *livevars-table*))
-		     (format t "~%Update ~s translated nondestructively.
- Live variables ~s present" expr livevars))
-		   (pvs2C-update  expr
-						    bindings livevars))))
+		     (format t "~%Update ~s translated nondestructively. Live variables ~s present"
+			       expr livevars))
+		   (pvs2C-update expr bindings livevars))))
 	  (pvs2C-update expr bindings livevars))
-      (pvs2C (translate-update-to-if! expr)
-		  bindings livevars)))
+      (cons (pvs-type-2-C-type expr)
+	    (pvs2C (translate-update-to-if! expr) bindings livevars))))
 
-(defun pvs2C-update
-    (expr bindings livevars)
+(defun pvs2C-update (expr bindings livevars)
   (with-slots (type expression assignments) expr
     (let* ((assign-exprs (mapcar #'expression assignments))
 	   (exprvar (gentemp "E"))
@@ -662,15 +661,16 @@
 					 assign-exprs)
 					;;assign-args can be ignored
 					livevars) )))
-      (format nil "~a"
-    (pvs2C-update* (type expression)
+      (cons (pvs-type-2-C-type type)
+	    (format nil "~a"
+		    (pvs2C-update* (type expression)
 				   C-expr exprvar
 				   (mapcar #'arguments assignments)
 				   assign-exprs
 				   bindings
 				   (append (updateable-vars expression)
 					   livevars)
-				   (list (list (pvs-type-2-C-type type) exprvar C-expr)))))))
+				   (list (list (pvs-type-2-C-type type) exprvar C-expr))))))))
 
 (defun pvs2C-assign-rhs (assignments bindings livevars)
   (when (consp assignments)
@@ -690,9 +690,7 @@
 
 
 ;;recursion over updates in an update expression
-(defun pvs2C-update*
-    (type expr exprvar
-	  assign-args assign-exprs bindings livevars accum)
+(defun pvs2C-update* (type expr exprvar assign-args assign-exprs bindings livevars accum)
   (if (consp assign-args)
       (let* ((*lhs-args* nil)
 	     (assign-exprvar (gentemp "R"))
@@ -727,11 +725,6 @@
 					assign-exprvar C-assign-expr)))
 	(add-instructions-first (mapcar #'(lambda (x) (format nil "~{~a ~a = ~a;~}" x)) lhs-bindings))
 	cdr-C-output)
-;;	(format nil "~a ~a = ~a~%~:{~a ~a = ~a~%~}~a"
-;;		(pvs2C-type (type (car assign-exprs)))
-;;		assign-exprvar C-assign-expr
-;;		lhs-bindings
-;;		 cdr-C-output))
     (progn 
         (add-instructions (mapcar #'(lambda (x) (format nil "~{~a ~a = ~a;~}" x)) (nreverse accum)))
 ;;        (format nil "~:{~a ~a = ~a~%~}~a" (nreverse accum) exprvar)
@@ -794,39 +787,6 @@
   (pvs2C-update-nd-type* (find-supertype type) expr newexprvar arg1 restargs
 			  assign-expr bindings livevars accum))
 
-(defmethod pvs2C-type ((type recordtype) &optional tbindings)
-  (with-slots (print-type) type
-    (if (type-name? print-type)
-	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
-	  (if entry (cadr entry) ;return the C-rectype-name
-	      (let* ((formatted-fields (loop for fld in (fields type)
-				  collect
-				  (format nil "~a :: !~a" (id fld)
-						(pvs2C-type (type fld)))))
-		    (C-rectype (format nil "{ ~{~a~^, ~} }" formatted-fields))
-		    (C-rectype-name (gentemp (format nil "pvs~a" (id print-type)))))
-		(push (list (declaration print-type) C-rectype-name C-rectype)
-		      *C-record-defns*)
-		C-rectype-name)))
-	(pvs2C-error "~%Record type ~a must be declared." type))))
-
-(defmethod pvs2C-type ((type tupletype) &optional tbindings)
-  (format nil "(~{!~a~^, ~})" (loop for elemtype in (types type)
-				   collect (pvs2C-type elemtype))))
-
-(defmethod pvs2C-type ((type funtype) &optional tbindings)
-  (if (C-updateable? type)
-      (format nil "~a*" (pvs2C-type (range type)))
-      (format nil "~aClosure" (pvs2C-type (range type)))))
-
-(defmethod pvs2C-type ((type subtype) &optional tbindings)
-  (cond ((subtype-of? type *integer*) "BigInt"  )
-	((subtype-of? type *real*   ) "Rational")
-	(t (pvs2C-type (find-supertype type)))))
-
-(defmethod pvs2C-type ((type type-name) &optional tbindings)
-  (or (cdr (assoc type tbindings :test #'tc-eq))
-      (id type)))
 
 
 
@@ -981,8 +941,6 @@
 			(C-info-type-arg ndes-info))
 		;; Then the defn
 		(format output "~%~a}"  (C-info-definition des-info))))
-		;;(format output "~%~{  ~#[~;return ~:;~]~a;~%~}}"
-	;;		(line-split (C-info-definition ndes-info)))
 	    (when des-info
 	      (let ((id (C-info-id des-info)))
 		;; First the signature
@@ -999,8 +957,12 @@
 
 
 
-(defun line-split (string)
-  (loop for start = 0 then (1+ finish)
-        for finish = (position #\Newline string :start start)
-        collecting (subseq string start finish)
-        until (null finish)))
+
+
+;; Old code
+
+;(defun line-split (string)
+;  (loop for start = 0 then (1+ finish)
+;        for finish = (position #\Newline string :start start)
+;        collecting (subseq string start finish)
+;        until (null finish)))

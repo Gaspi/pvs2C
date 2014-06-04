@@ -4,7 +4,7 @@ BEGIN
   f(x:rat) :rat = x
   g(x:int, y:rat):rat =  x + y
   
-  a:int = f(1)
+  a:rat = if true then 1 else 0 endif
   
   a:boolean = true
   
