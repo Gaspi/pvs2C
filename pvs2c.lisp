@@ -158,27 +158,26 @@
       (let ((e (pvs2C expr bindings livevars type)))
 	(add-instruction (format nil "~a = ~a;" name e))
 	(add-instructions *C-destructions*)
-	(reset-destructions)
-	)
+	(reset-destructions))
     (let* ((e (pvs2C* expr bindings livevars))
-	   (type-e (car e))
+	   (type-e (car e)))
       (if (eq type-e type)
 	  (progn
 	    (add-instructions (apply-argument (cdr e) name))
 	    (add-instructions *C-destructions*)
 	    (reset-destructions))
 	(if (pointer? type-e)
-	    ()
-	  ()
-	  ))))))
-
-
-
-
-;; -------------------   Refactoring de code point HERE --------------------------
-
-
-
+	    (let ((n (gen-C-var typeA "set")))
+	      (add-instructions (C-alloc n))
+	      (add-instructions (apply-argument (cdr e) n))
+	      (add-instructions *C-destructions*)
+	      (reset-destructions)
+	      (add-instruction (set type name type-e n))
+	      (add-instructions (C-free n)))
+	  (progn
+	      (add-instruction (set type name type-e (cdr e)))
+	      (add-instructions *C-destructions*)
+	      (reset-destructions)))))))
 
 
 (defmethod pvs2C (expr bindings livevars exp-type)
@@ -212,17 +211,24 @@
 
 
 
-;; set and convert need to be implemented correctly here
+; --- set and conversion functions need to be implemented correctly here ---
 
 (defun convert (typeA typeB e)
   (if (eq typeA typeB)
       e
-    (format nil "convert[~a -> ~a](~a)" typeA typeB e)))
+    (let ((n (gen-C-var typeA "conv")))
+      (add-instructions (C-alloc n))
+      (add-destructions (C-free n))
+      (add-instruction (set typeA n typeB e))
+      n)))
 
 (defun set (typeA nameA typeB nameB)
   (if (pointer? typeA)
-      (format nil "set_~a_~a(~a, ~a)" typeA typeB nameA nameB)
-    (format nil "~a ~a = ~a_from_~a(~a)" typeA nameA typeA typeB nameB)))
+      (format nil "~a(~a, ~a);" (convertor typeA typeB) nameA nameB)
+    (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB)))
+
+(defun convertor (typeA typeB)
+  (format nil "~a_from_~a" typeA typeB))
 
 
 
