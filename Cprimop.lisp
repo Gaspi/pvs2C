@@ -58,111 +58,179 @@
 
 
 ;; ------ Primitive constant (now only boolean) --------
-(defun pvs2C*-primitive-cste (expr bindings livevars result)
+(defun pvs2C*-primitive-cste (expr bindings livevars)
   (let ((nop (pvs2C-primitive-op expr)))
     (if (boolean-primitive? nop)
-	(pvs2C*-boolean-primitive nop result)
-      (set-C-nonpointer "set" result nop))))
+	(pvs2C*-boolean-primitive nop)
+      (cons (make-instance 'C-type)
+	    (list (set-C-nonpointer "set" "~a" nop))))))
 
 (defun boolean-primitive? (name)
   (member name '(TRUE FALSE)))
-(defun pvs2C*-boolean-primitive (op result)
-  (set-C-nonpointer result op))
+(defun pvs2C*-boolean-primitive (op)
+  (cons (make-instance 'C-int)
+	(format nil "~a" op)))
 
 
 
 ;; --------- Primitive function call ----------------
-(defun pvs2C*-primitive-app (expr bindings livevars result)
-  (let* ((op (operator expr))
-	 (nop (pvs2C-primitive-op op))
-	 (type-args (mapcar #'pvs-type-2-C-type
-			    (mapcar #'type (arguments expr))))
-	 (type-res (when result (C-type result)))
-	 (args (pvs2C (arguments expr) bindings livevars)))
-    (cond ((equality-function? nop args)
-	      (pvs2C*-equality-function args result))
-	  ((comparison-function? nop)
-	      (pvs2C*-comparison-function nop args result))
-	  ((negation-function? nop args)
-	     (pvs2C*-negation-function args result))
-	  ((boolean-function? nop)
-	    (pvs2C*-boolean-function nop args result))
-	  ((eq nop 'Add) (pvs2C*-add args result))
+(defun pvs2C*-primitive-app (expr bindings livevars)
+  (let* ((op (pvs2C-primitive-op (operator expr)))
+	 (args (arguments expr))
+	 (type-args (pvs-type-2-C-type args)))
+    (cond ((equality-function? op args)
+	     (pvs2C*-equality-function type-args args bindings livevars))
+	  ((boolean-function? op)
+	     (pvs2C*-boolean-function op type-args args bindings livevars))
+	  ((negation-function? op args)
+	     (pvs2C*-negation-function (car type-args) (car args)
+				       bindings livevars))
+	  ((eq op 'Add)
+	     (pvs2C*-add type-args args bindings livevars))
 	  (t
-	    (format nil "~a;" (set-C-pointer nop result args))))))
+	     (cons (pvs-type-2-C-type expr)
+		   (list (set-C-pointer op "~a" (pvs2C args bindings livevars type-args))))))))
 
 
+;; ------------- Boolean functions (2 arguments - number or bool / result bool) ----------
 (defun boolean-function? (name)
   (member name '(== && || ! pvsWhen pvsImplies pvsIff
 		    pvsNumberFieldPred < <= > >= 
 		    pvsRealPred pvsIntegerPred pvsIntegerPred
 		    pvsRationalsPred isEven isOdd isCons isNull isMember )))
-(defun pvs2C*-boolean-function (op args result)
-  (set-C-nonpointer result
-     (cond ((infix-primitive? op)
-	      (pvs2C*-infix-primitive op args result))
-	   ((comparison-function? op)
-	      (pvs2C*-comparison-function op args result))
-	   (t (mk-C-funcall op args)))))
+(defun pvs2C*-boolean-function (op type-args args bindings livevars)
+  (cons (make-instance 'C-int)
+	(cond ((infix-primitive? op)
+	        (pvs2C*-infix-primitive op args bindings livevars))
+	      ((comparison-function? op)
+	        (pvs2C*-comparison-function op args bindings livevars))
+	      (t
+	        (mk-C-funcall op (pvs2C args bindings livevars type-args) )))))
 
 (defun infix-primitive? (name)
   (member name '(== && ||)))
-(defun pvs2C*-infix-primitive (op args result)
-  (format nil (format nil "(~a~a~a ~a ~a)" "~{" "~a" "~^" op "~}")  args ))
+(defun pvs2C*-infix-primitive (op args bindings livevars)
+  (format nil (format nil "(~~{~~a~~^ ~a ~~})" op)
+	          (pvs2C args bindings livevars (list *C-int* *C-int*))))
 
 ;; ------------- Negation (1 argument - number / result number) ----------
 (defun negation-function? (name args)
-  (and (= (length args) 1) (eq name 'pvsSub)))
-(defun pvs2C*-negation-function (args result)
-  (if (pointer? result)
-      (set-C-pointer "pvsNeg" result args)
-    (set-C-nonpointer result (format nil "(-~a)" (car args)))))
+  (and (eq name 'pvsSub) (= (length args) 1)))
+(defmethod pvs2C*-negation-function ((type-arg C-int) arg bindings livevars)
+  (cons *C-int* (format nil "(-~a)" (pvs2C arg bindings livevars *C-int*))))
+(defmethod pvs2C*-negation-function ((type-arg C-mpz) arg bindings livevars)
+  (cons *C-mpz*
+	(set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*))))
+(defmethod pvs2C*-negation-function ((type-arg C-mpq) arg bindings livevars)
+  (cons *C-mpq*
+	(set-C-pointer "mpq_neg" "~a" (pvs2C arg bindings livevars *C-mpq*))))
+(defmethod pvs2C*-negation-function (type-arg arg bindings livevars)
+  (cons type-arg
+	(set-C-pointer "pvsNeg" "~a" (pvs2C arg bindings livevars type-arg))))
+
 
 
 ;; -------------- Equality (2 arguments - could be anything / result int) ---------------
 (defun equality-function? (name args)
-  (and (= (length args) 2) (eq name 'Eq)))
-(defun pvs2C*-equality-function (args result)
-  (set-C-nonpointer result
-		    (pvs2C-eq (C-type (car args))
-			      (C-type (cadr args))
-			      args)))
-(defgeneric pvs2C-eq (typeA typeB args))
-(defmethod pvs2C-eq ((typeA C-mpz) (typeB C-mpz) args)
-  (format nil "(mpz_cmp(~a, ~a) == 0)" (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-mpz) (typeB C-mpq) args)
-  (format nil "(mpzq_cmp(~a, ~a) == 0)" (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-mpq) (typeB C-mpz) args)
-  (format nil "(mpqz_cmp(~a, ~a) == 0)" (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-mpq) (typeB C-mpq) args)
-  (format nil "(mpq_cmp(~a, ~a) == 0)" (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-closure) (typeB C-closure) args)
-  (format nil "closureEq(~a, ~a)" (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-struct) (typeB C-struct) args)
-  (format nil "~aEq(~a, ~a)" (slot-value typeA 'name) (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-named-type) (typeB C-named-type) args)
-  (format nil "~aEq(~a, ~a)" (slot-value typeA 'name) (car args) (cadr args)))
-(defmethod pvs2C-eq ((typeA C-type) (typeB C-type) args)
-  (format nil "(~a == ~a)" (car args) (cadr args)))
+  (and (eq name 'Eq) (= (length args) 2)))
+(defun pvs2C*-equality-function (type-args args bindings livevars)
+  (cons (make-instance 'C-int)
+	(pvs2C-eq (car type-args) (cadr type-args)
+		  (car args) (cadr args)
+		  bindings livevars)))
+
+(defgeneric pvs2C-eq (typeA typeB argA argB bindings livevars))
+
+(defmethod pvs2C-eq ((typeA C-mpq) typeB argA argB bindings livevars)
+  (format nil "(mpq_cmp(~a, ~a) == 0)"
+	  (pvs2C argA bindings livevars *C-mpq*)
+	  (pvs2C argB bindings livevars *C-mpq*)))
+(defmethod pvs2C-eq (typeA (typeB C-mpq) argA argB bindings livevars)
+  (format nil "(mpq_cmp(~a, ~a) == 0)"
+	  (pvs2C argA bindings livevars *C-mpq*)
+	  (pvs2C argB bindings livevars *C-mpq*)))
+
+(defmethod pvs2C-eq ((typeA C-mpz) typeB argA argB bindings livevars)
+  (format nil "(mpz_cmp(~a, ~a) == 0)"
+	  (pvs2C argA bindings livevars *C-mpz*)
+	  (pvs2C argB bindings livevars *C-mpz*)))
+(defmethod pvs2C-eq (typeA (typeB C-mpz) argA argB bindings livevars)
+  (format nil "(mpz_cmp(~a, ~a) == 0)"
+	  (pvs2C argA bindings livevars *C-mpz*)
+	  (pvs2C argB bindings livevars *C-mpz*)))
+
+(defmethod pvs2C-eq ((typeA C-closure) typeB argA argB bindings livevars)
+  (format nil "closureEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+(defmethod pvs2C-eq (typeA (typeB C-closure) argA argB bindings livevars)
+  (format nil "closureEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+
+(defmethod pvs2C-eq ((typeA C-struct) typeB argA argB bindings livevars)
+  (format nil "aEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+(defmethod pvs2C-eq (typeA (typeB C-struct) argA argB bindings livevars)
+  (format nil "aEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+(defmethod pvs2C-eq ((typeA C-named-type) typeB argA argB bindings livevars)
+  (format nil "aEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+(defmethod pvs2C-eq (typeA (typeB C-named-type) argA argB bindings livevars)
+  (format nil "aEq(~a, ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+
+(defmethod pvs2C-eq (typeA typeB argA argB bindings livevars)
+  (format nil "(~a == ~a)"
+	  (pvs2C argA bindings livevars typeA)
+	  (pvs2C argB bindings livevars typeB)))
+
 
 
 ;; -------- Comparison (2 arguments - numbers / result int) ---------------
 (defun comparison-function? (name)
   (member name '(< <= > >=)))
-(defun pvs2C*-comparison-function (op args result)
-  (set-C-nonpointer result
-		    (format nil "( ~a(~a, ~a) ~a 0 )"
-			    (pvs2C-comp (slot-value (car args)  'type)
-					(slot-value (cadr args) 'type))
-			    (car args)
-			    (cadr args)
-			    op)))
-(defgeneric pvs2C-comp (typeA typeB))
-(defmethod pvs2C-comp ((typeA C-mpz) (typeB C-mpz)) "mpz_cmp")
-(defmethod pvs2C-comp ((typeA C-mpz) (typeB C-mpq)) "mpzq_cmp")
-(defmethod pvs2C-comp ((typeA C-mpq) (typeB C-mpz)) "mpqz_cmp")
-(defmethod pvs2C-comp ((typeA C-mpq) (typeB C-mpq)) "mpq_cmp")
-(defmethod pvs2C-comp (typeA typeB) "compare")
+(defun pvs2C*-comparison-function (op type-args args bindings livevars)
+  (let ((aux (pvs2C-comp (car type-args) (cadr type-args) op)))
+    (cons *C-int*
+	  (format nil (car aux)
+		  (pvs2C (car  args) binfings livevars (cadr aux) )
+		  (pvs2C (cadr args) binfings livevars (caddr aux))))))
+
+(defgeneric pvs2C-comp (typeA typeB op))
+
+(defmethod pvs2C-comp ((typeA C-mpq) typeB op)
+  (list (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op) *C-mpq* *C-mpq*))
+(defmethod pvs2C-comp (typeA (typeB C-mpq) op)
+  (list (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op) *C-mpq* *C-mpq*))
+
+(defmethod pvs2C-comp ((typeA C-mpz) typeB op)
+  (list (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op) *C-mpz* *C-mpz*))
+(defmethod pvs2C-comp (typeA (typeB C-mpz) op)
+  (list (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op) *C-mpz* *C-mpz*))
+
+(defmethod pvs2C-comp ((typeA C-int) (typeB C-int) op)
+  (list (format nil "(~~a ~a ~~a)" op) *C-mpz* *C-mpz*))
+
+(defmethod pvs2C-comp (typeA typeB op)
+  (list (format nil "(pvsCompare(~~a, ~~a) ~a 0)" op) typeA typeB))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

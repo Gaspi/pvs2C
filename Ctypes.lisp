@@ -12,6 +12,11 @@
 (defclass C-named-type (C-type) ((name :initarg :name)))
 (defclass C-closure  (C-type) ())
 
+(defvar *C-type* (make-instance 'C-type))
+(defvar *C-int* (make-instance 'C-int))
+(defvar *C-mpz* (make-instance 'C-mpz))
+(defvar *C-mpq* (make-instance 'C-mpq))
+
 (defmethod print-object ((obj C-int) out) (format out "int"  ))
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
 (defmethod print-object ((obj C-mpq) out) (format out "mpq_t"))
@@ -72,8 +77,16 @@
       (make-instance 'C-int)
     (pvs-type-2-C-type (type e))))
 
-(defmethod pvs-type-2-C-type ((type expr) &optional tbindings)
-  (pvs-type-2-C-type (type type)))
+(defmethod pvs-type-2-C-type ((e expr) &optional tbindings)
+  (pvs-type-2-C-type (type e)))
+
+(defmethod pvs-type-2-C-type ((l list) &optional tbindings)
+  (if (consp l)
+      (cons (pvs-type-2-C-type (car l))
+	    (pvs-type-2-C-type (cdr l)))
+    nil))
+
+
 
 
 
@@ -141,7 +154,7 @@
   (free (slot-value v 'type) (slot-value v 'name)))
 
 
-(defun C-type-args (operator)
+(defmethod C-type-args (operator)
   (let ((dom-type (domain (type operator))))
     (if (tupletype? dom-type)
 	(mapcar #'pvs-type-2-C-type (types dom-type))

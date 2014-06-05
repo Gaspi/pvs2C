@@ -63,8 +63,35 @@
   (mapcar #'(lambda (x) (format nil x arg)) instructions))
 
 
+; --- set and conversion functions need to be implemented correctly here ---
+
+(defun convert (typeA typeB e)
+  (if (eq typeA typeB) e
+    (let ((n (gen-C-var typeA "conv")))
+      (add-instructions (C-alloc n))
+      (add-destructions (C-free n))
+      (add-instruction (get-typed-copy typeA n typeB e))
+      n)))
+
+(defun get-typed-copy (typeA nameA typeB nameB)
+  (if (pointer? typeA)
+      (format nil "~a(~a, ~a);" (convertor typeA typeB) nameA nameB)
+    (if (eq typeA typeB)
+	(format nil "~a = ~a;" nameA nameB)
+      (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB))))
+
+(defun convertor (typeA typeB)
+  (if (eq typeA typeB)
+      (format nil "copy_~a" typeA)
+    (format nil "~a_from_~a" typeA typeB)))
+
+
+
+
 (defmethod pvs2C ((expr list) bindings livevars exp-type)
-  (pvs2C-list expr bindings livevars nil exp-type))
+  (let ((accum *C-destructions*))
+    (reset-destructions)	 
+    (pvs2C-list expr bindings livevars exp-type accum)))
 
 (defun pvs2C-list (l bindings livevars exp-type accum)
   (if (consp l)
@@ -75,8 +102,8 @@
 	(reset-destructions)
 	(cons carExpr
 	      (pvs2C-list (cdr l) bindings                        ;;need car's freevars
-		     (append (updateable-vars (car l))  ;;f(A, A WITH ..)
-			     livevars) (cdr exp-type) newAccu)))
+		     (append (updateable-vars (car l)) livevars)
+		     (cdr exp-type) newAccu)))
     (progn
       (add-destructions accum)
       nil)))
@@ -164,16 +191,16 @@
 	    (add-instructions (apply-argument (cdr e) name))
 	    (add-instructions *C-destructions*)
 	    (reset-destructions))
-	(if (pointer? type-e)
-	    (let ((n (gen-C-var typeA "set")))
+	(if (consp (cdr e))  ;; pointer? type-e
+	    (let ((n (gen-C-var type-e "set")))
 	      (add-instructions (C-alloc n))
 	      (add-instructions (apply-argument (cdr e) n))
 	      (add-instructions *C-destructions*)
 	      (reset-destructions)
-	      (add-instruction (set type name type-e n))
+	      (add-instruction (get-typed-copy type name type-e n))
 	      (add-instructions (C-free n)))
 	  (progn
-	      (add-instruction (set type name type-e (cdr e)))
+	      (add-instruction (get-typed-copy type name type-e (cdr e)))
 	      (add-instructions *C-destructions*)
 	      (reset-destructions)))))))
 
@@ -206,28 +233,7 @@
 
 
 
-; --- set and conversion functions need to be implemented correctly here ---
 
-(defun convert (typeA typeB e)
-  (if (eq typeA typeB)
-      e
-    (let ((n (gen-C-var typeA "conv")))
-      (add-instructions (C-alloc n))
-      (add-destructions (C-free n))
-      (add-instruction (set typeA n typeB e))
-      n)))
-
-(defun set (typeA nameA typeB nameB)
-  (if (pointer? typeA)
-      (format nil "~a(~a, ~a);" (convertor typeA typeB) nameA nameB)
-    (if (eq typeA typeB)
-	(format nil "~a = ~a;" nameA nameB)
-      (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB))))
-
-(defun convertor (typeA typeB)
-  (if (eq typeA typeB)
-      (format nil "copy_~a" typeA)
-    (format nil "~a_from_~a" typeA typeB)))
 
 
 
@@ -265,9 +271,9 @@
   (let ((type (pvs-type-2-C-type expr)))
     (cons type
        (if (pointer? type)
-	   (let (op (cond ((eq (type-of type) 'C-mpz) "mpz_set_str")
+	   (let ((op (cond ((eq (type-of type) 'C-mpz) "mpz_set_str")
 			  ((eq (type-of type) 'C-mpq) "mpq_set_str")
-			  (t "setUnknown")))
+			  (t "setUnknown"))))
 	     (list (format nil "~a(~~a, \"~a\");" op (number expr))))
 	 (format nil "~a" (number expr))))))
 
@@ -320,7 +326,7 @@
 	 (type (pvs-type-2-C-type expr)))
     (cons type
 	  (if (pointer? type)
-	      (set type "~a" type e)
+	      (get-typed-copy type "~a" type e)
 	    e))))
 
 ;; When is this function called ??  (not working)
@@ -535,22 +541,6 @@
 		(if (pointer? type-e)
 		    (list (set-C-pointer (C_nondestructive_id expr) "~a" C-actuals))
 		  (mk-C-funcall (C_nondestructive_id expr) C-actuals)))))))
-
-
-
-
-
-
-
-
-
-;; ---------------  Refactoring point ---------------------
-
-
-
-
-
-
 
 
 (defun range-arr (max &key (min 0) (step 1))
