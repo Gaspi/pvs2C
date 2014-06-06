@@ -1,9 +1,13 @@
 // C file generated from foo.pvs
 
-void pvs_a53(mpz_t result);
+int pvs_a377();
 
-void pvs_d_a54(mpz_t result);
+int pvs_d_a378();
 
-void pvs_f55(mpz_t result, mpz_t x, mpz_t y);
+int pvs_b379();
 
-void pvs_d_f56(mpz_t result, mpz_t x, mpz_t y);
+int pvs_d_b380();
+
+int pvs_f387(mpz_t x, int y);
+
+int pvs_d_f388(mpz_t x, int y);

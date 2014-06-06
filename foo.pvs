@@ -1,8 +1,14 @@
 foo : THEORY
 BEGIN
-
- a:int = 2+3
- 
- f(x:int, y:int):int = x + y + a
+  
+  a:below(10) = 2
+  
+  b:below(10) = a + a
+  
+  f(x:nat, y:below(10)):RECURSIVE below(10)=
+    if y = 0 then 0
+    else if x < y then x
+    else f( x - y, y) endif endif
+  MEASURE x
 
 END foo

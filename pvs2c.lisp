@@ -2,7 +2,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;   Author: Gaspard ferey
 ;; --------------------------------------------------------------------
-;;   Draft clean translator modified
+;;   C translator
 ;; --------------------------------------------------------------------
 
 (in-package :pvs)
@@ -67,12 +67,14 @@
 ; --- set and conversion functions need to be implemented correctly here ---
 
 (defun convert (typeA typeB e)
-  (if (same-type typeA typeB) e
-    (let ((n (gen-C-var typeA "conv")))
-      (add-instructions (C-alloc n))
-      (add-destructions (C-free n))
-      (add-instruction (get-typed-copy typeA n typeB e))
-      n)))
+  (cond ((same-type typeA typeB) e)
+	((not (pointer? typeA)) (format nil (convertor typeA typeB) e))
+	(t
+	 (let ((n (gen-C-var typeA "conv")))
+	   (add-instructions (C-alloc n))
+	   (add-instructions (get-typed-copy typeA n typeB e))
+	   (add-destructions (C-free n))
+	   n))))
 
 
 (defmethod pvs2C ((expr list) bindings livevars exp-type)
@@ -143,11 +145,24 @@
 	(t (call-next-method))))
 
 
+
+
+
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
   (let* ((type (pvs-type-2-C-type expr))    ;; could be improved to find a smaller type
 	 (if-bloc (pvs2C-if expr bindings livevars type)))
     (cons type if-bloc)))
 
+(defmethod pvs2C ((expr if-expr) bindings livevars exp-type)
+  (let* ((type (smaller-type (pvs-type-2-C-type expr) exp-type))
+	 (if-bloc (pvs2C-if expr bindings livevars type))
+	 (if-name (gen-C-var type "if")))
+    (add-instructions (C-alloc if-name))
+    (add-instructions (apply-argument if-bloc if-name))
+    (add-instructions *C-destructions*)
+    (reset-destructions)
+    (add-destructions (C-free if-name))
+    (convert exp-type type if-name)))
 
 ;(defmethod pvs2C ((expr if-expr) bindings livevars exp-type)
 ;  (let* ((type (pvs-type-2-C-type expr))
@@ -178,10 +193,10 @@
 	      (add-instructions (apply-argument (cdr e) n))
 	      (add-instructions *C-destructions*)
 	      (reset-destructions)
-	      (add-instruction (get-typed-copy type name type-e n))
+	      (add-instructions (get-typed-copy type name type-e n))
 	      (add-instructions (C-free n))))
 	(progn
-	  (add-instruction (get-typed-copy type name type-e (cdr e)))
+	  (add-instructions (get-typed-copy type name type-e (cdr e)))
 	  (add-instructions *C-destructions*)
 	  (reset-destructions))))))
 
@@ -205,7 +220,7 @@
 	      (convert exp-type type (cdr e))
 	    (let ((n (gen-C-var type "aux")))
 	      (add-instructions (C-alloc n)) ;; probably empty
-	      (add-instruction (format nil "~a ~a = ~a;" type n (cdr e)))
+	      (add-instruction (format nil "~a = ~a;" n (cdr e)))
 	      (add-instructions *C-destructions*)
 	      (reset-destructions)
 	      (add-destructions (C-free n)) ; probably empty
@@ -327,7 +342,10 @@
 	  (if (datatype-constant? operator)
 	      (cons (pvs-type-2-C-type (range (type operator)))
 		    (mk-C-funcall (pvs2C-resolution operator)
-				  (pvs2C (arguments expr) bindings livevars)))
+				  (pvs2C (arguments expr)
+					 bindings
+					 livevars
+					 (pvs-type-2-C-type (arguments expr)))))
 	    (pvs2C-defn-application expr bindings livevars)))
       (if (lambda? operator)
 	  (let* ((bind-decls (bindings operator))
@@ -355,10 +373,10 @@
 	   (cons type
 		 (if (C-updateable? (type operator))
 		     (if (pointer? type)
-			 (format nil "pvsSelect(~~a, ~a, ~a);" C-op C-arg)
+			 (list (format nil "pvsSelect(~~a, ~a, ~a);" C-op C-arg))
 		       (format nil "pvsSelect(~a, ~a);" C-op C-arg))
 		   (if (pointer? type)
-		       (set-C-pointer C-op "~a" C-arg)
+		       (list (set-C-pointer C-op "~a" C-arg))
 		     (mk-C-funcall C-op C-arg)))))))))
 
 
@@ -391,14 +409,12 @@
 		 (check (check-output-vars analysis alist livevars))
 		 (id-op (if check (C_id operator)
 			          (C_nondestructive_id operator))))
-	    (cons ret-type (list
-			    (if (pointer? ret-type)
-				(set-C-pointer id-op "~a" C-args)
-			      (mk-C-funcall id-op C-args)))))
-	(cons ret-type (list
-			(if (pointer? ret-type)
-			    (set-C-pointer (C_id operator) "~a" C-args)
-			  (mk-C-funcall (C_id operator) C-args))))))))
+	    (cons ret-type (if (pointer? ret-type)
+			       (list (set-C-pointer id-op "~a" C-args))
+			     (mk-C-funcall id-op C-args))))
+	(cons ret-type (if (pointer? ret-type)
+			   (list (set-C-pointer (C_id operator) "~a" C-args))
+			 (mk-C-funcall (C_id operator) C-args)))))))
 
 (defun pvs2C-resolution (op)
   (let* ((op-decl (declaration op)))
@@ -472,7 +488,8 @@
 	 (hash-entry (gethash op-decl *C-destructive-hash*))
 	 (old-output-vars (C-info-analysis hash-entry)))
     (pvs2C2 body id-map nil cl-type-out "result")
-    (format t "~%Defining (destructively) ~a with ~%type ~a -> ~a ~%as ~a" (id op-decl) cl-type-arg cl-type-out *C-instructions*)
+    (format t "~%Defining (destructively) ~a with ~%type ~a -> ~a ~%as ~a"
+	    (id op-decl) cl-type-arg cl-type-out *C-instructions*)
     (unless pointer-out (add-instructions-first (C-alloc result-var)))
     (setf (C-info-type-out hash-entry) (if pointer-out "void" cl-type-out)
 	  (C-info-type-arg hash-entry) cl-type-arg
@@ -881,11 +898,13 @@
 			    :if-does-not-exist :create)
       (format output  "/*~%C file generated from ~a.pvs" filename)
       (format output  "~%Make sure to link GMP and PVS.c in compilation:")
-      (format output  "~%    gcc -o ~a ~a.c PVS.c -lgmp" filename filename)
+      (format output  "~%    gcc -o ~a ~a.c -lgmp" filename filename)
+;;      (format output  "~%    gcc -o ~a ~a.c -lgmp" filename filename)  ;; No need for PVS.c anymore
       (format output  "~%    ./~a~%*/" filename)
       (format outputH "// C file generated from ~a.pvs" filename)
       (format output  "~2%#include<stdio.h>")
-      (format output   "~%#include \"PVS.h\"")
+      (format output   "~%#include<gmp.h>")
+;;      (format output   "~%#include \"PVS.h\"") ;; Not anymore
       (format output   "~%#include \"~a.h\"" filename)
       (format output   "~2%#define TRUE 1")
       (format output   "~%#define FALSE 0")

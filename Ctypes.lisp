@@ -20,6 +20,7 @@
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
 
+;; This is C inplementation dependent
 (defvar *min-C-int* (- (expt 2 15)))
 (defvar *max-C-int* (- (expt 2 15) 1))
 (defvar *min-C-uli* 0)
@@ -40,6 +41,7 @@
 (defmethod same-type ((typeA C-closure) (typeB C-closure)) t)
 (defmethod same-type (typeA typeB) nil)
 
+(defun type= (A B) (same-type A B)) ;;Alias
 
 
 (defmethod print-object ((obj C-int) out) (format out "int"))
@@ -125,15 +127,16 @@
 	(if range
 	    (let ((ninf (car range))
 		  (nsup (cadr range)))
-	      (get-bounds (cdr l)
+	      (get-inner-bounds-list
+	                  (cdr l)
 			  (when inf (max inf ninf) ninf)
 			  (when sup (min sup nsup) nsup)))
-	  (get-bounds (cdr l) inf sup)))
+	  (get-inner-bounds-list (cdr l) inf sup)))
     (list inf sup)))
 
 (defgeneric is-in-range? (e inf sup))
 (defmethod is-in-range? ((interval list) inf sup)
-  (and interval
+  (and interval (car interval) (cadr interval)
        (<= inf (car interval))
        (<=     (cadr interval) sup)))
 (defmethod is-in-range? ((t type-expr) inf sup)
@@ -159,7 +162,9 @@
 
 (defmethod pvs-type-2-C-type ((e expr) &optional tbindings)
   (if (C-integer-type? e)
-      *C-int*
+      (cond ((C-int-type? e) *C-int*)
+	    ((C-unsignedlong-type? e) *C-uli*)
+	    (t *C-mpz*))
     (pvs-type-2-C-type (type e))))
 
 (defmethod pvs-type-2-C-type ((l list) &optional tbindings)
@@ -172,31 +177,18 @@
 
 
 (defstruct C-var name type)
-(defun get-C-var (type name)
-  (make-C-var :name name :type type))
 (defun C-var (type name) (make-C-var :name name :type type))
 (defmethod print-object ((obj C-var) out)
   (format out "~a" (slot-value obj 'name)))
+(defun var-type (arg) (slot-value arg 'type))
+(defun var-name (arg) (slot-value arg 'name))
+(defun gen-C-var (type prefix)
+  (C-var type (gentemp prefix)))
 
-(defmethod pointer? ((obj C-var)) (pointer? (C-type obj)))
+(defmethod pointer? ((obj C-var)) (pointer? (var-type obj)))
 (defmethod pointer? ((e expr)) (pointer? (pvs-type-2-C-type (type e))))
 (defmethod pointer? (arg) nil)
 
-(defmethod C-type ((arg C-var)) (slot-value arg 'type))
-
-(defgeneric gen-C-var (expr prefix))
-(defmethod gen-C-var ((type C-type) prefix)
-  (C-var type (gentemp prefix)))
-(defmethod gen-C-var ((expr expr) prefix)
-  (let* ((type (type expr))
-	 (name (gentemp prefix))
-	 (C-type
-	  (if (subtype-of? type *number*)
-	      (if (C-integer-type? expr)
-		  *C-mpz*
-		*C-mpq*)
-	    (pvs-type-2-C-type type))))
-    (C-var C-type name)))
 
 (defgeneric C-alloc (arg))
 (defmethod C-alloc ((type C-mpz))
@@ -207,7 +199,7 @@
   (list (format "~~a = malloc( sizeof(~a) );" type)))
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
-  (let ((type (C-type v))
+  (let ((type (var-type v))
 	(name (slot-value v 'name)))
     (cons
      (format nil "~a ~a;" type name)
@@ -223,27 +215,60 @@
 (defmethod C-free ((type C-mpq))
   (list "mpq_clear(~a);"))
 (defmethod C-free ((type C-type))
-  (when (pointer? C-type) (list "free(~a);")))
+  (when (pointer? type) (list "free(~a);")))
 (defmethod C-free ((v C-var))
-  (apply-argument (C-free (C-type v))
-		  (slot-value v 'name)))
+  (apply-argument (C-free (var-type v)) (var-name v)))
+
+
+
 
 
 
 (defun get-typed-copy (typeA nameA typeB nameB)
-  (if (pointer? typeA)
-      (format nil "~a(~a, ~a);" (convertor typeA typeB) nameA nameB)
-    (if (same-type typeA typeB)
-	(format nil "~a = ~a;" nameA nameB)
-      (format nil "~a = ~a(~a);" nameA (convertor typeA typeB) nameB))))
-
-(defun convertor (typeA typeB)
-  (if (same-type typeA typeB)
-      (format nil "copy_~a" typeA)
-    (format nil "~a_from_~a" typeA typeB)))
+  (cond
+   ((pointer? typeA)
+    (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
+   ((same-type typeA typeB)
+       (list (format nil "~a = ~a;" nameA nameB)))
+   (t
+       (list (format nil "~a = ~a;" nameA (format nil (convertor typeA typeB) nameB))))))
 
 
+(defgeneric convertor (typeA typeB))
+(defmethod convertor ((typeA C-mpz) (typeB C-mpz)) (list "mpz_set(~a, ~a);"))
+(defmethod convertor ((typeA C-mpz) (typeB C-mpq)) (list "mpq_get_num(~a, ~a);"))
+(defmethod convertor ((typeA C-mpz) (typeB C-uli)) (list "mpz_set_ui(~a, ~a);"))
+(defmethod convertor ((typeA C-mpz) (typeB C-int)) (list "mpz_set_si(~a, (long) ~a);"))
+(defmethod convertor ((typeA C-mpq) (typeB C-mpq)) (list "mpq_set(~a, ~a);"
+							 "mpq_canonicalize(~a);"))
+(defmethod convertor ((typeA C-mpq) (typeB C-mpz)) (list "mpq_set_z(~a, ~a);"
+							 "mpq_canonicalize(~a);"))
+(defmethod convertor ((typeA C-mpq) (typeB C-uli)) (list "mpq_set_d(~a, (double) ~a );"
+							 "mpq_canonicalize(~a);"))
+(defmethod convertor ((typeA C-mpq) (typeB C-int)) (list "mpq_set_d(~a, (double) ~a );"
+							 "mpq_canonicalize(~a);"))
+(defmethod convertor ((typeA C-uli) (typeB C-mpz)) "mpz_get_ui(~a)")
+(defmethod convertor ((typeA C-int) (typeB C-mpz)) "( (int) mpz_get_si(~a) )")
+(defmethod convertor ((typeA C-uli) (typeB C-mpq)) "( (unsigned long) mpq_get_d(~a) )")
+(defmethod convertor ((typeA C-int) (typeB C-mpq)) "( (int) mpq_get_d(~a) )")
+(defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
+(defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
+(defmethod convertor (typeA typeB)
+  (let ((args-str (if (pointer? typeA) "~a, ~a" "~a")))
+    (cond ((type= typeA typeB)
+	     (format nil "copy_~a(~a)" typeA args-str))
+	  (t (format nil "~a_from_~a(~a)" typeA typeB agrs-str)))))
 
+
+
+
+
+(defgeneric smaller-type (typeA typeB))
+(defmethod smaller-type ((typeA C-mpq) typeB) typeB)
+(defmethod smaller-type ((typeA C-mpz) (typeB C-mpq)) C-mpz)
+(defmethod smaller-type ((typeA C-mpz) typeB) typeB)
+(defmethod smaller-type ((typeA C-int) typeB) C-int)
+(defmethod smaller-type ((typeA C-uli) typeB) C-int)
 
 
 ;; Old functions
@@ -304,3 +329,16 @@
 ;(defmethod pvs2C-type ((type type-name) &optional tbindings)
 ;  (or (cdr (assoc type tbindings :test #'tc-eq))
 ;      (id type)))
+
+
+
+;(defmethod gen-C-var ((expr expr) prefix)
+;  (let* ((type (type expr))
+;	 (name (gentemp prefix))
+;	 (C-type
+;	  (if (subtype-of? type *number*)
+;	      (if (C-integer-type? expr)
+;		  *C-mpz*
+;		*C-mpq*)
+;	    (pvs-type-2-C-type type))))
+;    (C-var C-type name)))
