@@ -14,7 +14,6 @@
     (when entry (cdr entry))))
 
 
-
 (defun mk-C-funcall (fun args)
   (if (listp args)
       (format nil "~a(~{~a~^, ~})" fun args)
@@ -41,8 +40,8 @@
     (set-C-nonpointer result (mk-C-funcall function args))))
 
 
-(defgeneric pvs2C-add ())
-
+(defun apply-argument (instructions arg)
+  (mapcar #'(lambda (x) (format nil x arg)) instructions))
 
 
 ;; How to define addition (depending on the type)
@@ -62,14 +61,13 @@
   (let ((nop (pvs2C-primitive-op expr)))
     (if (boolean-primitive? nop)
 	(pvs2C*-boolean-primitive nop)
-      (cons (make-instance 'C-type)
+      (cons *C-type*
 	    (list (set-C-nonpointer "set" "~a" nop))))))
 
 (defun boolean-primitive? (name)
   (member name '(TRUE FALSE)))
 (defun pvs2C*-boolean-primitive (op)
-  (cons (make-instance 'C-int)
-	(format nil "~a" op)))
+  (cons *C-int* (format nil "~a" op)))
 
 
 
@@ -77,16 +75,16 @@
 (defun pvs2C*-primitive-app (expr bindings livevars)
   (let* ((op (pvs2C-primitive-op (operator expr)))
 	 (args (arguments expr))
-	 (type-args (pvs-type-2-C-type args)))
+	 (type-args (pvs-type-2-C-type args))
+	 (type-res  (pvs-type-2-C-type expr)))
     (cond ((equality-function? op args)
-	     (pvs2C*-equality-function type-args args bindings livevars))
+	     (pvs2C*-equality type-args args bindings livevars))
 	  ((boolean-function? op)
-	     (pvs2C*-boolean-function op type-args args bindings livevars))
+	     (pvs2C*-boolean op type-args args bindings livevars))
 	  ((negation-function? op args)
-	     (pvs2C*-negation-function (car type-args) (car args)
-				       bindings livevars))
-	  ((eq op 'Add)
-	     (pvs2C*-add type-args args bindings livevars))
+	     (pvs2C*-negation (car type-args) (car args) bindings livevars))
+	  ((add-function? op args)
+	     (pvs2C*-add (car type-args) (cadr type-args) type-res args bindings livevars))
 	  (t
 	     (cons (pvs-type-2-C-type expr)
 		   (list (set-C-pointer op "~a" (pvs2C args bindings livevars type-args))))))))
@@ -98,12 +96,12 @@
 		    pvsNumberFieldPred < <= > >= 
 		    pvsRealPred pvsIntegerPred pvsIntegerPred
 		    pvsRationalsPred isEven isOdd isCons isNull isMember )))
-(defun pvs2C*-boolean-function (op type-args args bindings livevars)
-  (cons (make-instance 'C-int)
+(defun pvs2C*-boolean (op type-args args bindings livevars)
+  (cons *C-int*
 	(cond ((infix-primitive? op)
 	        (pvs2C*-infix-primitive op args bindings livevars))
 	      ((comparison-function? op)
-	        (pvs2C*-comparison-function op args bindings livevars))
+	        (pvs2C*-comparison op type-args args bindings livevars))
 	      (t
 	        (mk-C-funcall op (pvs2C args bindings livevars type-args) )))))
 
@@ -113,28 +111,12 @@
   (format nil (format nil "(~~{~~a~~^ ~a ~~})" op)
 	          (pvs2C args bindings livevars (list *C-int* *C-int*))))
 
-;; ------------- Negation (1 argument - number / result number) ----------
-(defun negation-function? (name args)
-  (and (eq name 'pvsSub) (= (length args) 1)))
-(defmethod pvs2C*-negation-function ((type-arg C-int) arg bindings livevars)
-  (cons *C-int* (format nil "(-~a)" (pvs2C arg bindings livevars *C-int*))))
-(defmethod pvs2C*-negation-function ((type-arg C-mpz) arg bindings livevars)
-  (cons *C-mpz*
-	(set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*))))
-(defmethod pvs2C*-negation-function ((type-arg C-mpq) arg bindings livevars)
-  (cons *C-mpq*
-	(set-C-pointer "mpq_neg" "~a" (pvs2C arg bindings livevars *C-mpq*))))
-(defmethod pvs2C*-negation-function (type-arg arg bindings livevars)
-  (cons type-arg
-	(set-C-pointer "pvsNeg" "~a" (pvs2C arg bindings livevars type-arg))))
 
-
-
-;; -------------- Equality (2 arguments - could be anything / result int) ---------------
+;; -------- Equality (2 arguments - could be anything / result int) --------
 (defun equality-function? (name args)
   (and (eq name 'Eq) (= (length args) 2)))
-(defun pvs2C*-equality-function (type-args args bindings livevars)
-  (cons (make-instance 'C-int)
+(defun pvs2C*-equality (type-args args bindings livevars)
+  (cons *C-int*
 	(pvs2C-eq (car type-args) (cadr type-args)
 		  (car args) (cadr args)
 		  bindings livevars)))
@@ -195,35 +177,91 @@
 ;; -------- Comparison (2 arguments - numbers / result int) ---------------
 (defun comparison-function? (name)
   (member name '(< <= > >=)))
-(defun pvs2C*-comparison-function (op type-args args bindings livevars)
-  (let ((aux (pvs2C-comp (car type-args) (cadr type-args) op)))
-    (cons *C-int*
-	  (format nil (car aux)
-		  (pvs2C (car  args) binfings livevars (cadr aux) )
-		  (pvs2C (cadr args) binfings livevars (caddr aux))))))
+(defun pvs2C*-comparison (op type-args args bindings livevars)
+  (let* ((aux (pvs2C-comp (car type-args) (cadr type-args) op))
+	 (args (pvs2C args bindings livevars (cdr aux))))
+    (format nil (car aux) (car args) (cadr args))))
 
 (defgeneric pvs2C-comp (typeA typeB op))
-
 (defmethod pvs2C-comp ((typeA C-mpq) typeB op)
-  (list (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op) *C-mpq* *C-mpq*))
+  (cons (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op)
+	(list *C-mpq* *C-mpq*)))
 (defmethod pvs2C-comp (typeA (typeB C-mpq) op)
-  (list (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op) *C-mpq* *C-mpq*))
-
+  (cons (format nil "(mpq_cmp(~~a, ~~a) ~a 0)" op)
+	(list *C-mpq* *C-mpq*)))
 (defmethod pvs2C-comp ((typeA C-mpz) typeB op)
-  (list (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op) *C-mpz* *C-mpz*))
+  (cons (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op)
+	(list *C-mpz* *C-mpz*)))
 (defmethod pvs2C-comp (typeA (typeB C-mpz) op)
-  (list (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op) *C-mpz* *C-mpz*))
-
+  (cons (format nil "(mpz_cmp(~~a, ~~a) ~a 0)" op)
+	(list *C-mpz* *C-mpz*)))
 (defmethod pvs2C-comp ((typeA C-int) (typeB C-int) op)
-  (list (format nil "(~~a ~a ~~a)" op) *C-mpz* *C-mpz*))
-
+  (cons (format nil "(~~a ~a ~~a)" op)
+	(list *C-int* *C-int*)))
+(defmethod pvs2C-comp ((typeA C-uli) (typeB C-uli) op)
+  (cons (format nil "(~~a ~a ~~a)" op)
+	(list *C-uli* *C-uli*)))
 (defmethod pvs2C-comp (typeA typeB op)
-  (list (format nil "(pvsCompare(~~a, ~~a) ~a 0)" op) typeA typeB))
+  (cons (format nil "(pvsCompare(~~a, ~~a) ~a 0)" op)
+	(list typeA typeB)))
 
 
 
 
+;; ------------- Negation (1 argument - number / result number) ----------
+(defun negation-function? (name args)
+  (and (eq name 'pvsSub) (= (length args) 1)))
+(defmethod pvs2C*-negation ((type-arg C-int) arg bindings livevars)
+  (cons *C-int* (format nil "(-~a)" (pvs2C arg bindings livevars *C-int*))))
+(defmethod pvs2C*-negation ((type-arg C-uli) arg bindings livevars)
+  (cons *C-mpz*
+	(list (set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*)))))
+(defmethod pvs2C*-negation ((type-arg C-mpz) arg bindings livevars)
+  (cons *C-mpz*
+	(list (set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*)))))
+(defmethod pvs2C*-negation ((type-arg C-mpq) arg bindings livevars)
+  (cons *C-mpq*
+	(list (set-C-pointer "mpq_neg" "~a" (pvs2C arg bindings livevars *C-mpq*)))))
+(defmethod pvs2C*-negation (type-arg arg bindings livevars)
+  (cons type-arg
+	(list (set-C-pointer "pvsNeg" "~a" (pvs2C arg bindings livevars type-arg)))))
 
+
+
+
+;; -------- Arithmetic (2 arguments - numbers / result number) ---------------
+
+(defun add-function? (op args)
+  (and (eq op 'pvsAdd) (eq (length args) 2)))
+
+(defgeneric pvs2C*-add (typeA typeB typeR args bindings livevars))
+(defmethod pvs2C*-add ((typeA C-mpq) typeB typeR args bindings livevars)
+  (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
+			   (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+(defmethod pvs2C*-add (typeA (typeB C-mpq) typeR args bindings livevars)
+  (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
+			   (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+(defmethod pvs2C*-add ((typeA C-mpz) typeB typeR args bindings livevars)
+  (if (C-unsignedlong-type? (cadr args))
+      (cons *C-mpz* (list (set-C-pointer "mpq_add_ui" "~a"
+			       (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
+    (cons *C-mpz* (list (set-C-pointer "mpq_add" "~a"
+			     (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))))
+(defmethod pvs2C*-add (typeA (typeB C-mpz) typeR args bindings livevars)
+  (if (C-unsignedlong-type? (car args))
+      (cons *C-mpz* (list (set-C-pointer "mpq_add_ui" "~a"
+			       (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*)))))
+    (cons *C-mpz* (list (set-C-pointer "mpq_add" "~a"
+			     (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))))
+(defmethod pvs2C*-add (typeA typeB (typeR C-int) args bindings livevars)
+  (cons *C-int* (format nil "(~{~a~^ + ~})"
+			(pvs2C args bindings livevars (list typeA typeB)))))
+(defmethod pvs2C*-add (typeA typeB (typeR C-uli) args bindings livevars)
+  (cons *C-uli* (format nil "(~{~a~^ + ~})"
+			(pvs2C args bindings livevars (list typeA typeB)))))
+(defmethod pvs2C*-add (typeA typeB typeR args bindings livevars)
+  (cons *C-type* (list (set-C-pointer "pvsAdd" "~a"
+			    (pvs2C args bindings livevars (list typeA typeB))))))
 
 
 

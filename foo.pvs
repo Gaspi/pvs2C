@@ -3,6 +3,6 @@ BEGIN
 
  a:int = 2+3
  
- f(x:int):int = x + a
+ f(x:int, y:int):int = x + y + a
 
 END foo

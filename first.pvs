@@ -29,7 +29,6 @@ BEGIN
     else if a = 0 then 0
     else binomial(a-1, b-1) + binomial(a-1, b) endif endif
   MEASURE a
-  
 
 
 END first
