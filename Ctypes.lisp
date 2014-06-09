@@ -14,6 +14,25 @@
 (defclass C-closure  (C-type) ())
 
 
+;; Project : new classes
+;(defcl C-type () ())
+;
+;(defcl C-pointer (C-type))
+;(defcl C-number () (C-type))
+;(defcl C-integer () (C-number))
+;
+;(defcl C-int (C-integer))
+;(defcl C-uli (C-integer))
+;(defcl C-mpz (C-integer C-pointer))
+;
+;(defcl C-mpq (C-number C-pointer))
+;
+;(defcl C-pointer-type (C-pointer) ((target :type C-type  :initarg :target)))
+;(defcl C-struct (C-pointer) ((name :initarg :name)))
+;(defcl C-named-type (C-pointer) ((name :initarg :name)))
+;(defcl C-closure  (C-pointer) ())
+
+
 (defvar *C-type* (make-instance 'C-type))
 (defvar *C-int* (make-instance 'C-int))
 (defvar *C-uli* (make-instance 'C-int))
@@ -27,21 +46,19 @@
 (defvar *max-C-uli* (- (expt 2 32) 1))
 
 
-(defgeneric same-type (typeA typeB))
-(defmethod same-type ((typeA C-int) (typeB C-int)) t)
-(defmethod same-type ((typeA C-uli) (typeB C-uli)) t)
-(defmethod same-type ((typeA C-mpz) (typeB C-mpz)) t)
-(defmethod same-type ((typeA C-mpq) (typeB C-mpq)) t)
-(defmethod same-type ((typeA C-pointer) (typeB C-pointer))
-  (same-type (slot-value typeA 'target) (slot-value typeB 'target)))
-(defmethod same-type ((typeA C-struct) (typeB C-struct))
+(defgeneric type= (typeA typeB))
+(defmethod type= ((typeA C-int) (typeB C-int)) t)
+(defmethod type= ((typeA C-uli) (typeB C-uli)) t)
+(defmethod type= ((typeA C-mpz) (typeB C-mpz)) t)
+(defmethod type= ((typeA C-mpq) (typeB C-mpq)) t)
+(defmethod type= ((typeA C-pointer) (typeB C-pointer))
+  (type= (slot-value typeA 'target) (slot-value typeB 'target)))
+(defmethod type= ((typeA C-struct) (typeB C-struct))
   (string= (slot-value typeA 'name) (slot-value typeB 'name)))
-(defmethod same-type ((typeA C-named-type) (typeB C-named-type))
+(defmethod type= ((typeA C-named-type) (typeB C-named-type))
   (string= (slot-value typeA 'name) (slot-value typeB 'name)))
-(defmethod same-type ((typeA C-closure) (typeB C-closure)) t)
-(defmethod same-type (typeA typeB) nil)
-
-(defun type= (A B) (same-type A B)) ;;Alias
+(defmethod type= ((typeA C-closure) (typeB C-closure)) t)
+(defmethod type= (typeA typeB) nil)
 
 
 (defmethod print-object ((obj C-int) out) (format out "int"))
@@ -58,6 +75,12 @@
 (defmethod pointer? ((type C-int)) nil)
 (defmethod pointer? ((type C-uli)) nil)
 (defmethod pointer? ((type C-type)) t)
+
+(defgeneric integer-type? (type))
+(defmethod integer-type? ((type C-int)) t)
+(defmethod integer-type? ((type C-uli)) t)
+(defmethod integer-type? ((type C-mpz)) t)
+(defmethod integer-type? ((type C-type)) nil)
 
 
 (defmethod pvs-type-2-C-type ((type recordtype) &optional tbindings)
@@ -228,7 +251,7 @@
   (cond
    ((pointer? typeA)
     (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
-   ((same-type typeA typeB)
+   ((type= typeA typeB)
        (list (format nil "~a = ~a;" nameA nameB)))
    (t
        (list (format nil "~a = ~a;" nameA (format nil (convertor typeA typeB) nameB))))))

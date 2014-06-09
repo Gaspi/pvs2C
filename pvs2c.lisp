@@ -1,9 +1,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;   Author: Gaspard ferey
-;; --------------------------------------------------------------------
-;;   C translator
-;; --------------------------------------------------------------------
+;;     Author: Gaspard ferey
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;              C translator
+;;
+;;  Main functions :
+;;
+;;    pvs2C expr bindings livevars type
+;;      -> string representing a C-variable or expression of the
+;;         given type and with the translation of expr as a value.
+;;
+;;    pvs2C* xpr bindings livevars
+;;      -> cons of a type amd a string representing a C-variable
+;;         or expression of the given type and with the translation
+;;         of expr as a value.
+;;
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (in-package :pvs)
 
@@ -67,7 +83,7 @@
 ; --- set and conversion functions need to be implemented correctly here ---
 
 (defun convert (typeA typeB e)
-  (cond ((same-type typeA typeB) e)
+  (cond ((type= typeA typeB) e)
 	((not (pointer? typeA)) (format nil (convertor typeA typeB) e))
 	(t
 	 (let ((n (gen-C-var typeA "conv")))
@@ -183,7 +199,7 @@
     (let* ((e (pvs2C* expr bindings livevars))
 	   (type-e (car e)))
       (if (consp (cdr e))  ;; pointer? type-e
-	  (if (same-type type-e type)
+	  (if (type= type-e type)
 	      (progn
 		(add-instructions (apply-argument (cdr e) name))
 		(add-instructions *C-destructions*)
@@ -200,6 +216,14 @@
 	  (add-instructions *C-destructions*)
 	  (reset-destructions))))))
 
+(defun pvs2C3 (expr bindings livevars type name)
+  (let ((previous-instr *C-instructions*))
+    (reset-instructions)
+    (pvs2C2 expr bindings livevars type name)
+    (let ((res *C-instructions*))
+      (reset-instructions)
+      (add-instructions previous-instr)
+      res)))
 
 (defmethod pvs2C (expr bindings livevars exp-type)
   (let ((name (getConstantName expr bindings)))
@@ -262,8 +286,8 @@
   (let ((type (pvs-type-2-C-type expr)))
     (cons type
        (if (pointer? type)
-	   (let ((op (cond ((same-type type *C-mpz*) "mpz_set_str")
-			   ((same-type type *C-mpq*) "mpq_set_str")
+	   (let ((op (cond ((type= type *C-mpz*) "mpz_set_str")
+			   ((type= type *C-mpq*) "mpq_set_str")
 			   (t "setUnknown"))))
 	     (list (format nil "~a(~~a, \"~a\");" op (number expr))))
 	 (format nil "~a" (number expr))))))

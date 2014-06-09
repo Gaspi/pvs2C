@@ -2,11 +2,14 @@ first : THEORY
 BEGIN
   
   f(x:rat) :rat = x
-  g(x:int, y:rat):rat =  x + y
+  g(x:int, y:rat):rat =  x + y + 0.5
   
   a:int = g(1, f(0))
   
   adda(i:int):int = a + i
+
+  b:rat = if true then 1 else 2 endif / if false then 2 else 3 endif
+
 
   foo(x:int):int =
     1 + if x = 0 and true and (true or false) then

@@ -87,6 +87,10 @@
 	     (pvs2C*-add (car type-args) (cadr type-args) type-res args bindings livevars))
 	  ((sub-function? op args)
 	     (pvs2C*-sub (car type-args) (cadr type-args) type-res args bindings livevars))
+	  ((times-function? op args)
+	     (pvs2C*-times (car type-args) (cadr type-args) type-res args bindings livevars))
+	  ((div-function? op args)
+	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
 	  (t
 	     (cons (pvs-type-2-C-type expr)
 		   (list (set-C-pointer op "~a" (pvs2C args bindings livevars type-args))))))))
@@ -110,7 +114,7 @@
 (defun infix-primitive? (name)
   (member name '(== && ||)))
 (defun pvs2C*-infix-primitive (op args bindings livevars)
-  (format nil (format nil "(~~{~~a~~^ ~a ~~})" op)
+  (format nil (format nil "(~~{~~a~~^ ~a ~~})" (if (eq op '||) "||" op))
 	          (pvs2C args bindings livevars (list *C-int* *C-int*))))
 
 
@@ -207,16 +211,19 @@
 (defun add-function? (op args)
   (and (eq op 'pvsAdd) (eq (length args) 2)))
 (defun pvs2C*-add (typeA typeB typeR args bindings livevars)
-  (cond ((or (same-type typeA *C-mpq*) (same-type typeB *C-mpq*))
+  (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
 	   (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
 				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
-	((or (same-type typeA *C-mpz*) (same-type typeB *C-mpz*))
-	   (if (C-unsignedlong-type? (cadr args))
-	       (cons *C-mpz* (list (set-C-pointer "mpz_add_ui" "~a"
-					(pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
-	     (cons *C-mpz* (list (set-C-pointer "mpz_add" "~a"
-				      (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))))
-	((or (same-type typeR *C-int*) (same-type typeB *C-uli*))
+	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*) (type= typeR *C-mpz*))
+	   (cond ((C-unsignedlong-type? (cadr args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_add_ui" "~a"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+		 ((C-unsignedlong-type? (car args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_add_ui" "~a"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
+		 ((cons *C-mpz* (list (set-C-pointer "mpz_add" "~a"
+					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+	((or (type= typeR *C-int*) (type= typeR *C-uli*))
 	   (cons typeR (format nil "(~{~a~^ + ~})"
 				 (pvs2C args bindings livevars (list typeA typeB)))))
 	(t (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
@@ -226,19 +233,22 @@
 (defun sub-function? (op args)
   (and (eq op 'pvsSub) (eq (length args) 2)))
 (defun pvs2C*-sub (typeA typeB typeR args bindings livevars)
-  (cond ((or (same-type typeA *C-mpq*) (same-type typeB *C-mpq*))
+  (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
 	   (cons *C-mpq* (list (set-C-pointer "mpq_sub" "~a"
 				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
-	((or (same-type typeA *C-mpz*) (same-type typeB *C-mpz*))
+	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*))
 	 (cond ((C-unsignedlong-type? (car args))
-		   (cons *C-mpz* (list (set-C-pointer "mpz_ui_sub" "~a"
-					    (pvs2C args bindings livevars (list *C-uli* *C-mpz*))))))
+		   (cons *C-mpz*
+			 (list (set-C-pointer "mpz_ui_sub" "~a"
+				    (pvs2C args bindings livevars (list *C-uli* *C-mpz*))))))
 	       ((C-unsignedlong-type? (cadr args))
-		   (cons *C-mpz* (list (set-C-pointer "mpz_sub_ui" "~a"
-					    (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
-	       (t  (cons *C-mpz* (list (set-C-pointer "mpz_sub" "~a"
-					    (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
-	((or (same-type typeR *C-int*) (same-type typeB *C-uli*))
+		   (cons *C-mpz*
+			 (list (set-C-pointer "mpz_sub_ui" "~a"
+				    (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+	       (t  (cons *C-mpz*
+			 (list (set-C-pointer "mpz_sub" "~a"
+				    (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+	((or (type= typeR *C-int*) (type= typeR *C-uli*))
 	   (cons typeR (format nil "(~{~a~^ + ~})"
 				 (pvs2C args bindings livevars (list typeA typeB)))))
 	(t (cons *C-mpq* (list (set-C-pointer "mpq_sub" "~a"
@@ -246,9 +256,62 @@
 
 
 
+(defun times-function? (op args)
+  (and (eq op 'pvsTimes) (eq (length args) 2)))
+(defun pvs2C*-times (typeA typeB typeR args bindings livevars)
+  (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
+	   (cons *C-mpq* (list (set-C-pointer "mpq_mul" "~a"
+				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*) (type= typeR *C-mpz*))
+	   (cond ((C-unsignedlong-type? (cadr args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_ui" "~a"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+		 ((C-unsignedlong-type? (car args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_ui" "~a"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
+		 ((C-int-type? (cadr args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_si" "~a"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-int*))))))
+		 ((C-int-type? (car args))
+		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_si" "~a"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-int*))))))
+		 ((cons *C-mpz* (list (set-C-pointer "mpz_mul" "~a"
+					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+	((or (type= typeR *C-int*) (type= typeR *C-uli*))
+	   (cons typeR (format nil "(~{~a~^ * ~})"
+				 (pvs2C args bindings livevars (list typeA typeB)))))
+	(t (cons *C-mpq* (list (set-C-pointer "mpq_mul" "~a"
+			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
 
 
-
+(defun div-function? (op args)
+  (and (eq op 'pvsDiv) (eq (length args) 2)))
+(defun pvs2C*-div (typeA typeB typeR args bindings livevars)
+  (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
+	   (cons *C-mpq* (list (set-C-pointer "mpq_div" "~a"
+				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+	((and (or (type= typeA *C-mpz*) (type= typeB *C-mpz*)) (integer-type? typeR))
+	 (cond ((C-unsignedlong-type? (car args))
+		   (cons *C-mpz*
+			 (list (set-C-pointer "mpz_divexact_ui" "~a"
+				    (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
+	       ((C-unsignedlong-type? (cadr args))
+		   (cons *C-mpz*
+			 (list (set-C-pointer "mpz_divexact_ui" "~a"
+				    (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+	       (t  (cons *C-mpz*
+			 (list (set-C-pointer "mpz_divexact" "~a"
+				    (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+	((or (type= typeR *C-int*) (type= typeR *C-uli*))
+	   (cons typeR (format nil "(~{~a~^ / ~})"
+				 (pvs2C args bindings livevars (list typeA typeB)))))
+	((and (integer-type? typeA) (integer-type? typeB))
+	 (cons *C-mpq*
+	       (append (pvs2C3 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)")
+		       (pvs2C3 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)")
+		       (list "mpq_canonicalize(~a);"))))
+	(t (cons *C-mpq* (list (set-C-pointer "mpq_div" "~a"
+			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
 
 
 
