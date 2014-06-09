@@ -20,25 +20,10 @@
     (format nil "~a(~a)" fun args)))
 
 ;; Setting C variables to values
-(defun set-C-pointer (function result args)
-  (format nil "~a;"
-	  (mk-C-funcall function (append (list result) args))))
-
-(defun set-C-nonpointer (result expr)
-  (if result
-      (format nil "~a = ~a;" result expr)
-    (format nil "~a" expr)))
-
-
-(defun set-C-var (copy result expr)
-  (if (pointer? result)
-      (set-C-pointer copy result expr)
-    (set-C-nonpointer result expr)))
-(defun set-C-funres (function result args)
-  (if (pointer? result)
-      (set-C-pointer function result args)
-    (set-C-nonpointer result (mk-C-funcall function args))))
-
+(defun set-C-pointer (function args)
+  (let ((C-args (cons "~a" (if (listp args) args (list args)))))
+    (list (format nil "~a;"
+		  (mk-C-funcall function C-args)))))
 
 (defun apply-argument (instructions arg)
   (mapcar #'(lambda (x) (format nil x arg)) instructions))
@@ -56,13 +41,14 @@
 
 
 
+
 ;; ------ Primitive constant (now only boolean) --------
 (defun pvs2C*-primitive-cste (expr bindings livevars)
   (let ((nop (pvs2C-primitive-op expr)))
     (if (boolean-primitive? nop)
 	(pvs2C*-boolean-primitive nop)
-      (cons *C-type*
-	    (list (set-C-nonpointer "set" "~a" nop))))))
+      (cons *C-type*   ;; If unimplemented ...
+	    (list (format nil "[set](~~a, ~a);" nop))))))
 
 (defun boolean-primitive? (name)
   (member name '(TRUE FALSE)))
@@ -93,7 +79,7 @@
 	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
 	  (t
 	     (cons (pvs-type-2-C-type expr)
-		   (list (set-C-pointer op "~a" (pvs2C args bindings livevars type-args))))))))
+		   (set-C-pointer op (pvs2C args bindings livevars type-args)))))))
 
 
 ;; ------------- Boolean functions (2 arguments - number or bool / result bool) ----------
@@ -124,7 +110,7 @@
 (defun pvs2C*-equality (type-args args bindings livevars)
   (let* ((res (pvs2C-eq (car type-args) (cadr type-args)))
 	 (C-args (pvs2C args bindings livevars (cdr res))))
-    (cons *C-int* (format nil (car res) (car C-args) (cdr C-args)))))
+    (cons *C-int* (format nil (car res) (car C-args) (cadr C-args)))))
 
 (defgeneric pvs2C-eq (typeA typeB))
 (defmethod pvs2C-eq ((typeA C-mpq) typeB)
@@ -193,16 +179,16 @@
   (cons *C-int* (format nil "(-~a)" (pvs2C arg bindings livevars *C-int*))))
 (defmethod pvs2C*-negation ((type-arg C-uli) arg bindings livevars)
   (cons *C-mpz*
-	(list (set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*)))))
+	(set-C-pointer "mpz_neg" (pvs2C arg bindings livevars *C-mpz*))))
 (defmethod pvs2C*-negation ((type-arg C-mpz) arg bindings livevars)
   (cons *C-mpz*
-	(list (set-C-pointer "mpz_neg" "~a" (pvs2C arg bindings livevars *C-mpz*)))))
+	(set-C-pointer "mpz_neg" (pvs2C arg bindings livevars *C-mpz*))))
 (defmethod pvs2C*-negation ((type-arg C-mpq) arg bindings livevars)
   (cons *C-mpq*
-	(list (set-C-pointer "mpq_neg" "~a" (pvs2C arg bindings livevars *C-mpq*)))))
+	(set-C-pointer "mpq_neg" (pvs2C arg bindings livevars *C-mpq*))))
 (defmethod pvs2C*-negation (type-arg arg bindings livevars)
   (cons type-arg
-	(list (set-C-pointer "pvsNeg" "~a" (pvs2C arg bindings livevars type-arg)))))
+	(set-C-pointer "pvsNeg" (pvs2C arg bindings livevars type-arg))))
 
 
 
@@ -212,47 +198,41 @@
   (and (eq op 'pvsAdd) (eq (length args) 2)))
 (defun pvs2C*-add (typeA typeB typeR args bindings livevars)
   (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
-	   (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
-				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+	   (cons *C-mpq* (set-C-pointer "mpq_add"
+				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))
 	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*) (type= typeR *C-mpz*))
 	   (cond ((C-unsignedlong-type? (cadr args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_add_ui" "~a"
-					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_add_ui"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
 		 ((C-unsignedlong-type? (car args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_add_ui" "~a"
-					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
-		 ((cons *C-mpz* (list (set-C-pointer "mpz_add" "~a"
-					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_add_ui"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*)))))
+		 ((cons *C-mpz* (set-C-pointer "mpz_add"
+					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))))
 	((or (type= typeR *C-int*) (type= typeR *C-uli*))
 	   (cons typeR (format nil "(~{~a~^ + ~})"
 				 (pvs2C args bindings livevars (list typeA typeB)))))
-	(t (cons *C-mpq* (list (set-C-pointer "mpq_add" "~a"
-			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
+	(t (cons *C-mpq* (set-C-pointer "mpq_add"
+			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))
 
 
 (defun sub-function? (op args)
   (and (eq op 'pvsSub) (eq (length args) 2)))
 (defun pvs2C*-sub (typeA typeB typeR args bindings livevars)
-  (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
-	   (cons *C-mpq* (list (set-C-pointer "mpq_sub" "~a"
-				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
-	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*))
-	 (cond ((C-unsignedlong-type? (car args))
-		   (cons *C-mpz*
-			 (list (set-C-pointer "mpz_ui_sub" "~a"
-				    (pvs2C args bindings livevars (list *C-uli* *C-mpz*))))))
-	       ((C-unsignedlong-type? (cadr args))
-		   (cons *C-mpz*
-			 (list (set-C-pointer "mpz_sub_ui" "~a"
-				    (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
-	       (t  (cons *C-mpz*
-			 (list (set-C-pointer "mpz_sub" "~a"
-				    (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
-	((or (type= typeR *C-int*) (type= typeR *C-uli*))
-	   (cons typeR (format nil "(~{~a~^ + ~})"
-				 (pvs2C args bindings livevars (list typeA typeB)))))
-	(t (cons *C-mpq* (list (set-C-pointer "mpq_sub" "~a"
-			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
+  (cond ((notany #'C-pointer? (list typeA typeB typeR))
+	    (cons typeR (format nil "(~{~a~^ + ~})"
+				(pvs2C args bindings livevars (list typeA typeB)))))
+	((and (C-integer? typeB) (C-unsignedlong-type? (car args)))
+	    (cons *C-mpz* (set-C-pointer "mpz_ui_sub"
+			       (pvs2C args bindings livevars (list *C-uli* *C-mpz*)))))
+	((and (C-integer? typeA) (C-unsignedlong-type? (cadr args)))
+	    (cons *C-mpz* (set-C-pointer "mpz_sub_ui"
+			       (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
+	((and (C-integer? typeA) (C-integer? typeB))
+	    (cons *C-mpz* (set-C-pointer "mpz_sub"
+			       (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))
+	(t (cons *C-mpq* (set-C-pointer "mpq_sub"
+			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))
 
 
 
@@ -260,107 +240,55 @@
   (and (eq op 'pvsTimes) (eq (length args) 2)))
 (defun pvs2C*-times (typeA typeB typeR args bindings livevars)
   (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
-	   (cons *C-mpq* (list (set-C-pointer "mpq_mul" "~a"
-				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
+	   (cons *C-mpq* (set-C-pointer "mpq_mul"
+				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))
 	((or (type= typeA *C-mpz*) (type= typeB *C-mpz*) (type= typeR *C-mpz*))
 	   (cond ((C-unsignedlong-type? (cadr args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_ui" "~a"
-					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_mul_ui"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
 		 ((C-unsignedlong-type? (car args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_ui" "~a"
-					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_mul_ui"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*)))))
 		 ((C-int-type? (cadr args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_si" "~a"
-					     (pvs2C args bindings livevars (list *C-mpz* *C-int*))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_mul_si"
+					     (pvs2C args bindings livevars (list *C-mpz* *C-int*)))))
 		 ((C-int-type? (car args))
-		    (cons *C-mpz* (list (set-C-pointer "mpz_mul_si" "~a"
-					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-int*))))))
-		 ((cons *C-mpz* (list (set-C-pointer "mpz_mul" "~a"
-					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
+		    (cons *C-mpz* (set-C-pointer "mpz_mul_si"
+					     (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-int*)))))
+		 ((cons *C-mpz* (set-C-pointer "mpz_mul"
+					   (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))))
 	((or (type= typeR *C-int*) (type= typeR *C-uli*))
 	   (cons typeR (format nil "(~{~a~^ * ~})"
 				 (pvs2C args bindings livevars (list typeA typeB)))))
-	(t (cons *C-mpq* (list (set-C-pointer "mpq_mul" "~a"
-			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
+	(t (cons *C-mpq* (set-C-pointer "mpq_mul"
+			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))
 
 
 (defun div-function? (op args)
   (and (eq op 'pvsDiv) (eq (length args) 2)))
 (defun pvs2C*-div (typeA typeB typeR args bindings livevars)
   (cond ((or (type= typeA *C-mpq*) (type= typeB *C-mpq*))
-	   (cons *C-mpq* (list (set-C-pointer "mpq_div" "~a"
-				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))
-	((and (or (type= typeA *C-mpz*) (type= typeB *C-mpz*)) (integer-type? typeR))
-	 (cond ((C-unsignedlong-type? (car args))
-		   (cons *C-mpz*
-			 (list (set-C-pointer "mpz_divexact_ui" "~a"
-				    (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*))))))
-	       ((C-unsignedlong-type? (cadr args))
-		   (cons *C-mpz*
-			 (list (set-C-pointer "mpz_divexact_ui" "~a"
-				    (pvs2C args bindings livevars (list *C-mpz* *C-uli*))))))
-	       (t  (cons *C-mpz*
-			 (list (set-C-pointer "mpz_divexact" "~a"
-				    (pvs2C args bindings livevars (list *C-mpz* *C-mpz*))))))))
-	((or (type= typeR *C-int*) (type= typeR *C-uli*))
-	   (cons typeR (format nil "(~{~a~^ / ~})"
+	   (cons *C-mpq* (set-C-pointer "mpq_div"
+				    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))
+	((notany #'C-pointer? (list typeA typeB typeR))
+	    (cons typeR (format nil "(~{~a~^ / ~})"
 				 (pvs2C args bindings livevars (list typeA typeB)))))
-	((and (integer-type? typeA) (integer-type? typeB))
-	 (cons *C-mpq*
+	((and (C-integer? typeB) (C-integer? typeR) (C-unsignedlong-type? (car args)))
+	    (cons *C-mpz* (set-C-pointer "mpz_divexact_ui"
+			       (pvs2C (reverse args) bindings livevars (list *C-mpz* *C-uli*)))))
+	((and (C-integer? typeA) (C-integer? typeR) (C-unsignedlong-type? (cadr args)))
+	    (cons *C-mpz* (set-C-pointer "mpz_divexact_ui"
+			       (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
+	((every #'C-integer? (list typeA typeB typeC))
+	    (cons *C-mpz* (set-C-pointer "mpz_divexact"
+			       (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))
+	((and (C-integer? typeA) (C-integer? typeB))
+	    (cons *C-mpq*
 	       (append (pvs2C3 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)")
 		       (pvs2C3 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)")
 		       (list "mpq_canonicalize(~a);"))))
-	(t (cons *C-mpq* (list (set-C-pointer "mpq_div" "~a"
-			    (pvs2C args bindings livevars (list *C-mpq* *C-mpq*))))))))
+	(t (cons *C-mpq* (set-C-pointer "mpq_div"
+			      (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))
 
 
 
-
-
-
-
-;; Reminder of *pvs2cl-primitives*  :
-; =  equalities
-; /=  notequal
-; TRUE  booleans
-; FALSE  booleans
-; IMPLIES  booleans
-; =>  booleans
-; <=>  booleans
-; AND  booleans
-; &  booleans
-; OR  booleans
-; NOT  booleans
-; WHEN  booleans
-; IFF  booleans
-; +  number_fields
-; -  number_fields
-; *  number_fields
-; /  number_fields
-; number_field_pred  number_fields
-; <  reals
-; <=  reals
-; >  reals
-; >=  reals
-; real_pred  reals
-; integer_pred  integers
-; integer?  integers
-; rational_pred  rationals
-; floor  floor_ceil
-; ceiling  floor_ceil
-; rem  modulo_arithmetic
-; ndiv  modulo_arithmetic
-; even?  integers
-; odd?  integers
-; cons  list_adt
-; car  list_adt
-; cdr  list_adt
-; cons?  list_adt
-; null  list_adt
-; null?  list_adt
-; restrict  restrict
-; length  list_props
-; member  list_props
-; nth  list_props
-; append  list_props
-; reverse  list_props

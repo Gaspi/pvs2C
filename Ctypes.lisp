@@ -3,39 +3,39 @@
 
 
 ;; structure to represent the C variables
-(defclass C-type () ())
-(defclass C-int (C-type) ())
-(defclass C-uli (C-type) ())
-(defclass C-mpz (C-type) ())
-(defclass C-mpq (C-type) ())
-(defclass C-pointer (C-type) ((target :type C-type  :initarg :target)))
-(defclass C-struct (C-type) ((name :initarg :name)))
-(defclass C-named-type (C-type) ((name :initarg :name)))
-(defclass C-closure  (C-type) ())
+;(defclass C-type () ())
+;(defclass C-int (C-type) ())
+;(defclass C-uli (C-type) ())
+;(defclass C-mpz (C-type) ())
+;(defclass C-mpq (C-type) ())
+;(defclass C-pointer-type (C-type) ((target :type C-type  :initarg :target)))
+;(defclass C-struct (C-type) ((name :initarg :name)))
+;(defclass C-named-type (C-type) ((name :initarg :name)))
+;(defclass C-closure  (C-type) ())
 
 
 ;; Project : new classes
-;(defcl C-type () ())
-;
-;(defcl C-pointer (C-type))
-;(defcl C-number () (C-type))
-;(defcl C-integer () (C-number))
-;
-;(defcl C-int (C-integer))
-;(defcl C-uli (C-integer))
-;(defcl C-mpz (C-integer C-pointer))
-;
-;(defcl C-mpq (C-number C-pointer))
-;
-;(defcl C-pointer-type (C-pointer) ((target :type C-type  :initarg :target)))
-;(defcl C-struct (C-pointer) ((name :initarg :name)))
-;(defcl C-named-type (C-pointer) ((name :initarg :name)))
-;(defcl C-closure  (C-pointer) ())
+(defcl C-type ())
+
+(defcl C-pointer (C-type))
+(defcl C-number (C-type))
+(defcl C-integer (C-number))
+
+(defcl C-int (C-integer))
+(defcl C-uli (C-integer))
+(defcl C-mpz (C-integer C-pointer))
+
+(defcl C-mpq (C-number C-pointer))
+
+(defcl C-pointer-type (C-pointer) (target))
+(defcl C-struct (C-pointer) (name))
+(defcl C-named-type (C-pointer) (name))
+(defcl C-closure  (C-pointer))
 
 
 (defvar *C-type* (make-instance 'C-type))
 (defvar *C-int* (make-instance 'C-int))
-(defvar *C-uli* (make-instance 'C-int))
+(defvar *C-uli* (make-instance 'C-uli))
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
 
@@ -46,12 +46,11 @@
 (defvar *max-C-uli* (- (expt 2 32) 1))
 
 
-(defgeneric type= (typeA typeB))
 (defmethod type= ((typeA C-int) (typeB C-int)) t)
 (defmethod type= ((typeA C-uli) (typeB C-uli)) t)
 (defmethod type= ((typeA C-mpz) (typeB C-mpz)) t)
 (defmethod type= ((typeA C-mpq) (typeB C-mpq)) t)
-(defmethod type= ((typeA C-pointer) (typeB C-pointer))
+(defmethod type= ((typeA C-pointer-type) (typeB C-pointer-type))
   (type= (slot-value typeA 'target) (slot-value typeB 'target)))
 (defmethod type= ((typeA C-struct) (typeB C-struct))
   (string= (slot-value typeA 'name) (slot-value typeB 'name)))
@@ -65,22 +64,11 @@
 (defmethod print-object ((obj C-uli) out) (format out "unsigned long int"))
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
 (defmethod print-object ((obj C-mpq) out) (format out "mpq_t"))
-(defmethod print-object ((obj C-pointer) out) (format out "~a*" (slot-value obj 'target)))
+(defmethod print-object ((obj C-pointer-type) out) (format out "~a*" (slot-value obj 'target)))
 (defmethod print-object ((obj C-struct) out) (format out "struct ~a" (slot-value obj 'name)))
 (defmethod print-object ((obj C-named-type) out) (format out "~a" (slot-value obj 'name)))
 (defmethod print-object ((obj C-closure) out) (format out "pvsClosure"))
 (defmethod print-object ((obj C-type) out) (format out "[Abstract C type]"))
-
-(defgeneric pointer? (type))
-(defmethod pointer? ((type C-int)) nil)
-(defmethod pointer? ((type C-uli)) nil)
-(defmethod pointer? ((type C-type)) t)
-
-(defgeneric integer-type? (type))
-(defmethod integer-type? ((type C-int)) t)
-(defmethod integer-type? ((type C-uli)) t)
-(defmethod integer-type? ((type C-mpz)) t)
-(defmethod integer-type? ((type C-type)) nil)
 
 
 (defmethod pvs-type-2-C-type ((type recordtype) &optional tbindings)
@@ -107,7 +95,7 @@
 
 (defmethod pvs-type-2-C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
-      (make-instance 'C-pointer :target (pvs-type-2-C-type (range type)))
+      (make-instance 'C-pointer-type :target (pvs-type-2-C-type (range type)))
     (make-instance 'C-closure)))
 
 (defmethod pvs-type-2-C-type ((type subtype) &optional tbindings)
@@ -137,13 +125,13 @@
 
 
 (defun is-expr-subtype? (expr type)
-  (let ((*generate-tccs* t))
-    (some #'(lambda (jty) (subtype-of? jty type))
-	  (judgement-types+ expr))))
+  (some #'(lambda (jty) (subtype-of? jty type))
+	(get-PVS-types expr)))
+
 
 (defun get-bounds (expr)
-  (let ((*generate-tccs* t))
-    (get-inner-bounds-list (judgement-types+ expr) nil nil)))
+  (get-inner-bounds-list (get-PVS-types expr) nil nil))
+
 (defun get-inner-bounds-list (l inf sup)
   (if (consp l)
       (let ((range (subrange-index (car l))))
@@ -152,8 +140,8 @@
 		  (nsup (cadr range)))
 	      (get-inner-bounds-list
 	                  (cdr l)
-			  (when inf (max inf ninf) ninf)
-			  (when sup (min sup nsup) nsup)))
+			  (if inf (max inf ninf) ninf)
+			  (if sup (min sup nsup) nsup)))
 	  (get-inner-bounds-list (cdr l) inf sup)))
     (list inf sup)))
 
@@ -197,6 +185,10 @@
     nil))
 
 
+(defun get-PVS-types (expr)
+  (let ((*generate-tccs* t))
+    (cons (type expr) (judgement-types+ expr))))
+
 
 
 (defstruct C-var name type)
@@ -208,9 +200,9 @@
 (defun gen-C-var (type prefix)
   (C-var type (gentemp prefix)))
 
-(defmethod pointer? ((obj C-var)) (pointer? (var-type obj)))
-(defmethod pointer? ((e expr)) (pointer? (pvs-type-2-C-type (type e))))
-(defmethod pointer? (arg) nil)
+
+(defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
+(defmethod pointer? ((e expr)) (C-pointer? (pvs-type-2-C-type (type e))))
 
 
 (defgeneric C-alloc (arg))
@@ -218,7 +210,7 @@
   (list "mpz_init(~a);"))
 (defmethod C-alloc ((type C-mpq))
   (list "mpq_init(~a);"))
-(defmethod C-alloc ((type C-pointer))
+(defmethod C-alloc ((type C-pointer-type))
   (list (format "~~a = malloc( sizeof(~a) );" type)))
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
@@ -238,7 +230,7 @@
 (defmethod C-free ((type C-mpq))
   (list "mpq_clear(~a);"))
 (defmethod C-free ((type C-type))
-  (when (pointer? type) (list "free(~a);")))
+  (when (C-pointer? type) (list "free(~a);")))
 (defmethod C-free ((v C-var))
   (apply-argument (C-free (var-type v)) (var-name v)))
 
@@ -246,15 +238,12 @@
 
 
 
-
-(defun get-typed-copy (typeA nameA typeB nameB)
-  (cond
-   ((pointer? typeA)
-    (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
-   ((type= typeA typeB)
-       (list (format nil "~a = ~a;" nameA nameB)))
-   (t
-       (list (format nil "~a = ~a;" nameA (format nil (convertor typeA typeB) nameB))))))
+(defmethod get-typed-copy ( (typeA C-pointer) nameA typeB nameB)
+  (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
+(defmethod get-typed-copy (  typeA            nameA typeB nameB)
+  (list (format nil "~a = ~a;" nameA
+		(if (type= typeA typeB) nameB
+		  (format nil (convertor typeA typeB) nameB)))))
 
 
 (defgeneric convertor (typeA typeB))
@@ -277,7 +266,7 @@
 (defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
 (defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
 (defmethod convertor (typeA typeB)
-  (let ((args-str (if (pointer? typeA) "~a, ~a" "~a")))
+  (let ((args-str (if (C-pointer? typeA) "~a, ~a" "~a")))
     (cond ((type= typeA typeB)
 	     (format nil "copy_~a(~a)" typeA args-str))
 	  (t (format nil "~a_from_~a(~a)" typeA typeB agrs-str)))))
