@@ -1,13 +1,13 @@
 // C file generated from demo.pvs
 
-int pvs_a607();
+int pvs_a75();
 
-int pvs_d_a608();
+int pvs_d_a76();
 
-int pvs_b609(int x);
+int pvs_b77(int x);
 
-int pvs_d_b610(int x);
+int pvs_d_b78(int x);
 
-void pvs_incr611(int* result, int* t56622);
+void pvs_incr79(int* result, int* t55888);
 
-void pvs_d_incr612(int* result, int* t56622);
+void pvs_d_incr80(int* result, int* t55888);

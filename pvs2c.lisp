@@ -714,13 +714,6 @@
   (if (consp assign-args)
       (let* ((*lhs-args* nil)
 	     (assign-exprvar (gentemp "R"))
-	     (C-assign-expr
-	      (pvs2C (car assign-exprs)
-		     bindings
-		     (append (updateable-vars (cdr assign-exprs))
-			     (append (updateable-vars (cdr assign-args))
-				     livevars))
-		     (pvs2C-type (range type))))
 	     (newexprvar (gentemp "N"))
 	     (new-accum (pvs2C-update-nd-type
 		       type exprvar newexprvar
@@ -740,13 +733,18 @@
 	       (append (updateable-free-formal-vars (car assign-exprs))
 		       livevars) 
 		       new-accum )))
-	(add-instructions-first (list (format nil "~a ~a = ~a;"
-					(pvs2C-type (type (car assign-exprs)))
-					assign-exprvar C-assign-expr)))
+	(add-instructions-first
+	    (pvs2C2-getdef (car assign-exprs) bindings
+			  (append (updateable-vars (cdr assign-exprs))
+			     (append (updateable-vars (cdr assign-args))
+				     livevars))
+			  (pvs2C-type (type (car assign-exprs)))
+			  assign-exprvar))
 	(add-instructions-first (mapcar #'(lambda (x) (format nil "~a" x)) lhs-bindings))
 	cdr-C-output)
     (progn 
-        (add-instructions (mapcar #'(lambda (x) (format nil "~a" x)) accum))
+        (add-instructions accum)
+;;      (add-instructions (mapcar #'(lambda (x) (format nil "~a" x)) accum))
 ;;        (format nil "~:{~a ~a = ~a~%~}~a" (nreverse accum) exprvar)
 	exprvar)))
      	  
@@ -777,7 +775,7 @@
 	       (exprval (format nil "pvsSelect(~a, ~a)" expr arg1var))
 	       (newexprvar2 (gentemp "N"))
 	       (newaccum
-		(pvs2C-update-nd-type 
+		(pvs2C-update-nd-type
 		 (range type) exprvar newexprvar2
 		 restargs assign-expr bindings livevars
 		 (cons (format nil "~a ~a = ~a;" (pvs2C-type type) exprvar exprval) accum))))
