@@ -1,3 +1,19 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                C translator
+;;
+;;     Author: Gaspard ferey
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; TODO :
+;;  times, add (neg?) a corriger comme sub et div (meilleure disjonction de cas)
+;;  In Ctypes :
+;;    C-interval-type (inf sup)
+;;    *C-int*  is an instance of that with inf -2^15 and sup 2^15-1
+;;    
+;;    get-all-types expr/type  -> return all possible C type for the arg
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (in-package :pvs)
 
