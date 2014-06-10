@@ -11,12 +11,12 @@
 ;;    *C-int*  is an instance of that with inf -2^15 and sup 2^15-1
 ;;    
 ;;    get-all-types expr/type  -> return all possible C type for the arg
+;;    
+;;    
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (in-package :pvs)
-
 
 (defparameter *C-primitives* '(Eq Neq TRUE FALSE pvsImplies pvsImplies == && && || 
  ! pvsWhen pvsIff pvsAdd pvsSub pvsTimes pvsDiv pvsNumberFieldPred < <= >
@@ -45,17 +45,6 @@
   (mapcar #'(lambda (x) (format nil x arg)) instructions))
 
 
-;; How to define addition (depending on the type)
-(defgeneric add-pointer (res a b))
-(defmethod add-pointer ((res C-int) (a C-int) (b C-int)) "(\~a + \~a)")
-(defmethod add-pointer (res a b) "add-unimpl(\~a, \~a + \~a)")
-
-
-
-
-
-
-
 
 
 ;; ------ Primitive constant (now only boolean) --------
@@ -77,8 +66,8 @@
 (defun pvs2C*-primitive-app (expr bindings livevars)
   (let* ((op (pvs2C-primitive-op (operator expr)))
 	 (args (arguments expr))
-	 (type-args (pvs-type-2-C-type args))
-	 (type-res  (pvs-type-2-C-type expr)))
+	 (type-args (pvs2C-type args))
+	 (type-res  (pvs2C-type expr)))
     (cond ((equality-function? op args)
 	     (pvs2C*-equality type-args args bindings livevars))
 	  ((boolean-function? op)
@@ -94,7 +83,7 @@
 	  ((div-function? op args)
 	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
 	  (t
-	     (cons (pvs-type-2-C-type expr)
+	     (cons (pvs2C-type expr)
 		   (set-C-pointer op (pvs2C args bindings livevars type-args)))))))
 
 

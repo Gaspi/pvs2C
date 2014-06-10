@@ -23,6 +23,7 @@
 
 (defcl C-int (C-integer))
 (defcl C-uli (C-integer))
+
 (defcl C-mpz (C-integer C-pointer))
 
 (defcl C-mpq (C-number C-pointer))
@@ -51,11 +52,11 @@
 (defmethod type= ((typeA C-mpz) (typeB C-mpz)) t)
 (defmethod type= ((typeA C-mpq) (typeB C-mpq)) t)
 (defmethod type= ((typeA C-pointer-type) (typeB C-pointer-type))
-  (type= (slot-value typeA 'target) (slot-value typeB 'target)))
+  (type= (target typeA) (target typeB)))
 (defmethod type= ((typeA C-struct) (typeB C-struct))
-  (string= (slot-value typeA 'name) (slot-value typeB 'name)))
+  (string= (name typeA) (name typeB)))
 (defmethod type= ((typeA C-named-type) (typeB C-named-type))
-  (string= (slot-value typeA 'name) (slot-value typeB 'name)))
+  (string= (name typeA) (name typeB)))
 (defmethod type= ((typeA C-closure) (typeB C-closure)) t)
 (defmethod type= (typeA typeB) nil)
 
@@ -71,7 +72,7 @@
 (defmethod print-object ((obj C-type) out) (format out "[Abstract C type]"))
 
 
-(defmethod pvs-type-2-C-type ((type recordtype) &optional tbindings)
+(defmethod pvs2C-type ((type recordtype) &optional tbindings)
   (with-slots (print-type) type
     (if (type-name? print-type)
 	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
@@ -79,7 +80,7 @@
 	      (let* ((formatted-fields (loop for fld in (fields type)
 				  collect
 				  (format nil "~a ~a;" 
-					  (pvs-type-2-C-type (type fld)) (id fld))))
+					  (pvs2C-type (type fld)) (id fld))))
 		     (C-rectype-name (gentemp (format nil "pvs~a" (id print-type))))
 		     (C-rectype (format nil "struct ~a {~%~{  ~a~%~}};"
 					C-rectype-name formatted-fields)))
@@ -88,17 +89,17 @@
 		(make-instance 'C-struct :name C-rectype-name))))
 	(pvs2C-error "~%Record type ~a must be declared." type))))
 
-(defmethod pvs-type-2-C-type ((type tupletype) &optional tbindings)
+(defmethod pvs2C-type ((type tupletype) &optional tbindings)
   (make-instance 'C-named-type
 		 :name (format nil "~{!~a~^_~}" (loop for elemtype in (types type)
-				   collect (pvs-type-2-C-type elemtype)))))
+				   collect (pvs2C-type elemtype)))))
 
-(defmethod pvs-type-2-C-type ((type funtype) &optional tbindings)
+(defmethod pvs2C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
-      (make-instance 'C-pointer-type :target (pvs-type-2-C-type (range type)))
+      (make-instance 'C-pointer-type :target (pvs2C-type (range type)))
     (make-instance 'C-closure)))
 
-(defmethod pvs-type-2-C-type ((type subtype) &optional tbindings)
+(defmethod pvs2C-type ((type subtype) &optional tbindings)
   (let ((range (subrange-index type)))
     (cond ((subtype-of? type *boolean*) *C-int*)
 	  ((subtype-of? type *integer*)
@@ -106,9 +107,9 @@
 		   ((is-in-range? range *min-C-uli* *max-C-uli*) *C-uli*)
 		   (t *C-mpz*)))
 	  ((subtype-of? type *number* ) *C-mpq*)
-	  (t (pvs-type-2-C-type (find-supertype type))))))
+	  (t (pvs2C-type (find-supertype type))))))
 
-(defmethod pvs-type-2-C-type ((type type-name) &optional tbindings)
+(defmethod pvs2C-type ((type type-name) &optional tbindings)
   (with-slots (id) type
      (if (eq id 'boolean) *C-int*
        (make-instance 'C-named-type
@@ -119,8 +120,8 @@
 (defun C-type-args (operator)
   (let ((dom-type (domain (type operator))))
     (if (tupletype? dom-type)
-	(pvs-type-2-C-type (types dom-type))
-      (list (pvs-type-2-C-type dom-type)))))
+	(pvs2C-type (types dom-type))
+      (list (pvs2C-type dom-type)))))
 
 
 
@@ -165,23 +166,23 @@
   (and (C-integer-type? expr)
        (is-in-range? expr *min-C-int* *max-C-int*)))
 
-(defmethod pvs-type-2-C-type ((e number-expr) &optional tbindings)
+(defmethod pvs2C-type ((e number-expr) &optional tbindings)
   (let ((n (number e)))
     (cond ((<= *min-C-int* n *max-C-int*) *C-int*)
 	  ((<= 0 n *max-C-uli*) *C-uli*)
-	  (t (pvs-type-2-C-type (type e))))))
+	  (t (pvs2C-type (type e))))))
 
-(defmethod pvs-type-2-C-type ((e expr) &optional tbindings)
+(defmethod pvs2C-type ((e expr) &optional tbindings)
   (if (C-integer-type? e)
       (cond ((C-int-type? e) *C-int*)
 	    ((C-unsignedlong-type? e) *C-uli*)
 	    (t *C-mpz*))
-    (pvs-type-2-C-type (type e))))
+    (pvs2C-type (type e))))
 
-(defmethod pvs-type-2-C-type ((l list) &optional tbindings)
+(defmethod pvs2C-type ((l list) &optional tbindings)
   (if (consp l)
-      (cons (pvs-type-2-C-type (car l))
-	    (pvs-type-2-C-type (cdr l)))
+      (cons (pvs2C-type (car l))
+	    (pvs2C-type (cdr l)))
     nil))
 
 
@@ -202,7 +203,7 @@
 
 
 (defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
-(defmethod pointer? ((e expr)) (C-pointer? (pvs-type-2-C-type (type e))))
+(defmethod pointer? ((e expr)) (C-pointer? (pvs2C-type (type e))))
 
 
 (defgeneric C-alloc (arg))
@@ -211,7 +212,7 @@
 (defmethod C-alloc ((type C-mpq))
   (list "mpq_init(~a);"))
 (defmethod C-alloc ((type C-pointer-type))
-  (list (format "~~a = malloc( sizeof(~a) );" type)))
+  (list (format nil "~~a = malloc( sizeof(~a) );" type)))
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
   (let ((type (var-type v))
@@ -266,13 +267,12 @@
 (defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
 (defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
 (defmethod convertor (typeA typeB)
-  (let ((args-str (if (C-pointer? typeA) "~a, ~a" "~a")))
-    (cond ((type= typeA typeB)
-	     (format nil "copy_~a(~a)" typeA args-str))
-	  (t (format nil "~a_from_~a(~a)" typeA typeB agrs-str)))))
-
-
-
+  (let ((func (if (type= typeA typeB)
+		  (format nil "copy_~a" typeA)
+		(format nil "~a_from_~a" typeA typeB))))
+    (if (C-pointer? typeA)
+	(list (format nil "~a(~~a, ~~a);" func))
+      (format nil "~a(~~a)" func))))
 
 
 (defgeneric smaller-type (typeA typeB))
@@ -281,76 +281,3 @@
 (defmethod smaller-type ((typeA C-mpz) typeB) typeB)
 (defmethod smaller-type ((typeA C-int) typeB) C-int)
 (defmethod smaller-type ((typeA C-uli) typeB) C-int)
-
-
-;; Old functions
-
-
-;(defun malloc (type name) ;; other versions should be defined (for BigInt, Rationnal, etc)
-;  (cond ((subtype-of? type *integer*) (list
-;				       (format nil "mpz_t ~a;" name)
-;				       (format nil "mpz_init(~a);" name)))
-;	((subtype-of? type *number*) (list
-;				      (format nil "mpq_t ~a;" name)
-;				      (format nil "mpq_init(~a);" name)))
-;	 (t (list (format nil "~a ~a = malloc( sizeof(~a) );"
-;			  (pvs2C-type type) name (pvs2C-type type))))))
-;
-;(defun free (type name) ;; other versions should be defined (for BigInt, Rationnal, etc)
-;  (cond ((subtype-of? type *integer*) (list
-;				       (format nil "mpz_clear(~a);" name)))
-;	((subtype-of? type *number*) (list
-;				      (format nil "mpq_clear(~a);" name)))
-;	 (t (list (format nil "free(~a);" name)))))
-
-
-
-
-
-
-;(defmethod pvs2C-type ((type recordtype) &optional tbindings)
-;  (with-slots (print-type) type
-;    (if (type-name? print-type)
-;	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
-;	  (if entry (cadr entry) ;return the C-rectype-name
-;	      (let* ((formatted-fields (loop for fld in (fields type)
-;				  collect
-;				  (format nil "~a :: !~a" (id fld)
-;						(pvs2C-type (type fld)))))
-;		    (C-rectype (format nil "{ ~{~a~^, ~} }" formatted-fields))
-;		    (C-rectype-name (gentemp (format nil "pvs~a" (id print-type)))))
-;		(push (list (declaration print-type) C-rectype-name C-rectype)
-;		      *C-record-defns*)
-;		C-rectype-name)))
-;	(pvs2C-error "~%Record type ~a must be declared." type))))
-;
-;(defmethod pvs2C-type ((type tupletype) &optional tbindings)
-;  (format nil "(~{!~a~^, ~})" (loop for elemtype in (types type)
-;				   collect (pvs2C-type elemtype))))
-;
-;(defmethod pvs2C-type ((type funtype) &optional tbindings)
-;  (if (C-updateable? type)
-;      (format nil "~a*" (pvs2C-type (range type)))
-;      (format nil "~aClosure" (pvs2C-type (range type)))))
-;
-;(defmethod pvs2C-type ((type subtype) &optional tbindings)
-;  (cond ((subtype-of? type *integer*) "BigInt"  )
-;	((subtype-of? type *real*   ) "Rational")
-;	(t (pvs2C-type (find-supertype type)))))
-;
-;(defmethod pvs2C-type ((type type-name) &optional tbindings)
-;  (or (cdr (assoc type tbindings :test #'tc-eq))
-;      (id type)))
-
-
-
-;(defmethod gen-C-var ((expr expr) prefix)
-;  (let* ((type (type expr))
-;	 (name (gentemp prefix))
-;	 (C-type
-;	  (if (subtype-of? type *number*)
-;	      (if (C-integer-type? expr)
-;		  *C-mpz*
-;		*C-mpq*)
-;	    (pvs-type-2-C-type type))))
-;    (C-var C-type name)))

@@ -5,31 +5,12 @@ BEGIN
 
 % Arithmetic
 
+  Arr : TYPE = [below(10) -> below(10) ]
+
   a:below(10) = 8
-  exp2(n:below(32)):RECURSIVE below(4294967296) =
-    if n = 0 then 1 else 2 * exp2(n-1) endif
-  MEASURE n
-
   
-  decr(n:below(32)):below(32) =
-    if n = 0 then 0 else n-1 endif
-  
-  double( n: below(2147483648) ) : below(4294967296) = 2 * n
-  
-  fast_exp2(n:below(32)):RECURSIVE below(4294967296) =
-    if n = 0 then 1 else double( fast_exp2( decr(n) ) ) endif
-  MEASURE n
+  b:Arr = lambda (x:below(10)) : x
 
-
-  factorial(n:nat): RECURSIVE nat =
-    if n > 0 then n * factorial(n-1) else 1 endif
-  MEASURE n
-
-  binomial(a:nat, b:nat):RECURSIVE nat =
-    if b = 0 then 1
-    else if a = 0 then 0
-    else binomial(a-1, b-1) + binomial(a-1, b) endif endif
-  MEASURE a
-
+  incr(t:Arr) : Arr = t with [ (t(0)) := t(9) ]
 
 END demo
