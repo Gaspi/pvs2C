@@ -408,7 +408,7 @@
 		 (if (C-updateable? (type operator))
 		     (if (C-pointer? type)
 			 (list (format nil "pvsSelect(~~a, ~a, ~a);" C-op C-arg))
-		       (format nil "pvsSelect(~a, ~a);" C-op C-arg))
+		       (format nil "pvsSelect(~a, ~a)" C-op C-arg))
 		   (if (C-pointer? type)
 		       (set-C-pointer C-op C-arg)
 		     (mk-C-funcall C-op C-arg)))))))))
@@ -649,11 +649,10 @@
 	selections-C)))
 
 (defmethod pvs2C* ((expr update-expr) bindings livevars)
-  (if (C-updateable? (type (expression expr)))
-      (if (and *destructive?* (not (some #'maplet? (assignments expr))))
-	  (let* ((expression (expression expr))
-		 (assignments (assignments expr))
-		 (*livevars-table* 
+  (with-slots (expression assignments) expr
+  (if (C-updateable? (type expression))
+      (if (and *destructive?* (not (some #'maplet? assignments)))
+	  (let* ((*livevars-table* 
 		  (no-livevars? expression livevars assignments)))
 	    ;;very unrefined: uses all freevars of eventually updated expression.
 	    (cond (*livevars-table* ;; check-assign-types
@@ -667,7 +666,7 @@
 		   (pvs2C-update expr bindings livevars))))
 	  (pvs2C-update expr bindings livevars))
       (cons (pvs2C-type expr)
-	    (pvs2C (translate-update-to-if! expr) bindings livevars))))
+	    (pvs2C (translate-update-to-if! expr) bindings livevars)))))
 
 (defun pvs2C-update (expr bindings livevars)
   (with-slots (type expression assignments) expr
@@ -681,15 +680,14 @@
 			      (pvs2C-type type)
 			      exprvar)))
       (cons (pvs2C-type type)
-	    (format nil "~a"
-		    (pvs2C-update* (type expression)
-				   exprvar
-				   (mapcar #'arguments assignments)
-				   assign-exprs
-				   bindings
-				   (append (updateable-vars expression)
-					   livevars)
-				   aux))))))
+	    (pvs2C-update* (type expression)
+			   exprvar
+			   (mapcar #'arguments assignments)
+			   assign-exprs
+			   bindings
+			   (append (updateable-vars expression)
+				   livevars)
+			   aux)))))
 
 (defun pvs2C-assign-rhs (assignments bindings livevars)
   (when (consp assignments)
@@ -725,11 +723,11 @@
 				       (append (updateable-vars (cdr assign-args))
 					       livevars)))
 		       accum))
-	     (lhs-bindings (nreverse *lhs-args*))
+	     (lhs-bindings *lhs-args*)
 	     (cdr-C-output
 	      (pvs2C-update*
 	       type newexprvar
-	       (cdr assign-args)(cdr assign-exprs) bindings
+	       (cdr assign-args) (cdr assign-exprs) bindings
 	       (append (updateable-free-formal-vars (car assign-exprs))
 		       livevars) 
 		       new-accum )))
@@ -740,10 +738,10 @@
 				     livevars))
 			  (pvs2C-type (type (car assign-exprs)))
 			  assign-exprvar))
-	(add-instructions-first (mapcar #'(lambda (x) (format nil "~a" x)) lhs-bindings))
+	(add-instructions-first lhs-bindings)
 	cdr-C-output)
     (progn 
-        (add-instructions accum)
+        (add-instructions (mapcar #'(lambda (x) (format nil "~a//" x)) accum))
 ;;      (add-instructions (mapcar #'(lambda (x) (format nil "~a" x)) accum))
 ;;        (format nil "~:{~a ~a = ~a~%~}~a" (nreverse accum) exprvar)
 	exprvar)))
@@ -756,7 +754,8 @@
   (if (consp args)
       (pvs2C-update-nd-type* type expr newexprvar (car args) (cdr args) assign-expr
 			      bindings livevars accum)
-      (cons (format nil "~a ~a = ~a;" (pvs2C-type type) newexprvar assign-expr) accum)))
+    (append accum
+	    (format nil "~a ~a = ~a;\\\\" (pvs2C-type type) newexprvar assign-expr))))
 
 (defmethod pvs2C-update-nd-type* ((type funtype) expr newexprvar arg1 restargs
 				   assign-expr bindings livevars accum)
@@ -765,10 +764,16 @@
 			 bindings
 			 (append (updateable-vars restargs) livevars)
 			 (pvs2C-type (domain type)))))
-    (push (format nil "~a ~a = ~a;" (pvs2C-type (type (car arg1)))
-		                    arg1var
-				    C-arg1)
-	  *lhs-args*)
+    (setf *lhs-args* (append *lhs-args*
+			     (pvs2C2-getdef (car arg1)
+					    bindings
+					    (append (updateable-vars restargs) livevars)
+					    (pvs2C-type (domain type))
+					    arg1var)))
+;    (push (format nil "~a ~a = ~a;" (pvs2C-type (type (car arg1)))
+;		                    arg1var
+;				    C-arg1)
+;	  *lhs-args*)
     (if (consp restargs)
 	(let* (
 	       (exprvar (gentemp "E"))
@@ -946,12 +951,10 @@
       (format output  "/*~%C file generated from ~a.pvs" filename)
       (format output  "~%Make sure to link GMP and PVS.c in compilation:")
       (format output  "~%    gcc -o ~a ~a.c -lgmp" filename filename)
-;;      (format output  "~%    gcc -o ~a ~a.c -lgmp" filename filename)  ;; No need for PVS.c anymore
       (format output  "~%    ./~a~%*/" filename)
       (format outputH "// C file generated from ~a.pvs" filename)
       (format output  "~2%#include<stdio.h>")
       (format output   "~%#include<gmp.h>")
-;;      (format output   "~%#include \"PVS.h\"") ;; Not anymore
       (format output   "~%#include \"~a.h\"" filename)
       (format output   "~2%#define TRUE 1")
       (format output   "~%#define FALSE 0")
