@@ -674,23 +674,21 @@
 (defun pvs2C-update (expr bindings livevars)
   (with-slots (type expression assignments) expr
     (let* ((C-type (pvs2C-type type))
-	   (assign-exprs (mapcar #'expression assignments))
-	   (accum (pvs2C2-getdef expression bindings
+	   (assign-exprs (mapcar #'expression assignments)))
+      (cons C-type
+	    (append (pvs2C2-getdef expression bindings
 				 (append (updateable-free-formal-vars
 					    assign-exprs) ;;assign-args can be ignored
 					 livevars)
 				 (pvs2C-type type)
-				 "~a")))
-                    ;; First we create a copy of the array named exprvar
-      (cons C-type
-	    (append (get-typed-copy C-type "~a" C-type    expr)  ;; Correct that !!!
+				 "~a") ;; First we create a copy of the array named "~a"
 		    (pvs2C-update* (type expression)
 				   (mapcar #'arguments assignments)
 				   assign-exprs
 				   bindings
 				   (append (updateable-vars expression)
 					   livevars)
-				   accum ))))))
+				   nil))))))
 
 
 ;;recursion over updates in an update expression
