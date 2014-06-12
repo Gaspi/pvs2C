@@ -288,12 +288,10 @@
 	    (cons *C-mpz* (set-C-pointer "mpz_divexact"
 			       (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))
 	((and (C-integer? typeA) (C-integer? typeB))
-	    (cons *C-mpq*
-	       (append (pvs2C3 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)")
-		       (pvs2C3 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)")
+	 (cons *C-mpq*
+	       (append (pvs2C2 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)" nil)
+		       (pvs2C2 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)" nil)
 		       (list "mpq_canonicalize(~a);"))))
 	(t (cons *C-mpq* (set-C-pointer "mpq_div"
 			      (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))
-
-
 
