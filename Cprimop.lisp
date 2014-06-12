@@ -12,8 +12,6 @@
 ;;    
 ;;    get-all-types expr/type  -> return all possible C type for the arg
 ;;    
-;;    
-;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :pvs)
@@ -43,7 +41,6 @@
 
 (defun apply-argument (instructions arg)
   (mapcar #'(lambda (x) (format nil x arg)) instructions))
-
 
 
 
@@ -284,7 +281,7 @@
 	((and (C-integer? typeA) (C-integer? typeR) (C-unsignedlong-type? (cadr args)))
 	    (cons *C-mpz* (set-C-pointer "mpz_divexact_ui"
 			       (pvs2C args bindings livevars (list *C-mpz* *C-uli*)))))
-	((every #'C-integer? (list typeA typeB typeC))
+	((every #'C-integer? (list typeA typeB typeR))
 	    (cons *C-mpz* (set-C-pointer "mpz_divexact"
 			       (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))
 	((and (C-integer? typeA) (C-integer? typeB))

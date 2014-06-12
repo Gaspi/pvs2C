@@ -1,7 +1,7 @@
 first : THEORY
 BEGIN
   
-  f(x:rat) :rat = x
+  f(x:below(10)) :below(10) = x
   g(x:int, y:rat):rat =  x + y + 0.5
   
   a:int = g(1, f(0))

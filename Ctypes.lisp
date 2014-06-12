@@ -1,58 +1,48 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                C translator
+;;
+;;     Author: Gaspard ferey
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :pvs)
 
-
-;; structure to represent the C variables
-;(defclass C-type () ())
-;(defclass C-int (C-type) ())
-;(defclass C-uli (C-type) ())
-;(defclass C-mpz (C-type) ())
-;(defclass C-mpq (C-type) ())
-;(defclass C-pointer-type (C-type) ((target :type C-type  :initarg :target)))
-;(defclass C-struct (C-type) ((name :initarg :name)))
-;(defclass C-named-type (C-type) ((name :initarg :name)))
-;(defclass C-closure  (C-type) ())
-
-
-;; Project : new classes
+;; Classes to represent C types
 (defcl C-type ())
-
 (defcl C-pointer (C-type))
 (defcl C-number (C-type))
 (defcl C-integer (C-number))
-
 (defcl C-int (C-integer))
 (defcl C-uli (C-integer))
-
 (defcl C-mpz (C-integer C-pointer))
-
 (defcl C-mpq (C-number C-pointer))
-
-(defcl C-pointer-type (C-pointer) (target))
+(defcl C-pointer-type (C-pointer) (target) (size))
 (defcl C-struct (C-pointer) (name))
 (defcl C-named-type (C-pointer) (name))
 (defcl C-closure  (C-pointer))
 
-
+;; Some instances of the classes above (to avoid over-instanciating)
 (defvar *C-type* (make-instance 'C-type))
 (defvar *C-int* (make-instance 'C-int))
 (defvar *C-uli* (make-instance 'C-uli))
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
 
-;; This is C inplementation dependent
+;; These constantas are C implementation dependent
 (defvar *min-C-int* (- (expt 2 15)))
 (defvar *max-C-int* (- (expt 2 15) 1))
 (defvar *min-C-uli* 0)
 (defvar *max-C-uli* (- (expt 2 32) 1))
 
-
+;; Type equality  (mainly used to know if conversion is needed)
 (defmethod type= ((typeA C-int) (typeB C-int)) t)
 (defmethod type= ((typeA C-uli) (typeB C-uli)) t)
 (defmethod type= ((typeA C-mpz) (typeB C-mpz)) t)
 (defmethod type= ((typeA C-mpq) (typeB C-mpq)) t)
 (defmethod type= ((typeA C-pointer-type) (typeB C-pointer-type))
-  (type= (target typeA) (target typeB)))
+  (and (type= (target typeA) (target typeB))
+       (eq    (size   typeA) (size   typeB))))
 (defmethod type= ((typeA C-struct) (typeB C-struct))
   (string= (name typeA) (name typeB)))
 (defmethod type= ((typeA C-named-type) (typeB C-named-type))
@@ -60,7 +50,7 @@
 (defmethod type= ((typeA C-closure) (typeB C-closure)) t)
 (defmethod type= (typeA typeB) nil)
 
-
+;; Type printing in C syntax
 (defmethod print-object ((obj C-int) out) (format out "int"))
 (defmethod print-object ((obj C-uli) out) (format out "unsigned long int"))
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
@@ -71,7 +61,7 @@
 (defmethod print-object ((obj C-closure) out) (format out "pvsClosure"))
 (defmethod print-object ((obj C-type) out) (format out "[Abstract C type]"))
 
-
+;; Translating PVS types to C types
 (defmethod pvs2C-type ((type recordtype) &optional tbindings)
   (with-slots (print-type) type
     (if (type-name? print-type)
@@ -96,7 +86,9 @@
 
 (defmethod pvs2C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
-      (make-instance 'C-pointer-type :target (pvs2C-type (range type)))
+      (make-instance 'C-pointer-type
+		     :target (pvs2C-type (range type))
+		     :size 1)
     (make-instance 'C-closure)))
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)
@@ -205,14 +197,14 @@
 (defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
 (defmethod pointer? ((e expr)) (C-pointer? (pvs2C-type (type e))))
 
-
+;; C variables memory allocation
 (defgeneric C-alloc (arg))
 (defmethod C-alloc ((type C-mpz))
   (list "mpz_init(~a);"))
 (defmethod C-alloc ((type C-mpq))
   (list "mpq_init(~a);"))
 (defmethod C-alloc ((type C-pointer-type))
-  (list (format nil "~~a = malloc( sizeof(~a) );" type)))
+  (list (format nil "~~a = malloc( ~a * sizeof(~a) );" (size type) (target type))))
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
   (let ((type (var-type v))
@@ -221,8 +213,7 @@
      (format nil "~a ~a;" type name)
      (apply-argument (C-alloc type) name))))
 
-
-
+;; C variables memory deallocation
 (defgeneric C-free (arg))
 (defmethod C-free ((type C-int)) nil)
 (defmethod C-free ((type C-uli)) nil)
@@ -238,6 +229,7 @@
 
 
 
+;; -------- Converting a C expression to an other type --------
 
 (defmethod get-typed-copy ( (typeA C-pointer) nameA typeB nameB)
   (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))

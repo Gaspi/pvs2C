@@ -814,7 +814,8 @@
 ;;this is the only case where C-updateable? can be false, because
 ;;the given function type is not an array.  
 (defmethod C-updateable? ((texpr funtype)) ;;add enum types, subrange.
-  (and (or (simple-below? (domain texpr))(simple-upto? (domain texpr)))
+  (and (or (simple-below? (domain texpr))
+	   (simple-upto? (domain texpr)))
        (C-updateable? (range texpr))))
 
 (defmethod C-updateable? ((texpr recordtype))
@@ -833,15 +834,15 @@
 ;  (not (or (eq texpr *boolean*)
 ;	   (eq texpr *number*))))
 
-
-
 ;(defmethod C-updateable? ((texpr actual))
 ;  (C-updateable? (type-value texpr)))
 
-(defmethod C-updateable? ((texpr t))
-  t) ;;It is okay to say  C-updateable? for uninterpreted
-;;or actuals since these will not be updated destructively or otherwise.
-  
+(defmethod C-updateable? ((texpr t)) t)
+;; It is okay to say  C-updateable? for uninterpreted
+;; or actuals since these will not be updated destructively or otherwise.
+
+
+
 (defun pvs2C-theory (theory)
   (reset-instructions)
   (reset-destructions)
