@@ -29,36 +29,34 @@
 (defvar *livevars-table* nil)
 (defvar *C-record-defns* nil)
 
-(defmacro reset (array) `(setq ,array nil))
+(defmacro C-reset (array) `(setq ,array nil))
+(defmacro C-save (array) `(setq ,array (list ,array)))
+(defmacro C-load (array)
+  `(let ((res (cdr ,array)))
+     (setq ,array (car ,array))
+     res))
+
 
 ;; Instructions to allocate memory for new variables
 (defvar *C-instructions* nil)
-(defun reset-instructions () (reset *C-instructions*))
+(defun reset-instructions () (C-reset *C-instructions*))
 (defun add-instructions (instructions)
-  (setf *C-instructions* (append *C-instructions* instructions)))
+  (setq *C-instructions* (append *C-instructions* instructions)))
 (defun add-instruction (instruction)
-  (setf *C-instructions* (append *C-instructions* (list instruction))))
+  (setq *C-instructions* (append *C-instructions* (list instruction))))
 (defun add-instructions-first (instructions)
-  (setf *C-instructions* (append instructions *C-instructions*)))
+  (setq *C-instructions* (append instructions *C-instructions*)))
 
 ;; Instructions to destruct previously allocated memory
 (defvar *C-destructions* nil)
-(defun reset-destructions () (reset *C-destructions*))
+(defun reset-destructions () (C-reset *C-destructions*))
 (defun add-destructions (destructions)
   (setq *C-destructions* (append *C-destructions* destructions)))
 (defun add-destruction (destruction)
   (setq *C-destructions* (append *C-destructions* (list destruction))))
 
-;; Check this code...
-;(defvar *C-stack* nil)
-;(defun save (array)
-;  (push array *C-stack*)
-;  (reset array))
-;(defun load (array)
-;  (setf array (pop *C-stack*)))
-
 (defvar *C-definitions* nil)
-(defun reset-definitions () (setf *C-definitions* nil))
+(defun reset-definitions () (C-reset *C-definitions*))
 (defun add-definition (definition)
   (setf *C-definitions* (append *C-definitions* (list definition))))
 
@@ -250,7 +248,7 @@
 		(add-instructions (C-alloc n))
 		(add-instructions (apply-argument (cdr e) n))
 		(add-instructions *C-destructions*)
-		(reset *C-destructions*)
+		(C-reset *C-destructions*)
 	;;	(load *C-destructions*)
 		(add-destructions (C-free n))
 		(convert exp-type type n))
@@ -261,7 +259,7 @@
 		(add-instructions (C-alloc n)) ; probably empty
 		(add-instruction (format nil "~a = ~a;" n (cdr e)))
 		(add-instructions *C-destructions*)
-		(reset *C-destructions*)
+		(C-reset *C-destructions*)
 		;;(load *C-destructions*)
 		(add-destructions (C-free n)) ; probably empty
 		(convert exp-type type n))))))))
@@ -274,7 +272,7 @@
     (add-instructions (C-alloc if-name))
     (add-instructions (apply-argument if-bloc if-name))
     (add-instructions *C-destructions*)
-    (reset *C-destructions*)
+    (C-reset *C-destructions*)
     ;;(load *C-destructions*)
     (add-destructions (C-free if-name))
     (convert exp-type type if-name)))
