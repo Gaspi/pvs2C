@@ -29,13 +29,24 @@
 (defvar *livevars-table* nil)
 (defvar *C-record-defns* nil)
 
-(defmacro C-reset (array) `(setq ,array nil))
-(defmacro C-save (array) `(setq ,array (list ,array)))
-(defmacro C-load (array)
-  `(let ((res (cdr ,array)))
-     (setq ,array (car ,array))
-     res))
+(defmacro debug (array str)
+  `(when (eq ',array '*C-destructions*)
+       (break (format nil "~a ~a : ~a~%" ',str ',array ,array))))
 
+(defmacro C-reset (array)
+  `(setq ,array nil))
+(defmacro C-save (array)
+  `(setq ,array (list ,array)))
+(defmacro C-load (array)
+  `(if (listp (car ,array))
+       (let ((res (cdr ,array)))
+	 (setq ,array (car ,array))
+	 res)
+     (break)))
+(defmacro C-flush (array)
+  `(let ((res ,array))
+     (setq ,array nil)
+     res))
 
 ;; Instructions to allocate memory for new variables
 (defvar *C-instructions* nil)
@@ -58,7 +69,7 @@
 (defvar *C-definitions* nil)
 (defun reset-definitions () (C-reset *C-definitions*))
 (defun add-definition (definition)
-  (setf *C-definitions* (append *C-definitions* (list definition))))
+  (setq *C-definitions* (append *C-definitions* (list definition))))
 
 
 (defmacro pvs2C-error (msg &rest args)
@@ -112,24 +123,34 @@
 
 
 (defmethod pvs2C ((expr list) bindings livevars exp-type)
-  (let ((accum *C-destructions*))
-    (reset-destructions)
-    (pvs2C-list expr bindings livevars exp-type accum)))
+  (when (consp expr)
+    (cons (pvs2C (car expr) bindings
+		 (append (updateable-vars (cdr expr)) livevars)
+			(car exp-type))
+	  (pvs2C (cdr expr) bindings
+			(append (updateable-vars (car expr)) livevars)
+			(cdr exp-type)))))
 
-(defun pvs2C-list (l bindings livevars exp-type accum)
-  (if (consp l)
-      (let ((carExpr (pvs2C (car l) bindings
-			(append (updateable-vars (cdr l)) livevars)
-			(car exp-type)))
-	    (newAccu (append *C-destructions* accum)))
-	(reset-destructions)
-	(cons carExpr
-	      (pvs2C-list (cdr l) bindings                        ;;need car's freevars
-		     (append (updateable-vars (car l)) livevars)
-		     (cdr exp-type) newAccu)))
-    (progn
-      (add-destructions accum)
-      nil)))
+
+;;(def method pvs2C ((expr list) bindings livevars exp-type)
+;;   (let ((accum *C-destructions*))
+;;     (reset-destructions)
+;;     (pvs2C-list expr bindings livevars exp-type accum)))
+
+;; (defun pvs2C-list (l bindings livevars exp-type accum)
+;;   (if (consp l)
+;;       (let ((carExpr (pvs2C (car l) bindings
+;; 			(append (updateable-vars (cdr l)) livevars)
+;; 			(car exp-type)))
+;; 	    (newAccu (append *C-destructions* accum)))
+;; 	(reset-destructions)
+;; 	(cons carExpr
+;; 	      (pvs2C-list (cdr l) bindings                        ;;need car's freevars
+;; 		     (append (updateable-vars (car l)) livevars)
+;; 		     (cdr exp-type) newAccu)))
+;;     (progn
+;;       (add-destructions accum)
+;;    nil)))
 
 
 
@@ -186,47 +207,47 @@
 
 
 ;; Returns nothing
-;; Empty *C-destructions*
-(defun pvs2C2 (expr bindings livevars type name &optional need-malloc)
-  (when need-malloc
-    (add-instructions (C-alloc (C-var type name))))
+;; Should not empty *C-destructions*
+(defun pvs2C2-getdef (expr bindings livevars type name &optional (need-malloc t))
+  (C-save *C-destructions*)
+  (when need-malloc (add-instructions (C-alloc (C-var type name))))
   (if (not (C-pointer? type))
       (let ((e (pvs2C expr bindings livevars type)))
-	(add-instruction (format nil "~a = ~a;" name e))
-	(add-instructions *C-destructions*)
-	(reset-destructions)
-	(when need-malloc (add-destructions (C-free (C-var type name)))))
+	(when need-malloc (add-destructions (C-free (C-var type name))))
+	(cons (format nil "~a = ~a;" name e)
+	      (C-load *C-destructions*)))
     (let* ((e (pvs2C* expr bindings livevars))
 	   (type-e (car e)))
       (if (consp (cdr e))  ;; C-pointer? type-e
 	  (if (type= type-e type)
 	      (progn
-		(add-instructions (apply-argument (cdr e) name))
-		(add-instructions *C-destructions*)
-		(reset-destructions)
-		(when need-malloc (add-destructions (C-free (C-var type name)))))
+		(when need-malloc (add-destructions (C-free (C-var type name))))
+		(append (apply-argument (cdr e) name)
+			(C-load *C-destructions*)))
 	    (let ((n (gen-C-var type-e "set")))
-	      (add-instructions (C-alloc n))
-	      (add-instructions (apply-argument (cdr e) n))
-	      (add-instructions *C-destructions*)
-	      (reset-destructions)
 	      (when need-malloc (add-destructions (C-free (C-var type name))))
-	      (add-instructions (get-typed-copy type name type-e n))
-	      (add-instructions (C-free n))))
+	      (append (C-alloc n)
+		      (apply-argument (cdr e) n)
+		      (C-load *C-destructions*)
+		      (get-typed-copy type name type-e n)
+		      (C-free n))))
 	(progn
-	  (add-instructions (get-typed-copy type name type-e (cdr e)))
-	  (add-instructions *C-destructions*)
-	  (reset-destructions)
-	  (when need-malloc (add-destructions (C-free (C-var type name)))))))))
+	  (when need-malloc (add-destructions (C-free (C-var type name))))
+	  (append (get-typed-copy type name type-e (cdr e))
+		  (C-load *C-destructions*)))))))
 
-(defun pvs2C2-getdef (expr bindings livevars exp-type name &optional (need-malloc t))
-  (let ((previous-instr *C-instructions*))
-    (reset-instructions)
-    (pvs2C2 expr bindings livevars exp-type name need-malloc)
-    (let ((res *C-instructions*))
-      (reset-instructions)
-      (add-instructions previous-instr)
-      res)))
+(defun pvs2C2 (expr bindings livevars type name &optional need-malloc)
+  (add-instructions (pvs2C2 expr bindings livevars type name need-malloc)))
+
+
+;; (defun pvs2C2-getdef (expr bindings livevars exp-type name &optional (need-malloc t))
+;;   (let ((previous-instr *C-instructions*))
+;;     (reset-instructions)
+;;     (pvs2C2 expr bindings livevars exp-type name need-malloc)
+;;     (let ((res *C-instructions*))
+;;       (reset-instructions)
+;;       (add-instructions previous-instr)
+;;       res)))
 
 (defun pvs2C3 (expr bindings livevars type name)
   (let ((previous-instr *C-instructions*))
@@ -240,40 +261,37 @@
 (defmethod pvs2C (expr bindings livevars exp-type)
   (let ((name (getConstantName expr bindings)))
     (if name (convert exp-type (pvs2C-type (car name)) (cdr name))
-     ;; (progn (save *C-destructions*)
+      (progn
+	(C-save *C-destructions*)
 	(let* ((e (pvs2C* expr bindings livevars)) ;; Returns an instructions (ends with *)
 	       (type (car e)))
-	  (if (consp (cdr e))
+	  (if (listp (cdr e))
 	      (let ((n (gen-C-var type "aux")))
 		(add-instructions (C-alloc n))
 		(add-instructions (apply-argument (cdr e) n))
-		(add-instructions *C-destructions*)
-		(C-reset *C-destructions*)
-	;;	(load *C-destructions*)
+		(add-instructions (C-load *C-destructions*))
+		;; (C-reset *C-destructions*)
 		(add-destructions (C-free n))
 		(convert exp-type type n))
-	    (if (not *C-destructions*)  ; If it's a very simple expression
-		;;(progn (load *C-destructions*)
-		       (convert exp-type type (cdr e))
+	    (if (not (cdr *C-destructions*))  ; If it was a simple expression (no destructions)
+		(progn (C-load *C-destructions*)
+		       (convert exp-type type (cdr e)))
 	      (let ((n (gen-C-var type "aux")))
 		(add-instructions (C-alloc n)) ; probably empty
 		(add-instruction (format nil "~a = ~a;" n (cdr e)))
-		(add-instructions *C-destructions*)
-		(C-reset *C-destructions*)
-		;;(load *C-destructions*)
+		(add-instructions (C-load *C-destructions*))
 		(add-destructions (C-free n)) ; probably empty
-		(convert exp-type type n))))))))
-
+		(convert exp-type type n)))))))))
+  
 (defmethod pvs2C ((expr if-expr) bindings livevars exp-type)
-  ;;(save *C-destructions*)
+  (C-save *C-destructions*)
   (let* ((type (smaller-type (pvs2C-type expr) exp-type))
 	 (if-bloc (pvs2C-if expr bindings livevars type))
 	 (if-name (gen-C-var type "if")))
     (add-instructions (C-alloc if-name))
     (add-instructions (apply-argument if-bloc if-name))
-    (add-instructions *C-destructions*)
-    (C-reset *C-destructions*)
-    ;;(load *C-destructions*)
+    (add-instructions (C-load *C-destructions*))
+    ;;(C-reset *C-destructions*)
     (add-destructions (C-free if-name))
     (convert exp-type type if-name)))
 
@@ -529,10 +547,9 @@
     (setf (C-info-type-out hash-entry) (if pointer-out "void" cl-type-out)
 	  (C-info-type-arg hash-entry) cl-type-arg
 	  (C-info-definition hash-entry)
-	       (format nil "~{  ~a~%~}~:[  return result;~%~;~]"
-		       *C-instructions* pointer-out))
-    (reset-instructions)
-    (reset-destructions)
+	       (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
+		       (C-flush *C-instructions*)
+		       (C-flush *C-destructions*) pointer-out))
       ))
 
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
@@ -558,11 +575,10 @@
     (setf (C-info-type-out hash-entry) (if pointer-out "void" cl-type-out)
 	  (C-info-type-arg hash-entry) cl-type-arg
 	  (C-info-definition hash-entry)
-	      (format nil "~{  ~a~%~}~:[  return result;~%~;~]"
-		      *C-instructions* pointer-out)
+	      (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
+		      (C-flush *C-instructions*)
+		      (C-flush *C-destructions*) pointer-out)
 	  (C-info-analysis hash-entry) *output-vars*)
-    (reset-instructions)
-    (reset-destructions)
     (unless (equalp old-output-vars *output-vars*)
       (pvs2C-resolution-destructive op-decl formals body range-type))))
 
