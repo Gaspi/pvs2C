@@ -1,0 +1,114 @@
+/*
+C file generated from demo.pvs
+Make sure to link GMP and PVS.c in compilation:
+    gcc -o demo demo.c -lgmp
+    ./demo
+*/
+
+#include<stdio.h>
+#include<gmp.h>
+#include "demo.h"
+
+#define TRUE 1
+#define FALSE 0
+
+int main(void) {
+  printf("Executing demo ...\n");
+  return 0;
+}
+
+int pvs_a197() {
+  int result;
+  result = 8;
+  return result;
+}
+
+int pvs_d_a198() {
+  int result;
+  result = 8;
+  return result;
+}
+
+int pvs_b199(int x) {
+  int result;
+  result = x;
+  return result;
+}
+
+int pvs_d_b200(int x) {
+  int result;
+  result = x;
+  return result;
+}
+
+void pvs_incr201(int* result, int* t55990) {
+  L205 = pvsSelect(t55990, 0);
+  free(~a);
+  int* result;
+  result = malloc( sizeof(int*) );
+  copy_int*(result, t55990);
+  pvsDestructiveUpdate(result, L205, pvsSelect(t55990, 9));
+}
+
+void pvs_d_incr202(int* result, int* t55990) {
+  L205 = pvsSelect(t55990, 0);
+  free(~a);
+  int* result;
+  result = malloc( sizeof(int*) );
+  copy_int*(result, t55990);
+  pvsDestructiveUpdate(result, L205, pvsSelect(t55990, 9));
+}
+
+void pvs_foo206(int* result, int* t55990) {
+  L220 = 0;
+  free(~a);
+  mpz_t conv221;
+  mpz_init(conv221);
+  mpz_set_si(conv221, (long) 1);
+  mpz_t aux222;
+  mpz_init(aux222);
+  mpz_add_ui(aux222, conv221, (unsigned long) pvsSelect(t55990, 9));
+  mpz_clear(conv221);
+  L223 = pvsSelect(t55990, 0);
+  mpz_clear(aux222);
+  mpz_t conv224;
+  mpz_init(conv224);
+  mpz_set_si(conv224, (long) 1);
+  mpz_t aux225;
+  mpz_init(aux225);
+  mpz_add_ui(aux225, conv224, (unsigned long) pvsSelect(t55990, 0));
+  mpz_clear(conv224);
+  int* result;
+  result = malloc( sizeof(int*) );
+  copy_int*(result, t55990);
+  pvsDestructiveUpdate(result, L220, ( (int) mpz_get_si(aux222) ));
+  pvsDestructiveUpdate(result, L223, ( (int) mpz_get_si(aux225) ));
+  mpz_clear(aux225);
+}
+
+void pvs_d_foo207(int* result, int* t55990) {
+  L220 = 0;
+  free(~a);
+  mpz_t conv221;
+  mpz_init(conv221);
+  mpz_set_si(conv221, (long) 1);
+  mpz_t aux222;
+  mpz_init(aux222);
+  mpz_add_ui(aux222, conv221, (unsigned long) pvsSelect(t55990, 9));
+  mpz_clear(conv221);
+  L223 = pvsSelect(t55990, 0);
+  mpz_clear(aux222);
+  mpz_t conv224;
+  mpz_init(conv224);
+  mpz_set_si(conv224, (long) 1);
+  mpz_t aux225;
+  mpz_init(aux225);
+  mpz_add_ui(aux225, conv224, (unsigned long) pvsSelect(t55990, 0));
+  mpz_clear(conv224);
+  int* result;
+  result = malloc( sizeof(int*) );
+  copy_int*(result, t55990);
+  pvsDestructiveUpdate(result, L220, ( (int) mpz_get_si(aux222) ));
+  pvsDestructiveUpdate(result, L223, ( (int) mpz_get_si(aux225) ));
+  mpz_clear(aux225);
+}
