@@ -1,8 +1,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                C translator
+;;                PVS to C translator
 ;;
 ;;     Author: Gaspard ferey
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; This requires "pvs2c.lisp" and "Cprimop.lisp" files both available at
+;;               https://github.com/Gaspi/pvs2c.git
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -226,7 +229,7 @@
 	       (list "}")))))))
 
 (defmethod C-alloc ((type C-pointer))
-  (cons (format nil "~~a = malloc( ~a );" (m-size type))))
+  (list (format nil "~~a = malloc( ~a );" (m-size type))))
 
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
@@ -297,7 +300,14 @@
 
 (defgeneric smaller-type (typeA typeB))
 (defmethod smaller-type ((typeA C-mpq) typeB) typeB)
-(defmethod smaller-type ((typeA C-mpz) (typeB C-mpq)) C-mpz)
+(defmethod smaller-type ((typeA C-mpz) (typeB C-mpq)) *C-mpz*)
 (defmethod smaller-type ((typeA C-mpz) typeB) typeB)
 (defmethod smaller-type ((typeA C-int) typeB) C-int)
 (defmethod smaller-type ((typeA C-uli) typeB) C-int)
+
+(defmethod smaller-type ((typeA C-closure) (typeB C-closure))
+  (make-instance 'C-closure))
+
+(defmethod smaller-type (typeA typeB)
+  (format t "!!! Warning !!! smaller-type called with unexpected type.")
+  typeA)

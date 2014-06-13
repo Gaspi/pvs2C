@@ -1,14 +1,6 @@
 foo : THEORY
 BEGIN
-  
-  a:below(10) = 2
-  
-  b:below(10) = a + a
-  
-  f(x:nat, y:below(10)):RECURSIVE below(10)=
-    if y = 0 then 0
-    else if x < y then x
-    else f( x - y, y) endif endif
-  MEASURE x
-
+  Arr : TYPE = [below(10) -> below(12)]
+  b:Arr = lambda (x:below(10)) : x
+  foo(t:Arr) : Arr = b
 END foo

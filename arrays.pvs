@@ -1,0 +1,28 @@
+arrays : THEORY
+BEGIN
+
+  Arr1 : TYPE = [below(10) -> below(12) ]
+  Arr2 : TYPE = [below(10) -> [below(12) -> below(14)] ]
+  Arr3 : TYPE = [below(10) -> int ]
+  Arr4 : TYPE = [below(10) -> [int -> below(14)] ]
+  
+  a:Arr4 = lambda(x:below(10)) : lambda(y:int) : x + if y = 0 then 1 else 0 endif
+  b:Arr1 = lambda (x:below(10)) : x
+  
+  incr(t:Arr1) : Arr1 = t with [ (t(0)) := t(9) ]
+  decr(t:Arr1) : Arr1 = b with [ (0) := 1 ]
+
+  sum( T:Arr1, U:Arr1) :Arr1 = lambda (x:below(10)) : T(x) + U(x)
+  
+  foo(t:Arr1)  : Arr1 = t with [ (0) := t(9) + 1, (t(0)) :=  t(0) + 1 ]
+  
+  bar(t:Arr2)  : Arr2 =
+    let a = t with [ (0)(0) := 0 ]
+    in a
+
+  test(t:Arr3) : Arr3 = t with [ (0) := 12 ]
+  
+  set(t:Arr4, x:below(10), y:int) : Arr4 = t with [ (x)(y) := 12 ]
+
+
+END arrays
