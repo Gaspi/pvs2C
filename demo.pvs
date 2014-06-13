@@ -3,8 +3,6 @@ demo : THEORY
 BEGIN
   
 
-% Arithmetic
-
   Arr  : TYPE = [below(10) -> below(12) ]
   Arr2 : TYPE = [below(10) -> [below(12) -> below(14)] ]
 
