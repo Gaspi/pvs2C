@@ -86,9 +86,10 @@
 
 (defmethod pvs2C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
-      (make-instance 'C-pointer-type
-		     :target (pvs2C-type (range type))
-		     :size 1)
+      (let ((range (subrange-index (domain type))))
+	(make-instance 'C-pointer-type
+		       :target (pvs2C-type (range type))
+		       :size (1+ (- (cadr range) (car range)))))
     (make-instance 'C-closure)))
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)
@@ -197,6 +198,15 @@
 (defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
 (defmethod pointer? ((e expr)) (C-pointer? (pvs2C-type (type e))))
 
+
+
+;; An expression to represent the memory size of a type
+(defmethod m-size ((type C-pointer-type))
+  (format nil "~a * sizeof(~a)" (size type) (target type)))
+(defmethod m-size ((type C-type))
+  (format nil "sizeof(~a)" type))
+
+
 ;; C variables memory allocation
 (defgeneric C-alloc (arg))
 (defmethod C-alloc ((type C-mpz))
@@ -204,7 +214,20 @@
 (defmethod C-alloc ((type C-mpq))
   (list "mpq_init(~a);"))
 (defmethod C-alloc ((type C-pointer-type))
-  (list (format nil "~~a = malloc( ~a * sizeof(~a) );" (size type) (target type))))
+  (with-slots (target size) type
+    (cons (format nil "~~a = malloc( ~a );" (m-size type))
+	  (when (C-pointer? target)
+	    (let* ((i (gentemp "i"))
+		   (name-i (format nil "~~a[~a]" i)))
+	      (append
+	       (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
+	       (mapcar #'(lambda (x) (format nil "  ~a" x))
+		       (apply-argument (C-alloc target) name-i))
+	       (list "}")))))))
+
+(defmethod C-alloc ((type C-pointer))
+  (cons (format nil "~~a = malloc( ~a );" (m-size type))))
+
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
   (let ((type (var-type v))
@@ -215,14 +238,10 @@
 
 ;; C variables memory deallocation
 (defgeneric C-free (arg))
-(defmethod C-free ((type C-int)) nil)
-(defmethod C-free ((type C-uli)) nil)
-(defmethod C-free ((type C-mpz))
-  (list "mpz_clear(~a);"))
-(defmethod C-free ((type C-mpq))
-  (list "mpq_clear(~a);"))
-(defmethod C-free ((type C-type))
-  (when (C-pointer? type) (list "free(~a);")))
+(defmethod C-free ((type C-mpz))     (list "mpz_clear(~a);"))
+(defmethod C-free ((type C-mpq))     (list "mpq_clear(~a);"))
+(defmethod C-free ((type C-pointer)) (list "free(~a);"))
+(defmethod C-free ((type C-type))    nil)
 (defmethod C-free ((v C-var))
   (apply-argument (C-free (var-type v)) (var-name v)))
 
@@ -231,6 +250,15 @@
 
 ;; -------- Converting a C expression to an other type --------
 
+(defmethod get-typed-copy ( (typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
+  (let* ((i (gentemp "i"))
+	 (nameAi (format nil "~a[~a]" nameA i))
+	 (nameBi (format nil "~a[~a]" nameB i)))
+  (append
+   (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (size typeB) i))
+   (mapcar #'(lambda (x) (format nil "  ~a" x))
+	   (get-typed-copy (target typeA) nameAi (target typeB) nameBi))
+   (list "}"))))
 (defmethod get-typed-copy ( (typeA C-pointer) nameA typeB nameB)
   (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
 (defmethod get-typed-copy (  typeA            nameA typeB nameB)

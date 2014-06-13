@@ -84,28 +84,9 @@
 (defmacro pvs2C-error (msg &rest args)
   `(format t ,msg ,@args))
 
-;; Deprecated
-(defmacro pvsC_update (array index value)
-  `(let ((update-op (if (and *destructive?* *livevars-table*)
-			(format nil "pvsDestructiveUpdate")
-			(format nil "pvsNonDestructiveUpdate"))))
-       (format nil  "~a(~a, ~a, ~a);" update-op ,array ,index ,value)))
-
-(defun updateable-set (type array index value)
-  (let ((update-op (if (and *destructive?* *livevars-table*)
-		       (format nil "pvsDestructiveUpdate")
-		     (format nil "pvsNonDestructiveUpdate")))) ;; Should depend on the type
-    (list (format nil "~a(~a, ~a, ~a);" update-op array index value))))
-
-(defun updateable-get (type result array index)
-  (let ((set-op "pvsGet")) ;; Should depend on the type
-    (list (format nil "~a ~a = ~a(~a, ~a);" (pvs2C-type type) result
-					  set-op array index))))
-
 
 (defvar *C-nondestructive-hash* (make-hash-table :test #'eq))
 (defvar *C-destructive-hash* (make-hash-table :test #'eq))
-
 
 
 (defun getConstantName (expr bindings)
@@ -448,21 +429,20 @@
 						     (caddr x)))
 			       (pair3lis type-args (bindings operator) C-arg))) ; process name
 	    (pvs2C* (expression operator) newbind nil))
-	 (let ((type (pvs2C-type (range (type operator))))
+	(let* ((type-op (pvs2C-type (type operator)))
+	       (type (pvs2C-type (range (type operator))))
 	       (C-arg (pvs2C argument bindings
 			     (append (updateable-free-formal-vars operator) livevars)
 			     (pvs2C-type argument) ))
 	       (C-op (pvs2C operator bindings
 			    (append (updateable-vars argument) livevars)
-			    (pvs2C-type (type operator)))))
-	   (cons type
-		 (if (C-updateable? (type operator))
-		     (if (C-pointer? type)
-			 (list (format nil "pvsSelect(~~a, ~a, ~a);" C-op C-arg))
-		       (format nil "pvsSelect(~a, ~a)" C-op C-arg))
-		   (if (C-pointer? type)
-		       (set-C-pointer C-op C-arg)
-		     (mk-C-funcall C-op C-arg)))))))))
+			    type-op)))
+	  (if (C-updateable? (type operator)) ;; if the operator is an array
+	      (pvs2C*-updateable-get type-op C-op C-arg)
+	    (cons type
+		  (if (C-pointer? type)
+		      (set-C-pointer C-op C-arg)
+		    (mk-C-funcall C-op C-arg)))))))))
 
 
 (defun constant-formals (module)
@@ -757,7 +737,7 @@
 			   (append (updateable-free-formal-vars (car assign-exprs))
 				   livevars)))))
 
-;;recursion over nested update arguments in a single update.
+;; ---- Recursion over nested update arguments in a single update ----
 (defun pvs2C-update-nd-type (type exprvar args assign-expr bindings livevars)
   (if (consp args)
       (pvs2C-update-nd-type* type exprvar (car args) (cdr args) assign-expr
@@ -776,11 +756,11 @@
 	    (pvs2C-type (domain type)) arg1var t)
     (if (consp restargs)
 	(let ((exprvar (gentemp "E")))
-	  (append (updateable-get type exprvar expr arg1var)
+	  (append (updateable-get (pvs2C-type type) exprvar expr arg1var)
 		  (pvs2C-update-nd-type (range type) exprvar
 					restargs assign-expr
 					bindings livevars)))
-      (updateable-set type expr arg1var
+      (updateable-set (pvs2C-type type) expr arg1var
 		      (pvs2C assign-expr bindings livevars (pvs2C-type (range type)))))))
 
 
@@ -803,6 +783,25 @@
 			  assign-expr bindings livevars))
 
 
+;; Function to get and set arrays
+(defun updateable-set (type array index value)
+  (if (and *destructive?* *livevars-table*) ;; Destructive update
+      (get-typed-copy (target type)
+		      (format nil "~a[~a]" array index)
+		      (target type) value)
+    (list (format nil "pvsNonDestructiveUpdate(~a, ~a, ~a);" array index value))))
+;; Should depend on the type ...
+
+;; Should probably not be used...
+(defmethod updateable-get ((type C-pointer-type) result array index)
+  (list (format nil "~a ~a = ~a[~a];"
+		(target type) result array index)))
+
+(defmethod pvs2C*-updateable-get ((type C-pointer-type) array index)
+  (cons (target type)
+	(if (C-pointer? (target type))
+	    (list (format nil "~~a = ~a[~a];" array index))
+	  (format nil "~a[~a]" array index))))
 
 
 ;;C-updateable? is used to check if the type of an updated expression
@@ -926,20 +925,25 @@
 			    :direction :output
 			    :if-exists :supersede
 			    :if-does-not-exist :create)
-      (format output  "/*~%C file generated from ~a.pvs" filename)
-      (format output  "~%Make sure to link GMP and PVS.c in compilation:")
-      (format output  "~%    gcc -o ~a ~a.c -lgmp" filename filename)
-      (format output  "~%    ./~a~%*/" filename)
-      (format outputH "// C file generated from ~a.pvs" filename)
-      (format output  "~2%#include<stdio.h>")
-      (format output   "~%#include<gmp.h>")
-      (format output   "~%#include \"~a.h\"" filename)
-      (format output   "~2%#define TRUE 1")
-      (format output   "~%#define FALSE 0")
-      (format output "~2%int main(void) {")
-      (format output  "~%  printf(\"Executing ~a ...\\n\");" filename)
-      (format output  "~%  return 0;~%}")
+      (format output "~{~a~%~}" (apply-argument (list
+	    "// ---------------------------------------------"
+	    "//        C file generated from ~a.pvs"
+	    "// ---------------------------------------------"
+	    "//   Make sure to link GMP in compilation:"
+	    "//      gcc -o ~a ~:*~a.c -lgmp"
+	    "//      ./~a"
+	    "// ---------------------------------------------"
+	    "~%#include<stdio.h>"
+	    "#include<gmp.h>"
+	    "#include \"~a.h\""
+	    "~%#define TRUE 1"
+	    "#define FALSE 0"
+	    "~%int main(void) {"
+	    "  printf(\"Executing ~a ...\\n\");"
+	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
+      (format outputH "// C file generated from ~a.pvs" filename)
+      
       (dolist (theory theories)
 	(dolist (decl (theory theory))
 	  (let ((ndes-info (gethash decl *C-nondestructive-hash*))
@@ -1003,3 +1007,11 @@
 (defmacro debug (array str)
   `(when (eq ',array '*C-destructions*)
        (break (format nil "~a ~a : ~a~%" ',str ',array ,array))))
+
+
+;; Deprecated
+(defmacro pvsC_update (array index value)
+  `(let ((update-op (if (and *destructive?* *livevars-table*)
+			(format nil "pvsDestructiveUpdate")
+			(format nil "pvsNonDestructiveUpdate"))))
+       (format nil  "~a(~a, ~a, ~a);" update-op ,array ,index ,value)))

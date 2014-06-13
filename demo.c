@@ -1,9 +1,10 @@
-/*
-C file generated from demo.pvs
-Make sure to link GMP and PVS.c in compilation:
-    gcc -o demo demo.c -lgmp
-    ./demo
-*/
+// ---------------------------------------------
+//        C file generated from demo.pvs
+// ---------------------------------------------
+//   Make sure to link GMP in compilation:
+//      gcc -o demo demo.c -lgmp
+//      ./demo
+// ---------------------------------------------
 
 #include<stdio.h>
 #include<gmp.h>
@@ -17,92 +18,153 @@ int main(void) {
   return 0;
 }
 
-int pvs_a366() {
+
+int pvs_a471() {
   int result;
   result = 8;
   return result;
 }
 
-int pvs_d_a367() {
+int pvs_d_a472() {
   int result;
   result = 8;
   return result;
 }
 
-int pvs_b368(int x) {
+int pvs_b473(int x) {
   int result;
   result = x;
   return result;
 }
 
-int pvs_d_b369(int x) {
+int pvs_d_b474(int x) {
   int result;
   result = x;
   return result;
 }
 
-void pvs_incr370(int* result, int* t56296) {
-  int L374;
-  L374 = pvsSelect(t56296, 0);
-  copy_int*(result, t56296);
-  pvsDestructiveUpdate(result, L374, pvsSelect(t56296, 9));
+void pvs_incr475(int* result, int* t56000) {
+  int L482;
+  L482 = t56000[0];
+  for(int i481 = 0; i481 < 10; i481++) {
+    result[i481] = t56000[i481];
+  }
+  result[L482] = t56000[9];
 }
 
-void pvs_d_incr371(int* result, int* t56296) {
-  int L374;
-  L374 = pvsSelect(t56296, 0);
-  copy_int*(result, t56296);
-  pvsDestructiveUpdate(result, L374, pvsSelect(t56296, 9));
+void pvs_d_incr476(int* result, int* t56000) {
+  int L482;
+  L482 = t56000[0];
+  for(int i481 = 0; i481 < 10; i481++) {
+    result[i481] = t56000[i481];
+  }
+  result[L482] = t56000[9];
 }
 
-void pvs_foo375(int* result, int* t56296) {
-  int L389;
-  L389 = 0;
-  mpz_t conv390;
-  mpz_init(conv390);
-  mpz_set_si(conv390, (long) 1);
-  mpz_t aux391;
-  mpz_init(aux391);
-  mpz_add_ui(aux391, conv390, (unsigned long) pvsSelect(t56296, 9));
-  mpz_clear(conv390);
-  int L392;
-  L392 = pvsSelect(t56296, 0);
-  mpz_t conv393;
-  mpz_init(conv393);
-  mpz_set_si(conv393, (long) 1);
-  mpz_t aux394;
-  mpz_init(aux394);
-  mpz_add_ui(aux394, conv393, (unsigned long) pvsSelect(t56296, 0));
-  mpz_clear(conv393);
-  copy_int*(result, t56296);
-  pvsDestructiveUpdate(result, L389, ( (int) mpz_get_si(aux391) ));
-  pvsDestructiveUpdate(result, L392, ( (int) mpz_get_si(aux394) ));
-  mpz_clear(aux391);
-  mpz_clear(aux394);
+void pvs_foo483(int* result, int* t56000) {
+  int L500;
+  L500 = 0;
+  mpz_t conv501;
+  mpz_init(conv501);
+  mpz_set_si(conv501, (long) 1);
+  mpz_t aux502;
+  mpz_init(aux502);
+  mpz_add_ui(aux502, conv501, (unsigned long) t56000[9]);
+  mpz_clear(conv501);
+  int L503;
+  L503 = t56000[0];
+  mpz_t conv504;
+  mpz_init(conv504);
+  mpz_set_si(conv504, (long) 1);
+  mpz_t aux505;
+  mpz_init(aux505);
+  mpz_add_ui(aux505, conv504, (unsigned long) t56000[0]);
+  mpz_clear(conv504);
+  for(int i499 = 0; i499 < 10; i499++) {
+    result[i499] = t56000[i499];
+  }
+  result[L500] = ( (int) mpz_get_si(aux502) );
+  result[L503] = ( (int) mpz_get_si(aux505) );
+  mpz_clear(aux502);
+  mpz_clear(aux505);
 }
 
-void pvs_d_foo376(int* result, int* t56296) {
-  int L389;
-  L389 = 0;
-  mpz_t conv390;
-  mpz_init(conv390);
-  mpz_set_si(conv390, (long) 1);
-  mpz_t aux391;
-  mpz_init(aux391);
-  mpz_add_ui(aux391, conv390, (unsigned long) pvsSelect(t56296, 9));
-  mpz_clear(conv390);
-  int L392;
-  L392 = pvsSelect(t56296, 0);
-  mpz_t conv393;
-  mpz_init(conv393);
-  mpz_set_si(conv393, (long) 1);
-  mpz_t aux394;
-  mpz_init(aux394);
-  mpz_add_ui(aux394, conv393, (unsigned long) pvsSelect(t56296, 0));
-  mpz_clear(conv393);
-  copy_int*(result, t56296);
-  pvsDestructiveUpdate(result, L389, ( (int) mpz_get_si(aux391) ));
-  pvsDestructiveUpdate(result, L392, ( (int) mpz_get_si(aux394) ));
-  mpz_clear(aux391);
-  mpz_clear(aux394);
+void pvs_d_foo484(int* result, int* t56000) {
+  int L500;
+  L500 = 0;
+  mpz_t conv501;
+  mpz_init(conv501);
+  mpz_set_si(conv501, (long) 1);
+  mpz_t aux502;
+  mpz_init(aux502);
+  mpz_add_ui(aux502, conv501, (unsigned long) t56000[9]);
+  mpz_clear(conv501);
+  int L503;
+  L503 = t56000[0];
+  mpz_t conv504;
+  mpz_init(conv504);
+  mpz_set_si(conv504, (long) 1);
+  mpz_t aux505;
+  mpz_init(aux505);
+  mpz_add_ui(aux505, conv504, (unsigned long) t56000[0]);
+  mpz_clear(conv504);
+  for(int i499 = 0; i499 < 10; i499++) {
+    result[i499] = t56000[i499];
+  }
+  result[L500] = ( (int) mpz_get_si(aux502) );
+  result[L503] = ( (int) mpz_get_si(aux505) );
+  mpz_clear(aux502);
+  mpz_clear(aux505);
+}
+
+void pvs_bar506(int** result, int** t56000) {
+  int L528;
+  L528 = 0;
+  int L530;
+  L530 = 0;
+  int** aux531;
+  aux531 = malloc( 10 * sizeof(int*) );
+  for(int i532 = 0; i532 < 10; i532++) {
+    aux531[i532] = malloc( 12 * sizeof(int) );
+  }
+  for(int i526 = 0; i526 < 10; i526++) {
+    for(int i527 = 0; i527 < 12; i527++) {
+      aux531[i526][i527] = t56000[i526][i527];
+    }
+  }
+  int* E529 = aux531[L528];
+  E529[L530] = 0;
+  int** a = aux531;
+  for(int i533 = 0; i533 < 10; i533++) {
+    for(int i534 = 0; i534 < 12; i534++) {
+      result[i533][i534] = a[i533][i534];
+    }
+  }
+  free(aux531);
+}
+
+void pvs_d_bar507(int** result, int** t56000) {
+  int L528;
+  L528 = 0;
+  int L530;
+  L530 = 0;
+  int** aux531;
+  aux531 = malloc( 10 * sizeof(int*) );
+  for(int i532 = 0; i532 < 10; i532++) {
+    aux531[i532] = malloc( 12 * sizeof(int) );
+  }
+  for(int i526 = 0; i526 < 10; i526++) {
+    for(int i527 = 0; i527 < 12; i527++) {
+      aux531[i526][i527] = t56000[i526][i527];
+    }
+  }
+  int* E529 = aux531[L528];
+  E529[L530] = 0;
+  int** a = aux531;
+  for(int i533 = 0; i533 < 10; i533++) {
+    for(int i534 = 0; i534 < 12; i534++) {
+      result[i533][i534] = a[i533][i534];
+    }
+  }
+  free(aux531);
 }
