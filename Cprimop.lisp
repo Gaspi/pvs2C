@@ -291,8 +291,10 @@
 			       (pvs2C args bindings livevars (list *C-mpz* *C-mpz*)))))
 	((and (C-integer? typeA) (C-integer? typeB))
 	 (cons *C-mpq*
-	       (append (pvs2C2 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)" nil)
-		       (pvs2C2 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)" nil)
+	       (append (pvs2C2-getdef (car args)  bindings livevars
+				      *C-mpz* "mpq_numref(~a)" nil)
+		       (pvs2C2-getdef (cadr args) bindings livevars
+				      *C-mpz* "mpq_denref(~a)" nil)
 		       (list "mpq_canonicalize(~a);"))))
 	(t (cons *C-mpq* (set-C-pointer "mpq_div"
 			      (pvs2C args bindings livevars (list *C-mpq* *C-mpq*)))))))

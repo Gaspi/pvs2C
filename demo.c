@@ -19,58 +19,58 @@ int main(void) {
 }
 
 
-int fun525(void *env) {
+int fun51(void *env) {
   mpz_t y = (mpz_t) env[1];
   mpz_t x = (mpz_t) env[0];
   return (mpz_cmp(x, y) == 0);
 }
 
-int fun527(void *env) {
+int fun53(void *env) {
   mpz_t y = (mpz_t) env[1];
   mpz_t x = (mpz_t) env[0];
   return (mpz_cmp(x, y) == 0);
 }
 
-int fun531(void *env) {
+int fun57(void *env) {
   mpz_t x = (mpz_t) env[0];
-  return pvs_b521(x);
+  return pvs_b47(x);
 }
 
-int fun533(void *env) {
+int fun59(void *env) {
   mpz_t x = (mpz_t) env[0];
-  return pvs_b521(x);
+  return pvs_b47(x);
 }
 
-int pvs_b521(mpz_t x) {
+int pvs_b47(mpz_t x) {
   int result;
   result = isEven(x);
   return result;
 }
 
-int pvs_d_b522(mpz_t x) {
+int pvs_d_b48(mpz_t x) {
   int result;
   result = isEven(x);
   return result;
 }
 
-void pvs_singl523(pvsClosure result, mpz_t x) {
-  void env528[2];
-  env528[0] = x;
-  makeClosure(result, fun527, env528);
+void pvs_singl49(pvsClosure result, mpz_t x) {
+  void env54[2];
+  env54[0] = x;
+  makeClosure(result, fun53, env54);
 }
 
-void pvs_d_singl524(pvsClosure result, mpz_t x) {
-  void env528[2];
-  env528[0] = x;
-  makeClosure(result, fun527, env528);
+void pvs_d_singl50(pvsClosure result, mpz_t x) {
+  void env54[2];
+  env54[0] = x;
+  makeClosure(result, fun53, env54);
 }
 
-void pvs_getB529(pvsClosure result, int y) {
-  void env534[1];
-  makeClosure(result, fun533, env534);
+void pvs_getB55(pvsClosure result, int y) {
+  void env60[1];
+  makeClosure(result, fun59, env60);
 }
 
-void pvs_d_getB530(pvsClosure result, int y) {
-  void env534[1];
-  makeClosure(result, fun533, env534);
+void pvs_d_getB56(pvsClosure result, int y) {
+  void env60[1];
+  makeClosure(result, fun59, env60);
 }

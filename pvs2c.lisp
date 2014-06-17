@@ -358,7 +358,8 @@
 			  (pvs2C (expression entry)
 				 bindings livevars)))))
     (cons (pvs2C-type expr)
-	  (format nil "struct record ~~a;" formatted-fields))))
+	  (cons "struct record ~~a;"
+		formatted-fields))))
 
 
 ;; ---- Old clean functions...
