@@ -253,6 +253,8 @@
 
 ;; -------- Converting a C expression to an other type --------
 
+;;; Add a case when the length is 1 (simple pointer)
+;;;   Just do (get-typed-copy (target typeA) "nameA*" (target typeB) "nameB*"))
 (defmethod get-typed-copy ( (typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
   (let* ((i (gentemp "i"))
 	 (nameAi (format nil "~a[~a]" nameA i))
@@ -311,3 +313,26 @@
 (defmethod smaller-type (typeA typeB)
   (format t "!!! Warning !!! smaller-type called with unexpected type.")
   typeA)
+
+
+;; ----------- Functions to convert environment to (*void)[] -------------------
+
+;; Return arrays of instructions
+(defun save-void (var-ind name-arr)
+  (save-void* (pvs2C-type (type (car var-ind)))
+	      (format nil "~a[~d]" name-arr (cdr var-ind))
+	      (id (car var-ind))))
+
+;; Return arrays of instructions
+(defun load-void (var-ind name-arr)
+  (load-void* (pvs2C-type (type (car var-ind)))
+	      (format nil "~a[~d]" name-arr (cdr var-ind))
+	      (id (car var-ind))))
+
+(defmethod save-void* (type name id)
+  (list (format nil "~a = ~a;" name id)))
+(defmethod load-void* (type name id)
+  (list (format nil "~a ~a = (~a) ~a;" type id type name)))
+
+
+

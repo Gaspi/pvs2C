@@ -1,37 +1,37 @@
 // C file generated from arrays.pvs
 
-void pvs_a1358(pvsClosure result, int x);
+void pvs_a312(pvsClosure result, int x);
 
-void pvs_d_a1359(pvsClosure result, int x);
+void pvs_d_a313(pvsClosure result, int x);
 
-int pvs_b1372(int x);
+int pvs_b326(int x);
 
-int pvs_d_b1373(int x);
+int pvs_d_b327(int x);
 
-void pvs_incr1374(int* result, int* t56371);
+void pvs_incr328(int* result, int* t56036);
 
-void pvs_d_incr1375(int* result, int* t56371);
+void pvs_d_incr329(int* result, int* t56036);
 
-void pvs_decr1382(int* result, int* t56371);
+void pvs_decr336(int* result, int* t56036);
 
-void pvs_d_decr1383(int* result, int* t56371);
+void pvs_d_decr337(int* result, int* t56036);
 
-void pvs_sum1388(int* result, int* T, int* U);
+void pvs_sum342(int* result, int* T, int* U);
 
-void pvs_d_sum1389(int* result, int* T, int* U);
+void pvs_d_sum343(int* result, int* T, int* U);
 
-void pvs_foo1400(int* result, int* t56371);
+void pvs_foo354(int* result, int* t56036);
 
-void pvs_d_foo1401(int* result, int* t56371);
+void pvs_d_foo355(int* result, int* t56036);
 
-void pvs_bar1423(int** result, int** t56371);
+void pvs_bar377(int** result, int** t56036);
 
-void pvs_d_bar1424(int** result, int** t56371);
+void pvs_d_bar378(int** result, int** t56036);
 
-void pvs_test1452(mpz_t* result, mpz_t* t56371);
+void pvs_test406(mpz_t* result, mpz_t* t56036);
 
-void pvs_d_test1453(mpz_t* result, mpz_t* t56371);
+void pvs_d_test407(mpz_t* result, mpz_t* t56036);
 
-void pvs_set1463(pvsClosure result, pvsClosure t56371, int x, mpz_t y);
+void pvs_set417(pvsClosure result, pvsClosure t56036, int x, mpz_t y);
 
-void pvs_d_set1464(pvsClosure result, pvsClosure t56371, int x, mpz_t y);
+void pvs_d_set418(pvsClosure result, pvsClosure t56036, int x, mpz_t y);

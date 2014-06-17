@@ -616,6 +616,9 @@
    (loop for n from min below max by step
       collect n))
 
+(defun append-lists (l)
+  (when (consp l) (append (car l) (append-lists (cdr l)))))
+
 ;; Creates a closure (not working now...)
 (defun pvs2C-lambda (bind-decls expr bindings) ;;removed livevars
   (let ((previous-instr *C-instructions*)
@@ -633,31 +636,29 @@
 	   (fv (freevars expr))
 	   (nb-args (length fv))
 	   (var-ind (pairlis fv (range-arr nb-args)))
-	   (param-def (mapcar #'(lambda (x) (format nil "~a ~a = (~a)args[~a];"
-						     (pvs2C-type (type (car x)))
-						     (id (car x))
-						     (pvs2C-type (type (car x)))
-						     (cdr x)))
-			       var-ind))
+	   (param-def (append-lists (mapcar #'(lambda (x) (load-void x "env"))
+					    var-ind)))
 	   (def-instructions *C-instructions*)
-	   (def-destructions *C-destructions*))
+	   (def-destructions *C-destructions*)
+	   (assign (loop for x in bindings
+			 when (assoc (cdr x) var-ind :test #'(lambda (x y) (eq x (id y)) ))
+			 collect it))
+	   ;; Carefull !! eq x (id y) is not enough, (duplication variable id)
+	   (env-name (gentemp "env")))
       (reset-instructions)
       (reset-destructions)
       (add-instructions previous-instr)
       (add-destructions previous-destr)
-      (add-definition (format nil "~a ~a(void *args) {~%~{  ~a~%~}  return ~a;~%}"
+      (add-definition (format nil "~a ~a(void *env) {~%~{  ~a~%~}  return ~a;~%}"
 			      range-type name
 			      (append param-def def-instructions def-destructions)
 			      cl-body))
-      (add-instruction (format nil "void args[~d];" nb-args))
-      (let ((assign (loop for x in bindings when (assoc (cdr x) var-ind
-							:test #'(lambda (x y) (eq x (id y)) )) collect it)))
-	(add-instructions (mapcar #'(lambda (x)
-				      (format nil "args[~d] = ~a;" (cdr x) (id (car x))))
-				  assign))
-	(cons (make-instance 'C-closure)
-	      (list (format nil "makeClosure(~~a, ~a, args);" name)))))))
-
+      (add-instruction (format nil "void ~a[~d];" env-name nb-args))
+      (add-instructions (append-lists (mapcar
+				       #'(lambda (x) (save-void x env-name))
+				       assign)))
+      (cons (make-instance 'C-closure)
+	    (list (format nil "makeClosure(~~a, ~a, ~a);" name env-name))))))
 
 
 (defmethod pvs2C* ((expr lambda-expr) bindings livevars)
@@ -684,30 +685,33 @@
 	(pvs2C-lambda bind-decls expression bindings)))))
 
 
-;; Doesn't work / wrong output format
+;; Doesn't work  / Should look like if-expr
 (defmethod pvs2C* ((expr cases-expr) bindings livevars)
-  (format nil "case ~a of ~{~%~a~}"
-    (pvs2C (expression expr) bindings livevars)
-    (pvs2C-cases (selections expr) (else-part expr) bindings livevars)))
+  (let ((type (pvs2C-type expr)))
+    (cons type
+	  (append (list (format nil "switch( ~a ) {"
+				(pvs2C (expression expr) bindings livevars type)))
+		  (pvs2C-cases (selections expr) (else-part expr) bindings livevars)
+		  (list "}")))))
 
-;; Doesn't work / wrong output format
+;; Doesn't work / Should look like if-expr
 (defun pvs2C-cases (selections else-part bindings livevars)
   (let ((selections-C
 	 (loop for entry in selections
 	       collect
 	       (let* ((bind-decls (args entry))
 		      (bind-ids (pvs2cl-make-bindings bind-decls bindings)))
-		 (format nil "~a ~{~a ~} -> ~a"
+		 (format nil "  case ~a ~{~a ~} : ~a; break;"
 			 (pvs2C (constructor entry) bindings livevars)
 			 bind-ids
 			 (pvs2C (expression entry)
-				     (append (pairlis bind-decls bind-ids) bindings)
-				     livevars))))))
-    (if else-part
-	(format nil "~a ~% _ -> ~a"
-	  selections-C
-	  (pvs2C (expression else-part) bindings livevars))
-	selections-C)))
+				(append (pairlis bind-decls bind-ids) bindings)
+				livevars)))))))
+  (append selections-C
+	  (when else-part
+	    (list (format nil "  default: ~a"
+			  (pvs2C (expression else-part) bindings livevars))))
+	  (list "}")))
 
 (defmethod pvs2C* ((expr update-expr) bindings livevars)
   (with-slots (expression assignments) expr
