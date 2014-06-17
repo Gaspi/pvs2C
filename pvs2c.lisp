@@ -446,8 +446,12 @@
 	       (C-op (pvs2C operator bindings
 			    (append (updateable-vars argument) livevars)
 			    type-op)))
-	  (if (C-updateable? (type operator)) ;; if the operator is an array
-	      (pvs2C*-updateable-get type-op C-op C-arg)
+	  (if (C-pointer-type? type-op) ;; if the operator is an array
+	      (cons (target type-op)
+		    (if (C-pointer? (target type-op))
+			(format nil "~a[~a]" C-op C-arg)
+		      (format nil "~a[~a]" C-op C-arg)))
+;;	     (pvs2C*-updateable-get type-op C-op C-arg)
 	    (cons type
 		  (if (C-pointer? type)
 		      (set-C-pointer C-op C-arg)
@@ -672,7 +676,7 @@
 		 (new-bind (append (pairlis (list (car bind-decls)) ;; Hopefully bind-decls has length 1
 					    (list i))
 				   bindings)))
-	    (cons (pvs2C-type type)
+	    (cons (pvs2C-type expr)
 		  (append
 		   (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (array-bound type) i))
 		   (mapcar #'(lambda (x) (format nil "  ~a" x))
@@ -740,11 +744,10 @@
 	   (assign-exprs (mapcar #'expression assignments)))
       (cons C-type
 	    (append (pvs2C2-getdef expression bindings
-				 (append (updateable-free-formal-vars
-					    assign-exprs) ;;assign-args can be ignored
-					 livevars)
-				 (pvs2C-type type)
-				 "~a" nil)
+				   (append (updateable-free-formal-vars
+					      assign-exprs) ;;assign-args can be ignored
+					   livevars)
+				   C-type "~a" nil)
 		    ;; First we create a copy of the array named "~a" without malloc
 		    (pvs2C-update* (type expression)
 				   (mapcar #'arguments assignments)
@@ -778,12 +781,14 @@
       (pvs2C-update-nd-type* type exprvar (car args) (cdr args) assign-expr
 			      bindings livevars)
     (let ((C-type (pvs2C-type type))) ;; Should not happen... (a priori)
+      (break)
       (get-typed-copy C-type exprvar
 		      C-type (pvs2C assign-expr bindings livevars C-type)))))
 
 (defmethod pvs2C-update-nd-type* ((type funtype) expr arg1 restargs
 				   assign-expr bindings livevars)
-  (let ((arg1var (gentemp "L")))
+  (let ((arg1var (gentemp "L"))
+	(Ctype (pvs2C-type type)))
     (pvs2C2 (car arg1) bindings
 	    (append (updateable-vars restargs)
 		    (updateable-free-formal-vars assign-expr)
@@ -791,12 +796,14 @@
 	    (pvs2C-type (domain type)) arg1var t)
     (if (consp restargs)
 	(let ((exprvar (gentemp "E")))
-	  (append (updateable-get (pvs2C-type type) exprvar expr arg1var)
+	  (append (updateable-get Ctype exprvar expr arg1var)
 		  (pvs2C-update-nd-type (range type) exprvar
 					restargs assign-expr
 					bindings livevars)))
-      (updateable-set (pvs2C-type type) expr arg1var
-		      (pvs2C assign-expr bindings livevars (pvs2C-type (range type)))))))
+      (pvs2C2-getdef assign-expr bindings livevars
+		     (target Ctype)
+		     (format nil "~a[~a]" expr arg1var)
+		     nil))))
 
 
 (defmethod pvs2C-update-nd-type* ((type recordtype) expr arg1 restargs
@@ -821,16 +828,21 @@
 ;; Function to get and set arrays
 (defun updateable-set (type array index value)
   (if (and *destructive?* *livevars-table*) ;; Destructive update
-      (get-typed-copy (target type)
-		      (format nil "~a[~a]" array index)
-		      (target type) value)
-    (list (format nil "pvsNonDestructiveUpdate(~a, ~a, ~a);" array index value))))
+      (list (format nil "~a[~a] = ~a; +++" array index value))
+;;      (get-typed-copy (target type)
+;;		      (format nil "~a[~a]" array index)
+;;		      (target type) value)
+    (get-typed-copy (target type)
+		    (format nil "~a[~a]" array index)
+		    (target type)
+		    value)))
+;;    (list (format nil "pvsNonDestructiveUpdate2(~a, ~a, ~a);" array index value))))
 ;; Should depend on the type ...
 
-;; Should probably not be used...
+
+;; Get array[index] to modify it's fields later
 (defmethod updateable-get ((type C-pointer-type) result array index)
-  (list (format nil "~a ~a = ~a[~a];"
-		(target type) result array index)))
+  (list (format nil "~a ~a = ~a[~a];" (target type) result array index)))
 
 (defmethod pvs2C*-updateable-get ((type C-pointer-type) array index)
   (cons (target type)

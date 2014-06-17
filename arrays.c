@@ -19,404 +19,208 @@ int main(void) {
 }
 
 
-mpq_t fun224(void *env) {
-  mpz_t y = (mpz_t) env[1];
-  int x = (int) env[0];
-  mpz_t conv219;
-  mpz_init(conv219);
-  mpz_set_si(conv219, (long) 0);
-  int aux220;
-  aux220 = (mpz_cmp(y, conv219) == 0);
-  mpz_clear(conv219);
-  mpz_t if221;
-  mpz_init(if221);
-  if(aux220) {
-    mpz_set_si(if221, (long) 1);
-  } else {
-    mpz_set_si(if221, (long) 0);
-  }
-  mpz_t aux222;
-  mpz_init(aux222);
-  mpz_add_ui(aux222, if221, (unsigned long) x);
-  mpz_clear(if221);
-  mpq_t conv223;
-  mpq_init(conv223);
-  mpq_set_z(conv223, aux222);
-  mpq_canonicalize(conv223);
-  mpz_clear(aux222);
-  mpq_clear(conv223);
-  return conv223;
+void pvs_b177(mpz_t result, int x) {
+  mpz_set_si(result, (long) x);
 }
 
-mpq_t fun231(void *env) {
-  mpz_t y = (mpz_t) env[1];
-  int x = (int) env[0];
-  mpz_t conv226;
-  mpz_init(conv226);
-  mpz_set_si(conv226, (long) 0);
-  int aux227;
-  aux227 = (mpz_cmp(y, conv226) == 0);
-  mpz_clear(conv226);
-  mpz_t if228;
-  mpz_init(if228);
-  if(aux227) {
-    mpz_set_si(if228, (long) 1);
-  } else {
-    mpz_set_si(if228, (long) 0);
-  }
-  mpz_t aux229;
-  mpz_init(aux229);
-  mpz_add_ui(aux229, if228, (unsigned long) x);
-  mpz_clear(if228);
-  mpq_t conv230;
-  mpq_init(conv230);
-  mpq_set_z(conv230, aux229);
-  mpq_canonicalize(conv230);
-  mpz_clear(aux229);
-  mpq_clear(conv230);
-  return conv230;
+void pvs_d_b178(mpz_t result, int x) {
+  mpz_set_si(result, (long) x);
 }
 
-mpq_t fun329(void *env) {
-  mpz_t x = (mpz_t) env[3];
-  pvsClosure t = (pvsClosure) env[2];
-  int x1 = (int) env[1];
-  mpz_t y = (mpz_t) env[0];
-  mpz_t if327;
-  mpz_init(if327);
-  if((mpz_cmp(x#0, y) == 0)) {
-    mpz_set_si(if327, (long) 12);
-  } else {
-    pvsClosure aux326;
-    aux326 = malloc( sizeof(pvsClosure) );
-    t56092(aux326, x1);
-    mpz_set_si(if327, (long) aux326(x#0));
-    free(aux326);
-  }
-  mpq_t conv328;
-  mpq_init(conv328);
-  mpq_set_z(conv328, if327);
-  mpq_canonicalize(conv328);
-  mpz_clear(if327);
-  mpq_clear(conv328);
-  return conv328;
+void pvs_a179(mpz_t result) {
+  mpz_t conv182;
+  mpz_init(conv182);
+  mpz_set_si(conv182, (long) 1);
+  mpz_add_ui(result, conv182, (unsigned long) 1);
+  mpz_clear(conv182);
 }
 
-pvsClosure fun332(void *env) {
-  int x1 = (int) env[3];
-  pvsClosure t = (pvsClosure) env[2];
-  mpz_t y = (mpz_t) env[1];
-  int x = (int) env[0];
-  pvsClosure if331;
-  if331 = malloc( sizeof(pvsClosure) );
-  if((x1 == x)) {
-    void env330[4];
-    env330[1] = x1;
-    env330[0] = y;
-    env330[3] = x;
-    makeClosure(if331, fun329, env330);
-  } else {
-    t56092(if331, x1);
-  }
-  free(if331);
-  return if331;
+void pvs_d_a180(mpz_t result) {
+  mpz_t conv182;
+  mpz_init(conv182);
+  mpz_set_si(conv182, (long) 1);
+  mpz_add_ui(result, conv182, (unsigned long) 1);
+  mpz_clear(conv182);
 }
 
-mpq_t fun338(void *env) {
-  mpz_t x = (mpz_t) env[3];
-  pvsClosure t = (pvsClosure) env[2];
-  int x1 = (int) env[1];
-  mpz_t y = (mpz_t) env[0];
-  mpz_t if336;
-  mpz_init(if336);
-  if((mpz_cmp(x#0, y) == 0)) {
-    mpz_set_si(if336, (long) 12);
-  } else {
-    pvsClosure aux335;
-    aux335 = malloc( sizeof(pvsClosure) );
-    t56092(aux335, x1);
-    mpz_set_si(if336, (long) aux335(x#0));
-    free(aux335);
+void pvs_incr183(mpz_t* result, mpz_t* t56009) {
+  int L190;
+  L190 = ( (int) mpz_get_si(t56009[0]) );
+  for(int i189 = 0; i189 < 10; i189++) {
+    mpz_set(result[i189], t56009[i189]);
   }
-  mpq_t conv337;
-  mpq_init(conv337);
-  mpq_set_z(conv337, if336);
-  mpq_canonicalize(conv337);
-  mpz_clear(if336);
-  mpq_clear(conv337);
-  return conv337;
+  mpz_set(result[L190], t56009[9]);
 }
 
-pvsClosure fun341(void *env) {
-  int x1 = (int) env[3];
-  pvsClosure t = (pvsClosure) env[2];
-  mpz_t y = (mpz_t) env[1];
-  int x = (int) env[0];
-  pvsClosure if340;
-  if340 = malloc( sizeof(pvsClosure) );
-  if((x1 == x)) {
-    void env339[4];
-    env339[1] = x1;
-    env339[0] = y;
-    env339[3] = x;
-    makeClosure(if340, fun338, env339);
-  } else {
-    t56092(if340, x1);
+void pvs_d_incr184(mpz_t* result, mpz_t* t56009) {
+  int L190;
+  L190 = ( (int) mpz_get_si(t56009[0]) );
+  for(int i189 = 0; i189 < 10; i189++) {
+    mpz_set(result[i189], t56009[i189]);
   }
-  free(if340);
-  return if340;
+  mpz_set(result[L190], t56009[9]);
 }
 
-void pvs_a217(pvsClosure result, int x) {
-  void env232[2];
-  env232[0] = x;
-  makeClosure(result, fun231, env232);
+void pvs_decr191(mpz_t* result, mpz_t* t56009) {
+  int L196;
+  L196 = 0;
+  for(int i195 = 0; i195 < 10; i195++) {
+    pvs_d_b178(result[i195], i195);
+  }
+  mpz_set_si(result[L196], (long) 1);
 }
 
-void pvs_d_a218(pvsClosure result, int x) {
-  void env232[2];
-  env232[0] = x;
-  makeClosure(result, fun231, env232);
+void pvs_d_decr192(mpz_t* result, mpz_t* t56009) {
+  int L196;
+  L196 = 0;
+  for(int i195 = 0; i195 < 10; i195++) {
+    pvs_d_b178(result[i195], i195);
+  }
+  mpz_set_si(result[L196], (long) 1);
 }
 
-int pvs_b233(int x) {
-  int result;
-  result = x;
-  return result;
+void pvs_sum197(mpz_t* result, mpz_t* T, mpz_t* U) {
+  for(int i200 = 0; i200 < 10; i200++) {
+    mpz_add(result[i200], T[i200], U[i200]);
+  }
 }
 
-int pvs_d_b234(int x) {
-  int result;
-  result = x;
-  return result;
+void pvs_d_sum198(mpz_t* result, mpz_t* T, mpz_t* U) {
+  for(int i200 = 0; i200 < 10; i200++) {
+    mpz_add(result[i200], T[i200], U[i200]);
+  }
 }
 
-void pvs_incr235(int* result, int* t56092) {
-  int L242;
-  L242 = t56092[0];
-  for(int i241 = 0; i241 < 10; i241++) {
-    result[i241] = t56092[i241];
+void pvs_foo201(mpz_t* result, mpz_t* t56009) {
+  int L210;
+  L210 = 0;
+  int L211;
+  L211 = ( (int) mpz_get_si(t56009[0]) );
+  for(int i209 = 0; i209 < 10; i209++) {
+    mpz_set(result[i209], t56009[i209]);
   }
-  result[L242] = t56092[9];
+  mpz_add_ui(result[L210], t56009[9], (unsigned long) 1);
+  mpz_add_ui(result[L211], t56009[0], (unsigned long) 1);
 }
 
-void pvs_d_incr236(int* result, int* t56092) {
-  int L242;
-  L242 = t56092[0];
-  for(int i241 = 0; i241 < 10; i241++) {
-    result[i241] = t56092[i241];
+void pvs_d_foo202(mpz_t* result, mpz_t* t56009) {
+  int L210;
+  L210 = 0;
+  int L211;
+  L211 = ( (int) mpz_get_si(t56009[0]) );
+  for(int i209 = 0; i209 < 10; i209++) {
+    mpz_set(result[i209], t56009[i209]);
   }
-  result[L242] = t56092[9];
+  mpz_add_ui(result[L210], t56009[9], (unsigned long) 1);
+  mpz_add_ui(result[L211], t56009[0], (unsigned long) 1);
 }
 
-void pvs_decr243(int* result, int* t56092) {
-  int L248;
-  L248 = 0;
-  for(int i247 = 0; i247 < 10; i247++) {
-    result[i247] = pvs_d_b234(i247);
+void pvs_bar212(int** result, int** t56009) {
+  int L234;
+  L234 = 0;
+  int L236;
+  L236 = 0;
+  int** aux237;
+  aux237 = malloc( 10 * sizeof(int*) );
+  for(int i238 = 0; i238 < 10; i238++) {
+    aux237[i238] = malloc( 8 * sizeof(int) );
   }
-  result[L248] = 1;
-}
-
-void pvs_d_decr244(int* result, int* t56092) {
-  int L248;
-  L248 = 0;
-  for(int i247 = 0; i247 < 10; i247++) {
-    result[i247] = pvs_d_b234(i247);
-  }
-  result[L248] = 1;
-}
-
-void pvs_sum249(int* result, int* T, int* U) {
-  mpq_t* set258;
-  set258 = malloc( 10 * sizeof(mpq_t) );
-  for(int i259 = 0; i259 < 10; i259++) {
-    mpq_init(set258[i259]);
-  }
-  for(int i256 = 0; i256 < 10; i256++) {
-    mpz_t conv257;
-    mpz_init(conv257);
-    mpz_set_si(conv257, (long) T[i256]);
-    mpz_add_ui(set258[i256], conv257, (unsigned long) U[i256]);
-    mpz_clear(conv257);
-  }
-  for(int i260 = 0; i260 < 10; i260++) {
-    result[i260] = ( (int) mpq_get_d(set258[i260]) );
-  }
-  free(set258);
-}
-
-void pvs_d_sum250(int* result, int* T, int* U) {
-  mpq_t* set258;
-  set258 = malloc( 10 * sizeof(mpq_t) );
-  for(int i259 = 0; i259 < 10; i259++) {
-    mpq_init(set258[i259]);
-  }
-  for(int i256 = 0; i256 < 10; i256++) {
-    mpz_t conv257;
-    mpz_init(conv257);
-    mpz_set_si(conv257, (long) T[i256]);
-    mpz_add_ui(set258[i256], conv257, (unsigned long) U[i256]);
-    mpz_clear(conv257);
-  }
-  for(int i260 = 0; i260 < 10; i260++) {
-    result[i260] = ( (int) mpq_get_d(set258[i260]) );
-  }
-  free(set258);
-}
-
-void pvs_foo261(int* result, int* t56092) {
-  int L278;
-  L278 = 0;
-  mpz_t conv279;
-  mpz_init(conv279);
-  mpz_set_si(conv279, (long) 1);
-  mpz_t aux280;
-  mpz_init(aux280);
-  mpz_add_ui(aux280, conv279, (unsigned long) t56092[9]);
-  mpz_clear(conv279);
-  int L281;
-  L281 = t56092[0];
-  mpz_t conv282;
-  mpz_init(conv282);
-  mpz_set_si(conv282, (long) 1);
-  mpz_t aux283;
-  mpz_init(aux283);
-  mpz_add_ui(aux283, conv282, (unsigned long) t56092[0]);
-  mpz_clear(conv282);
-  for(int i277 = 0; i277 < 10; i277++) {
-    result[i277] = t56092[i277];
-  }
-  result[L278] = ( (int) mpz_get_si(aux280) );
-  result[L281] = ( (int) mpz_get_si(aux283) );
-  mpz_clear(aux280);
-  mpz_clear(aux283);
-}
-
-void pvs_d_foo262(int* result, int* t56092) {
-  int L278;
-  L278 = 0;
-  mpz_t conv279;
-  mpz_init(conv279);
-  mpz_set_si(conv279, (long) 1);
-  mpz_t aux280;
-  mpz_init(aux280);
-  mpz_add_ui(aux280, conv279, (unsigned long) t56092[9]);
-  mpz_clear(conv279);
-  int L281;
-  L281 = t56092[0];
-  mpz_t conv282;
-  mpz_init(conv282);
-  mpz_set_si(conv282, (long) 1);
-  mpz_t aux283;
-  mpz_init(aux283);
-  mpz_add_ui(aux283, conv282, (unsigned long) t56092[0]);
-  mpz_clear(conv282);
-  for(int i277 = 0; i277 < 10; i277++) {
-    result[i277] = t56092[i277];
-  }
-  result[L278] = ( (int) mpz_get_si(aux280) );
-  result[L281] = ( (int) mpz_get_si(aux283) );
-  mpz_clear(aux280);
-  mpz_clear(aux283);
-}
-
-void pvs_bar284(int** result, int** t56092) {
-  int L306;
-  L306 = 0;
-  int L308;
-  L308 = 0;
-  int** aux309;
-  aux309 = malloc( 10 * sizeof(int*) );
-  for(int i310 = 0; i310 < 10; i310++) {
-    aux309[i310] = malloc( 12 * sizeof(int) );
-  }
-  for(int i304 = 0; i304 < 10; i304++) {
-    for(int i305 = 0; i305 < 12; i305++) {
-      aux309[i304][i305] = t56092[i304][i305];
+  for(int i232 = 0; i232 < 10; i232++) {
+    for(int i233 = 0; i233 < 8; i233++) {
+      aux237[i232][i233] = t56009[i232][i233];
     }
   }
-  int* E307 = aux309[L306];
-  E307[L308] = 0;
-  int** a = aux309;
-  for(int i311 = 0; i311 < 10; i311++) {
-    for(int i312 = 0; i312 < 12; i312++) {
-      result[i311][i312] = a[i311][i312];
+  int* E235 = aux237[L234];
+  E235[L236] = 0;
+  int** a = aux237;
+  for(int i239 = 0; i239 < 10; i239++) {
+    for(int i240 = 0; i240 < 8; i240++) {
+      result[i239][i240] = a[i239][i240];
     }
   }
-  free(aux309);
+  free(aux237);
 }
 
-void pvs_d_bar285(int** result, int** t56092) {
-  int L306;
-  L306 = 0;
-  int L308;
-  L308 = 0;
-  int** aux309;
-  aux309 = malloc( 10 * sizeof(int*) );
-  for(int i310 = 0; i310 < 10; i310++) {
-    aux309[i310] = malloc( 12 * sizeof(int) );
+void pvs_d_bar213(int** result, int** t56009) {
+  int L234;
+  L234 = 0;
+  int L236;
+  L236 = 0;
+  int** aux237;
+  aux237 = malloc( 10 * sizeof(int*) );
+  for(int i238 = 0; i238 < 10; i238++) {
+    aux237[i238] = malloc( 8 * sizeof(int) );
   }
-  for(int i304 = 0; i304 < 10; i304++) {
-    for(int i305 = 0; i305 < 12; i305++) {
-      aux309[i304][i305] = t56092[i304][i305];
+  for(int i232 = 0; i232 < 10; i232++) {
+    for(int i233 = 0; i233 < 8; i233++) {
+      aux237[i232][i233] = t56009[i232][i233];
     }
   }
-  int* E307 = aux309[L306];
-  E307[L308] = 0;
-  int** a = aux309;
-  for(int i311 = 0; i311 < 10; i311++) {
-    for(int i312 = 0; i312 < 12; i312++) {
-      result[i311][i312] = a[i311][i312];
+  int* E235 = aux237[L234];
+  E235[L236] = 0;
+  int** a = aux237;
+  for(int i239 = 0; i239 < 10; i239++) {
+    for(int i240 = 0; i240 < 8; i240++) {
+      result[i239][i240] = a[i239][i240];
     }
   }
-  free(aux309);
+  free(aux237);
 }
 
-void pvs_test313(mpz_t* result, mpz_t* t56092) {
-  int L322;
-  L322 = 0;
-  mpz_t conv323;
-  mpz_init(conv323);
-  mpz_set_si(conv323, (long) 12);
-  for(int i321 = 0; i321 < 10; i321++) {
-    mpz_set(result[i321], t56092[i321]);
+void pvs_test241(mpz_t* result, mpz_t* t56009) {
+  int L250;
+  L250 = 0;
+  for(int i249 = 0; i249 < 10; i249++) {
+    mpz_set(result[i249], t56009[i249]);
   }
-  mpz_set(result[L322], conv323);
-  mpz_clear(conv323);
+  mpz_t conv251;
+  mpz_init(conv251);
+  mpz_set_si(conv251, (long) 8);
+  mpz_add_ui(result[L250], conv251, (unsigned long) 1);
+  mpz_clear(conv251);
 }
 
-void pvs_d_test314(mpz_t* result, mpz_t* t56092) {
-  int L322;
-  L322 = 0;
-  mpz_t conv323;
-  mpz_init(conv323);
-  mpz_set_si(conv323, (long) 12);
-  for(int i321 = 0; i321 < 10; i321++) {
-    mpz_set(result[i321], t56092[i321]);
+void pvs_d_test242(mpz_t* result, mpz_t* t56009) {
+  int L250;
+  L250 = 0;
+  for(int i249 = 0; i249 < 10; i249++) {
+    mpz_set(result[i249], t56009[i249]);
   }
-  mpz_set(result[L322], conv323);
-  mpz_clear(conv323);
+  mpz_t conv251;
+  mpz_init(conv251);
+  mpz_set_si(conv251, (long) 8);
+  mpz_add_ui(result[L250], conv251, (unsigned long) 1);
+  mpz_clear(conv251);
 }
 
-void pvs_set324(pvsClosure result, pvsClosure t56092, int x, mpz_t y) {
-  void env342[4];
-  env342[1] = y;
-  env342[0] = x;
-  pvsClosure aux343;
-  aux343 = malloc( sizeof(pvsClosure) );
-  makeClosure(aux343, fun341, env342);
-  copy_pvsClosure(result, aux343);
-  free(aux343);
+void pvs_set0252(mpz_t** result, mpz_t** t56009, int x, int y) {
+  int L266;
+  L266 = x;
+  for(int i264 = 0; i264 < 10; i264++) {
+    for(int i265 = 0; i265 < 10; i265++) {
+      mpz_set(result[i264][i265], t56009[i264][i265]);
+    }
+  }
+  int L268;
+  L268 = 0;
+  for(int i267 = 0; i267 < 10; i267++) {
+    mpz_set(result[L266][i267], t56009[0][i267]);
+  }
+  mpz_set_si(result[L266][L268], (long) 0);
 }
 
-void pvs_d_set325(pvsClosure result, pvsClosure t56092, int x, mpz_t y) {
-  void env342[4];
-  env342[1] = y;
-  env342[0] = x;
-  pvsClosure aux343;
-  aux343 = malloc( sizeof(pvsClosure) );
-  makeClosure(aux343, fun341, env342);
-  copy_pvsClosure(result, aux343);
-  free(aux343);
+void pvs_d_set0253(mpz_t** result, mpz_t** t56009, int x, int y) {
+  int L266;
+  L266 = x;
+  for(int i264 = 0; i264 < 10; i264++) {
+    for(int i265 = 0; i265 < 10; i265++) {
+      mpz_set(result[i264][i265], t56009[i264][i265]);
+    }
+  }
+  int L268;
+  L268 = 0;
+  for(int i267 = 0; i267 < 10; i267++) {
+    mpz_set(result[L266][i267], t56009[0][i267]);
+  }
+  mpz_set_si(result[L266][L268], (long) 0);
 }

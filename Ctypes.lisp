@@ -125,8 +125,10 @@
   (some #'(lambda (jty) (subtype-of? jty type))
 	(get-PVS-types expr)))
 
+(defmethod get-bounds ((expr number-expr))
+  (list (number expr) (number expr)))
 
-(defun get-bounds (expr)
+(defmethod get-bounds ((expr expr))
   (get-inner-bounds-list (get-PVS-types expr) nil nil))
 
 (defun get-inner-bounds-list (l inf sup)
@@ -168,12 +170,22 @@
 	  ((<= 0 n *max-C-uli*) *C-uli*)
 	  (t (pvs2C-type (type e))))))
 
+(defmethod pvs2C-type ((e lambda-expr) &optional tbindings)
+  (with-slots (type expression) e
+  (if (C-updateable? type)
+      (let ((range (subrange-index (domain type))))
+	(make-instance 'C-pointer-type
+		       :target (pvs2C-type expression)
+		       :size (1+ (- (cadr range) (car range)))))
+    (make-instance 'C-closure))))
+
 (defmethod pvs2C-type ((e expr) &optional tbindings)
   (if (C-integer-type? e)
       (cond ((C-int-type? e) *C-int*)
 	    ((C-unsignedlong-type? e) *C-uli*)
 	    (t *C-mpz*))
     (pvs2C-type (type e))))
+
 
 (defmethod pvs2C-type ((l list) &optional tbindings)
   (if (consp l)

@@ -1,12 +1,14 @@
 arrays : THEORY
 BEGIN
 
-  Arr1 : TYPE = [below(10) -> below(8) ]
+  Arr1 : TYPE = [below(10) -> int ]
   Arr2 : TYPE = [below(10) -> [below(8) -> below(6)] ]
   Arr3 : TYPE = [below(10) -> int ]
   Arr4 : TYPE = [below(10) -> Arr3 ]
 
   b:Arr1 = lambda (x:below(10)) : x
+  
+  a:int = 1 + 1
   
   incr(t:Arr1) : Arr1 = t with [ (t(0)) := t(9) ]
   decr(t:Arr1) : Arr1 = b with [ (0) := 1 ]
@@ -19,7 +21,7 @@ BEGIN
     let a = t with [ (0)(0) := 0 ]
     in a
 
-  test(t:Arr3) : Arr3 = t with [ (0) := 12 ]
+  test(t:Arr3) : Arr3 = t with [ (0) := 8 + 1 ]
   
   set0( t:Arr4, x:below(10), y:below(10)) : Arr4 = t with [ (x) := (  t(0) WITH [ (0) := 0 ] ) ]
 
