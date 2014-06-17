@@ -1,12 +1,11 @@
 arrays : THEORY
 BEGIN
 
-  Arr1 : TYPE = [below(10) -> below(12) ]
-  Arr2 : TYPE = [below(10) -> [below(12) -> below(14)] ]
+  Arr1 : TYPE = [below(10) -> below(8) ]
+  Arr2 : TYPE = [below(10) -> [below(8) -> below(6)] ]
   Arr3 : TYPE = [below(10) -> int ]
-  Arr4 : TYPE = [below(10) -> [int -> below(14)] ]
-  
-  a:Arr4 = lambda(x:below(10)) : lambda(y:int) : x + if y = 0 then 1 else 0 endif
+  Arr4 : TYPE = [below(10) -> Arr3 ]
+
   b:Arr1 = lambda (x:below(10)) : x
   
   incr(t:Arr1) : Arr1 = t with [ (t(0)) := t(9) ]
@@ -22,7 +21,7 @@ BEGIN
 
   test(t:Arr3) : Arr3 = t with [ (0) := 12 ]
   
-  set(t:Arr4, x:below(10), y:int) : Arr4 = t with [ (x)(y) := 12 ]
+  set0( t:Arr4, x:below(10), y:below(10)) : Arr4 = t with [ (x) := (  t(0) WITH [ (0) := 0 ] ) ]
 
 
 END arrays
