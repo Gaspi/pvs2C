@@ -1,24 +1,7 @@
-draft : THEORY
+demo : THEORY
 BEGIN
   
-  Cint : TYPE = below(1000)
   
-  eps:rat = 0.01
+  f(x:int) : int = x + x
   
-  pow(i:Cint)(x:rat) : RECURSIVE rat =
-    if i = 0 then 1 else x * pow(i-1)(x) endif
-  MEASURE i
-  
-  sum(f:[rat->rat])(x:rat) : RECURSIVE rat =
-    if x >= 1 then 0
-    else f(x) + sum(f)(x + eps) endif
-  MEASURE 1-x
-  
-  integrate_xn(n:Cint) : rat =
-    let f:[rat -> rat] = pow(n) in
-    let s:[rat -> rat] = sum(f) in
-      s(0) * eps
-
-    
-  
-END draft
+END demo
