@@ -9,10 +9,5 @@ BEGIN
   
   f(t: rec ) : rec = t with [ `n := 0 ]
   
-  
-  
-  
-  
-  
-  
 END draft
+

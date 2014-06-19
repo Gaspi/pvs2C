@@ -120,7 +120,6 @@
       (list (pvs2C-type dom-type)))))
 
 
-
 (defun is-expr-subtype? (expr type)
   (some #'(lambda (jty) (subtype-of? jty type))
 	(get-PVS-types expr)))
@@ -153,7 +152,6 @@
   (is-in-range? (subrange-index t) inf sup))
 (defmethod is-in-range? ((e expr) inf sup)
   (is-in-range? (get-bounds e) inf sup))
-
 
 (defun C-integer-type? (expr)
   (is-expr-subtype? expr *integer*))
@@ -193,10 +191,10 @@
 	    (pvs2C-type (cdr l)))
     nil))
 
-
 (defun get-PVS-types (expr)
   (let ((*generate-tccs* t))
     (cons (type expr) (judgement-types+ expr))))
+
 
 
 
