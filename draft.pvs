@@ -1,7 +1,18 @@
-demo : THEORY
+draft : THEORY
 BEGIN
   
+  list : TYPE = [# car:int, cdr:list #]
   
-  f(x:int) : int = x + x
+  rec : TYPE = [# n : int,
+      	       	  arr : [below(n) -> int],
+		   #]
   
-END demo
+  f(t: rec ) : rec = t with [ `n := 0 ]
+  
+  
+  
+  
+  
+  
+  
+END draft
