@@ -69,7 +69,7 @@
   (with-slots (print-type) type
     (if (type-name? print-type)
 	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
-	  (if entry (cadr entry) ;return the C-rectype-name
+	  (if entry (make-instance 'C-struct :name (cadr entry))
 	      (let* ((formatted-fields (loop for fld in (fields type)
 				  collect
 				  (format nil "~a ~a;" 
@@ -92,7 +92,12 @@
       (let ((range (subrange-index (domain type))))
 	(make-instance 'C-pointer-type
 		       :target (pvs2C-type (range type))
-		       :size (1+ (- (cadr range) (car range)))))
+		       :size
+		         (when (and (car range)
+				    (cadr range)
+				    (not (eq (car range) '*))
+				    (not (eq (cadr range) '*)))
+			   (1+ (- (cadr range) (car range))))))
     (make-instance 'C-closure)))
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)

@@ -1,18 +1,16 @@
 draft : THEORY
 BEGIN
   
-  list : TYPE = [# car:int, cdr:list #]
-  
   rec : TYPE = [# n : int,
-      	       	  arr : [below(n) -> int],
+      	       	  arr : [below(n) -> int]
 		   #]
   
   f(t: rec ) : rec = t with [ `n := 0 ]
   
-  
-  
-  
-  
-  
+  Arr : TYPE = [below(10) -> int ]
+
+  f(t:Arr):Arr =
+    let a = lambda(x:below(10)): t(x) in
+      a
   
 END draft

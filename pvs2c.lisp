@@ -45,7 +45,7 @@
 (load "Ctypes")
 (load "Cprimop")
 
-(defvar *livevars-table* nil)
+(defvar *C-livevars-table* nil)
 (defvar *C-record-defns* nil)
 
 
@@ -362,19 +362,6 @@
 		formatted-fields))))
 
 
-;; ---- Old clean functions...
-(defun matchlist (index length dummy)
-  (if (eql index 0)
-	(if (eql length 0)
-	    (list dummy)
-	    (cons dummy (enlist (1- length))))
-      (cons '_ (matchlist (1- index)(1- length) dummy))))
-
-(defun enlist (n)
-  (if (eql n 0)
-      nil
-      (cons '_ (enlist (1- n)))))
-
 (defmethod pvs2C* ((expr projection-application) bindings livevars)
   (let* ((ll (length (exprs expr)))
 	 (dummy (gentemp "DDD"))
@@ -457,11 +444,6 @@
 		      (set-C-pointer C-op C-arg)
 		    (mk-C-funcall C-op C-arg)))))))))
 
-
-(defun constant-formals (module)
-  (loop for x in (formals module)
-	when (formal-const-decl? x)
-	collect (make-constant-from-decl x)))
 
 (defun pvs2C-defn-application (expr bindings livevars)
   (with-slots (operator argument) expr
@@ -609,7 +591,7 @@
 			     collect (mk-name-expr bd))))))
 	  (pvs2C* eta-expansion bindings livevars))
 	(let* ((actuals (expr-actuals (module-instance expr)))
-	       (C-actuals (pvs2C actuals bindings livevars))  ;; What are these actuals ? (type)
+	       (C-actuals (pvs2C actuals bindings livevars))  ;; The actuals are parameters
 	       (type-e (pvs2C-type (type expr))))
 	  (cons type-e
 		(if (C-pointer? type-e)
@@ -722,15 +704,15 @@
   (with-slots (expression assignments) expr
   (if (C-updateable? (type expression))
       (if (and *destructive?* (not (some #'maplet? assignments)))
-	  (let* ((*livevars-table* 
+	  (let* ((*C-livevars-table* 
 		  (no-livevars? expression livevars assignments)))
 	    ;;very unrefined: uses all freevars of eventually updated expression.
-	    (cond (*livevars-table* ;; check-assign-types
-		   (push-output-vars (car *livevars-table*)
-				     (cdr *livevars-table*))
+	    (cond (*C-livevars-table* ;; check-assign-types
+		   (push-output-vars (car *C-livevars-table*)
+				     (cdr *C-livevars-table*))
 		   (pvs2C-update expr bindings livevars))
 		  (t
-		   (when (and *eval-verbose* (not *livevars-table*))
+		   (when (and *eval-verbose* (not *C-livevars-table*))
 		     (format t "~%Update ~s translated nondestructively. Live variables ~s present"
 			       expr livevars))
 		   (pvs2C-update expr bindings livevars))))
@@ -827,7 +809,7 @@
 
 ;; Function to get and set arrays
 (defun updateable-set (type array index value)
-  (if (and *destructive?* *livevars-table*) ;; Destructive update
+  (if (and *destructive?* *C-livevars-table*) ;; Destructive update
       (list (format nil "~a[~a] = ~a; +++" array index value))
 ;;      (get-typed-copy (target type)
 ;;		      (format nil "~a[~a]" array index)
@@ -990,7 +972,9 @@
 	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)
-      
+
+      (dolist (rec-def *C-record-defns*)
+	(format output "~a~%" (caddr rec-def)))
       (dolist (theory theories)
 	(dolist (decl (theory theory))
 	  (let ((ndes-info (gethash decl *C-nondestructive-hash*))
@@ -998,15 +982,15 @@
 	    (when ndes-info
 	      (let ((id (C-info-id ndes-info)))
 		;; First the signature
-		(format output  "~2%~a ~a(~a) {"
-			(C-info-type-out ndes-info)
-			id
-			(C-info-type-arg ndes-info))
 		(format outputH "~2%~a ~a(~a);"
 			(C-info-type-out ndes-info)
 			id
 			(C-info-type-arg ndes-info))
 		;; Then the defn
+		(format output  "~2%~a ~a(~a) {"
+			(C-info-type-out ndes-info)
+			id
+			(C-info-type-arg ndes-info))
 		(format output "~%~a}"  (C-info-definition des-info))))
 	    (when des-info
 	      (let ((id (C-info-id des-info)))
@@ -1057,7 +1041,36 @@
 
 ;; Deprecated
 (defmacro pvsC_update (array index value)
-  `(let ((update-op (if (and *destructive?* *livevars-table*)
+  `(let ((update-op (if (and *destructive?* *C-livevars-table*)
 			(format nil "pvsDestructiveUpdate")
 			(format nil "pvsNonDestructiveUpdate"))))
        (format nil  "~a(~a, ~a, ~a);" update-op ,array ,index ,value)))
+
+
+
+
+;; To add in the .el files
+
+;; (defpvs pvs-C-file find-file (filename)
+;;   "Generates the C code for a given file and displays it in a buffer"
+;;   (interactive (pvs-complete-file-name "Generate C for file: "))
+;;   (unless (interactive-p) (pvs-collect-theories))
+;;   (pvs-bury-output)
+;;   (message "Generating C for file...")
+;;   (pvs-send-and-wait (format "(generate-C-for-pvs-file \"%s\")"
+;; 			 filename) nil nil 'dont-care)
+;;   (let ((buf (pvs-find-C-file filename)))
+;;     (when buf
+;;       (message "")
+;;       (save-excursion
+;; 	(set-buffer buf)
+;; 	(setq pvs-context-sensitive t)
+;; 	(lisp-mode)))))
+
+;; (defun pvs-find-C-file (filename)
+;;   (let ((buf (get-buffer (format "%s.c" filename))))
+;;     (when buf
+;;       (kill-buffer buf)))
+;;   (let ((C-file (format "%s%s.c" pvs-current-directory filename)))
+;;     (when (file-exists-p C-file)
+;;       (find-file-read-only-other-window C-file))))
