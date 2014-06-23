@@ -113,7 +113,7 @@
 
 (defun convert (typeA typeB e)
   (cond ((type= typeA typeB) e)
-	((C-base? typeA) (format nil (convertor typeA typeB) e))
+	((not (C-pointer? typeA)) (format nil (convertor typeA typeB) e))
 	(t
 	 (let ((n (gen-C-var typeA "conv")))
 	   (add-instructions (C-alloc n))
@@ -210,8 +210,8 @@
 ;; Should not empty *C-destructions*
 (defun pvs2C2 (expr bindings livevars type name &optional need-malloc)
   (C-save *C-destructions*)
-;;  (when need-malloc (add-instructions (C-alloc (C-var type name))))
-  (if (C-base? type)
+  (when need-malloc (add-instructions (C-alloc (C-var type name))))
+  (if (not (C-pointer? type))
       (let ((e (pvs2C expr bindings livevars type)))
 	(add-instruction (format nil "~a = ~a;" name e))
 	(add-instructions (C-load *C-destructions*))
@@ -221,7 +221,6 @@
       (if (consp (cdr e))  ;; C-pointer? type-e
 	  (if (type= type-e type)
 	      (progn
-		(when need-malloc (add-instructions (C-alloc (C-var type name))))
 		(add-instructions
 		 (append (apply-argument (cdr e) name)
 			 (C-load *C-destructions*)))
@@ -470,10 +469,10 @@
 		 (check (check-output-vars analysis alist livevars))
 		 (id-op (if check (C_id operator)
 			          (C_nondestructive_id operator))))
-	    (cons ret-type (if (C-gmp? ret-type)
+	    (cons ret-type (if (C-pointer? ret-type)
 			       (set-C-pointer id-op C-args)
 			     (mk-C-funcall id-op C-args))))
-	(cons ret-type (if (C-gmp? ret-type)
+	(cons ret-type (if (C-pointer? ret-type)
 			   (set-C-pointer (C_id operator) C-args)
 			 (mk-C-funcall (C_id operator) C-args)))))))
 
@@ -511,11 +510,10 @@
 	 (bind-ids (pvs2cl-make-bindings formals nil))
 	 (id-map (pairlis formals bind-ids))
 	 (cl-type-out (pvs2C-type range-type))
-	 (return-void (C-gmp? cl-type-out))
-;;	 (pointer-out (C-pointer? cl-type-out))
+	 (pointer-out (C-pointer? cl-type-out))
 	 (result-var (C-var cl-type-out "result"))
 	 (cl-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" cl-type-out)))
+	      (append (when pointer-out (list (format nil "~a result" cl-type-out)))
 		      (loop for var in formals
 			    collect (format nil "~a ~a"
 					    (pvs2C-type (type var))
@@ -525,13 +523,12 @@
     (format t "~%Defining (nondestructively) ~a with type~%   ~a -> ~a"
 	    (id op-decl) cl-type-arg cl-type-out)
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" *C-instructions*))
-    (unless return-void (add-instructions-first (C-alloc result-var)))
-    (setf (C-info-type-out hash-entry) (if return-void "void" cl-type-out)
+    (setf (C-info-type-out hash-entry) (if pointer-out "void" cl-type-out)
 	  (C-info-type-arg hash-entry) cl-type-arg
 	  (C-info-definition hash-entry)
 	       (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
 		       (C-flush *C-instructions*)
-		       (C-flush *C-destructions*) return-void))
+		       (C-flush *C-destructions*) pointer-out))
       ))
 
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
@@ -540,11 +537,10 @@
 	 (bind-ids (pvs2cl-make-bindings formals nil))
 	 (id-map (pairlis formals bind-ids))
 	 (cl-type-out (pvs2C-type range-type))
-	 (return-void (C-gmp? cl-type-out))
-;;	 (pointer-out (C-pointer? cl-type-out))
+	 (pointer-out (C-pointer? cl-type-out))
 	 (result-var (C-var cl-type-out "result"))
 	 (cl-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" cl-type-out)))
+	      (append (when pointer-out (list (format nil "~a result" cl-type-out)))
 		      (loop for var in formals
 		       collect (format nil "~a ~a"
 				       (pvs2C-type (type var))
@@ -555,13 +551,13 @@
     (format t "~%Defining (destructively) ~a with type~%   ~a -> ~a"
 	    (id op-decl) cl-type-arg cl-type-out)
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" *C-instructions*))
-    (unless return-void (add-instructions-first (C-alloc result-var)))
-    (setf (C-info-type-out hash-entry) (if return-void "void" cl-type-out)
+    (unless pointer-out (add-instructions-first (C-alloc result-var)))
+    (setf (C-info-type-out hash-entry) (if pointer-out "void" cl-type-out)
 	  (C-info-type-arg hash-entry) cl-type-arg
 	  (C-info-definition hash-entry)
 	      (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
 		      (C-flush *C-instructions*)
-		      (C-flush *C-destructions*) return-void )
+		      (C-flush *C-destructions*) pointer-out)
 	  (C-info-analysis hash-entry) *output-vars*)
     (unless (equalp old-output-vars *output-vars*)
       (pvs2C-resolution-destructive op-decl formals body range-type))))
@@ -664,7 +660,9 @@
 				   bindings)))
 	    (cons (pvs2C-type expr)
 		  (append
-		   (list (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {" i i (array-bound type) i))
+		   (list (format nil "if ( GC_count( ~~a ) == 1) {")
+			 (format nil "  ~~a = GC( ~a );" )
+			 (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {" i i (array-bound type) i))
 		   (mapcar #'(lambda (x) (format nil "  ~a" x))
 			   (pvs2C2-getdef expression
 					  new-bind
@@ -675,9 +673,6 @@
 		   (list "}"))))
 	(pvs2C-lambda bind-decls expression bindings)))))
 
-;; (list (format nil "if ( GC_count( ~~a ) == 1) {")
-;;       (format nil "  ~~a = GC( ~a );" )
-;;       ....
 
 ;; Doesn't work  / Should look like if-expr
 (defmethod pvs2C* ((expr cases-expr) bindings livevars)
@@ -1018,8 +1013,10 @@
 
 
 
-
 ;; Useless functions ?/
+
+
+
 
 (defun pvs2C-assign-rhs (assignments bindings livevars)
   (when (consp assignments)

@@ -11,7 +11,6 @@
 struct entry_s {
   void* pointer;
   int counter;
-  int rec_free;
   struct entry_s *next;
 };
 typedef struct entry_s entry_t;
@@ -51,14 +50,13 @@ int ht_hash( hashtable_t *hashtable, void* pointer ) {
 }
  
 /* Create a key-value pair. */
-entry_t *ht_newpair( void* pointer, int rec_free ) {
+entry_t *ht_newpair( void* pointer ) {
   entry_t *newpair;
   if( ( newpair = malloc( sizeof( entry_t ) ) ) == NULL )
     return NULL;
   
   newpair->pointer  = pointer;
   newpair->counter  = 1;     // Default value
-  newpair->rec_free = rec_free;
   newpair->next = NULL;
   return newpair;
 }
@@ -92,18 +90,17 @@ void GC_add_entry( entry_t* e) {
   GC_hashtable->table[bin] = e;
 }
 
-void GC_new( void* pointer, int rec_free) {
-  GC_add_entry( ht_newpair(pointer, rec_free) );
+void GC_new( void* pointer ) {
+  GC_add_entry( ht_newpair(pointer) );
 }
 
-int GC_incr( void* pointer) {
+void* GC( void* pointer ) {
   entry_t* entry = GC_get_entry( pointer);
-  if ( entry == NULL )
-    return -1;
-  else {
+  if (! entry)
+    GC_new( pointer );
+  else
     entry->counter++;
-    return entry->counter;
-  }
+  return pointer;
 }
 
 int GC_count( void* pointer ) {
@@ -114,31 +111,23 @@ int GC_count( void* pointer ) {
     return entry->counter;
 }
 
-void* GC(void* pointer) {
-  GC_incr( pointer );
-  return pointer;
-}
 
-
-// rec_free means need recusive freeing (bascially, is domain a pointer type ?)
-// if rec_free != 0 then entry->rec_free is set to the length of the array
-void* GC_malloc( int length, int size, int rec_free ) {
+void* GC_malloc( int length, int size ) {
   void* res = malloc( length * size );
-  if (rec_free)
-    GC_new( res, length);
-  else
-    GC_new( res, 0);
+  GC_new( res );
   return res;
 }
 
-void GC_free(void* pointer) {
+// 0 if the pointer is freed, 1 otehrwise
+int GC_free(void* pointer) {
   int i;
   entry_t* e = GC_get_entry(pointer);
-  for (i = 0; i < e->rec_free; i++) {
-    if ( *(pointer+i) != NULL )
-      GC_free(pointer[i]);
-  }
-  free(pointer);
+  e->counter--;
+  if (e->counter == 0) {
+    free(pointer);
+    return 0;
+  } else
+    return 1;
 }
 
 
@@ -146,17 +135,17 @@ void GC_free(void* pointer) {
 int main( int argc, char **argv ) {
   GC_start();
   
-  char* a = "a";
+  char* a = GC( "a" );
+  char* b = GC( a );
+  char* c = GC( b );
   
-  GC_new( a , 0);
-  GC_incr( a );
-  GC_incr( a );
+  char* d = GC( "d" );
   
-  char* b = "b";
-  GC_new( b, 1);
-  
-  printf( "%d\n", GC_count( a ) );
-  printf( "%d\n", GC_count( b ) );
+  printf( "a: %d\n", GC_count( a ) );
+  printf( "b: %d\n", GC_count( b ) );
+  GC_free( a );
+  printf( "c: %d\n", GC_count( c ) );
+  printf( "d: %d\n", GC_count( d ) );
   
   GC_quit();
   return 0;

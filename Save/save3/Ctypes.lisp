@@ -13,26 +13,20 @@
 
 ;; Classes to represent C types
 (defcl C-type ())
-(defcl C-base    (C-type)) ;; represents int, long, ...
 (defcl C-pointer (C-type))
-(defcl C-struct  (C-type) (name))
-(defcl C-gmp     (C-type))
-
-(defcl C-number ())
+(defcl C-number (C-type))
 (defcl C-integer (C-number))
-
-(defcl C-int (C-base C-integer))
-(defcl C-uli (C-base C-integer))
-(defcl C-mpz (C-gmp  C-integer))
-(defcl C-mpq (C-gmp  C-number ))
+(defcl C-int (C-integer))
+(defcl C-uli (C-integer))
+(defcl C-mpz (C-integer C-pointer))
+(defcl C-mpq (C-number C-pointer))
 (defcl C-pointer-type (C-pointer) (target) (size))
-
-(defcl C-closure  (C-pointer)) ;; To be implemented...
-(defcl C-named-type (C-pointer) (name)) ;; ???
-
+(defcl C-struct (C-pointer) (name))
+(defcl C-named-type (C-pointer) (name))
+(defcl C-closure  (C-pointer))
 
 ;; Some instances of the classes above (to avoid over-instanciating)
-(defvar *C-type* (make-instance 'C-type))  ;; Type undefined
+(defvar *C-type* (make-instance 'C-type))
 (defvar *C-int* (make-instance 'C-int))
 (defvar *C-uli* (make-instance 'C-uli))
 (defvar *C-mpz* (make-instance 'C-mpz))
@@ -232,10 +226,6 @@
 
 
 ;; C variables memory allocation
-(defun need-C-alloc (type)
-  (or (C-gmp? type)
-      (C-pointer? type)))
-
 (defgeneric C-alloc (arg))
 (defmethod C-alloc ((type C-mpz))
   (list "mpz_init(~a);"))
@@ -244,7 +234,7 @@
 (defmethod C-alloc ((type C-pointer-type))
   (with-slots (target size) type
     (cons (format nil "~~a = malloc( ~a );" (m-size type))
-	  (when (need-C-alloc target)
+	  (when (C-pointer? target)
 	    (let* ((i (gentemp "i"))
 		   (name-i (format nil "~~a[~a]" i)))
 	      (append
@@ -289,7 +279,7 @@
    (mapcar #'(lambda (x) (format nil "  ~a" x))
 	   (get-typed-copy (target typeA) nameAi (target typeB) nameBi))
    (list "}"))))
-(defmethod get-typed-copy ( (typeA C-gmp) nameA typeB nameB)
+(defmethod get-typed-copy ( (typeA C-pointer) nameA typeB nameB)
   (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
 (defmethod get-typed-copy (  typeA            nameA typeB nameB)
   (list (format nil "~a = ~a;" nameA
