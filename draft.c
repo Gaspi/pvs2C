@@ -17,58 +17,208 @@ int main(void) {
   printf("Executing draft ...\n");
   return 0;
 }
-struct pvsrec78 {
-  mpz_t n;
-  mpz_t* arr;
-};
 
 
-void pvs_f76(struct pvsrec78 result, struct pvsrec78 t55966) {
-  mpz_t conv81;
-  mpz_init(conv81);
-  mpz_set_si(conv81, (long) 0);
-  copy_struct pvsrec78(result, t55966);
-  result.n = conv81;
-  mpz_clear(conv81);
+unsigned long int pvs_a185() {
+  unsigned long int result;
+  result = (unsigned long) 2;
+  return result;
 }
 
-void pvs_d_f77(struct pvsrec78 result, struct pvsrec78 t55966) {
-  mpz_t conv81;
-  mpz_init(conv81);
-  mpz_set_si(conv81, (long) 0);
-  copy_struct pvsrec78(result, t55966);
-  result.n = conv81;
-  mpz_clear(conv81);
+unsigned long int pvs_d_a186() {
+  unsigned long int result;
+  result = (unsigned long) 2;
+  return result;
 }
 
-void pvs_f82(mpz_t* result, mpz_t* t55966) {
-  mpz_t* aux89;
-  aux89 = malloc( 10 * sizeof(mpz_t) );
-  for(int i90 = 0; i90 < 10; i90++) {
-    mpz_init(aux89[i90]);
-  }
-  for(int i88 = 0; i88 < 10; i88++) {
-    mpz_set(aux89[i88], t55966[i88]);
-  }
-  mpz_t* a = aux89;
-  for(int i91 = 0; i91 < 10; i91++) {
-    mpz_set(result[i91], a[i91]);
-  }
-  free(aux89);
+int pvs_b187() {
+  mpz_t aux192;
+  mpz_init(aux192);
+  mpz_t conv191;
+  mpz_init(conv191);
+  mpz_set_si(conv191, (long) 3);
+  mpz_add_ui(aux192, conv191, (unsigned long) 1);
+  mpz_clear(conv191);
+  int result;
+  result = ( (int) mpz_get_si(aux192) );
+  mpz_clear(aux192);
+  return result;
 }
 
-void pvs_d_f83(mpz_t* result, mpz_t* t55966) {
-  mpz_t* aux89;
-  aux89 = malloc( 10 * sizeof(mpz_t) );
-  for(int i90 = 0; i90 < 10; i90++) {
-    mpz_init(aux89[i90]);
+int pvs_d_b188() {
+  mpz_t aux192;
+  mpz_init(aux192);
+  mpz_t conv191;
+  mpz_init(conv191);
+  mpz_set_si(conv191, (long) 3);
+  mpz_add_ui(aux192, conv191, (unsigned long) 1);
+  mpz_clear(conv191);
+  int result;
+  result = ( (int) mpz_get_si(aux192) );
+  mpz_clear(aux192);
+  return result;
+}
+
+void pvs_c193(mpz_t result) {
+  mpz_t aux198;
+  mpz_init(aux198);
+  mpz_t conv197;
+  mpz_init(conv197);
+  mpz_set_si(conv197, (long) 1);
+  mpz_add_ui(aux198, conv197, (unsigned long) 2);
+  mpz_clear(conv197);
+  mpz_mul_ui(result, aux198, (unsigned long) 3);
+  mpz_clear(aux198);
+}
+
+void pvs_d_c194(mpz_t result) {
+  mpz_t aux198;
+  mpz_init(aux198);
+  mpz_t conv197;
+  mpz_init(conv197);
+  mpz_set_si(conv197, (long) 1);
+  mpz_add_ui(aux198, conv197, (unsigned long) 2);
+  mpz_clear(conv197);
+  mpz_mul_ui(result, aux198, (unsigned long) 3);
+  mpz_clear(aux198);
+}
+
+int pvs_incr199(int x) {
+  mpz_t aux204;
+  mpz_init(aux204);
+  mpz_t conv203;
+  mpz_init(conv203);
+  mpz_set_si(conv203, (long) x);
+  mpz_add_ui(aux204, conv203, (unsigned long) 1);
+  mpz_clear(conv203);
+  int result;
+  result = ( (int) mpz_get_si(aux204) );
+  mpz_clear(aux204);
+  return result;
+}
+
+int pvs_d_incr200(int x) {
+  mpz_t aux204;
+  mpz_init(aux204);
+  mpz_t conv203;
+  mpz_init(conv203);
+  mpz_set_si(conv203, (long) x);
+  mpz_add_ui(aux204, conv203, (unsigned long) 1);
+  mpz_clear(conv203);
+  int result;
+  result = ( (int) mpz_get_si(aux204) );
+  mpz_clear(aux204);
+  return result;
+}
+
+int pvs_zero205(mpz_t x) {
+  int result;
+  result = 0;
+  return result;
+}
+
+int pvs_d_zero206(mpz_t x) {
+  int result;
+  result = 0;
+  return result;
+}
+
+int pvs_f207(int a, int b) {
+  mpz_t aux214;
+  mpz_init(aux214);
+  mpz_t conv212;
+  mpz_init(conv212);
+  mpz_set_si(conv212, (long) b);
+  mpz_t conv213;
+  mpz_init(conv213);
+  mpz_set_si(conv213, (long) pvs_d_zero206(conv212));
+  mpz_clear(conv212);
+  mpz_mul_ui(aux214, conv213, (unsigned long) pvs_d_incr200(a));
+  mpz_clear(conv213);
+  int result;
+  result = ( (int) mpz_get_si(aux214) );
+  mpz_clear(aux214);
+  return result;
+}
+
+int pvs_d_f208(int a, int b) {
+  mpz_t aux214;
+  mpz_init(aux214);
+  mpz_t conv212;
+  mpz_init(conv212);
+  mpz_set_si(conv212, (long) b);
+  mpz_t conv213;
+  mpz_init(conv213);
+  mpz_set_si(conv213, (long) pvs_d_zero206(conv212));
+  mpz_clear(conv212);
+  mpz_mul_ui(aux214, conv213, (unsigned long) pvs_d_incr200(a));
+  mpz_clear(conv213);
+  int result;
+  result = ( (int) mpz_get_si(aux214) );
+  mpz_clear(aux214);
+  return result;
+}
+
+int pvs_t215(int x) {
+  int result;
+  result = x;
+  return result;
+}
+
+int pvs_d_t216(int x) {
+  int result;
+  result = x;
+  return result;
+}
+
+int* pvs_f217(int x) {
+  int* result;
+  for(int i220 = 0; i220 < 1000;;; i220++) {
+    result[i220] = pvs_d_t216(i220);
   }
-  for(int i88 = 0; i88 < 10; i88++) {
-    mpz_set(aux89[i88], t55966[i88]);
+  return result;
+}
+
+int* pvs_d_f218(int x) {
+  int* result;
+  for(int i220 = 0; i220 < 1000;;; i220++) {
+    result[i220] = pvs_d_t216(i220);
   }
-  mpz_t* a = aux89;
-  for(int i91 = 0; i91 < 10; i91++) {
-    mpz_set(result[i91], a[i91]);
+  return result;
+}
+
+int* pvs_update221(int* x) {
+  int* result;
+  int L230;
+  L230 = 0;
+  int res231;
+  res231 = 0;
+  if ( GC_count( x ) == 1 )
+    result = x;
+  else {
+    result = GC_malloc( 1000 * sizeof(int) );
+    for(int i229 = 0; i229 < 1000; i229++)
+      result[i229] = x[i229];
+    }
   }
-  free(aux89);
+  result[L230] = res231;
+  return result;
+}
+
+int* pvs_d_update222(int* x) {
+  int* result;
+  int L230;
+  L230 = 0;
+  int res231;
+  res231 = 0;
+  if ( GC_count( x ) == 1 )
+    result = x;
+  else {
+    result = GC_malloc( 1000 * sizeof(int) );
+    for(int i229 = 0; i229 < 1000; i229++)
+      result[i229] = x[i229];
+    }
+  }
+  result[L230] = res231;
+  return result;
 }

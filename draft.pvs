@@ -1,10 +1,28 @@
 draft : THEORY
 BEGIN
   
-  % Cint : TYPE = subrange(-1000, 1000)
-  % Culi : type = below(1000000)
+%  Cint : TYPE = subrange(-1000, 1000)
+  Cint : TYPE = below(1000)
+  Culi : type = below(1000000)
+
   
-  a:below(10) = 2
+  a:Culi = 2
+  b:Cint = 3+1
+  c:int  = 3*(1+2)
+  
+  incr(x:Cint):Cint = x + 1
+  
+  zero(x:int):Cint = 0
+  
+  f(a:Cint, b:Cint):Cint = zero(b) * incr(a)
+  
+  Arr : TYPE = [ Cint -> Cint ]
+  
+  t:Arr = lambda(x:Cint) : x
+  
+  f(x:Cint):Arr = t
+  
+  update(x:Arr):Arr = x with [(0) := 0]
   
 END draft
 

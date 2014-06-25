@@ -14,8 +14,7 @@
 ;; Classes to represent C types
 (defcl C-type ())
 (defcl C-base    (C-type)) ;; represents int, long, ...
-(defcl C-pointer (C-type))
-(defcl C-struct  (C-type) (name))
+(defcl C-pointer (C-type) (bang))
 (defcl C-gmp     (C-type))
 
 (defcl C-number ())
@@ -25,10 +24,11 @@
 (defcl C-uli (C-base C-integer))
 (defcl C-mpz (C-gmp  C-integer))
 (defcl C-mpq (C-gmp  C-number ))
-(defcl C-pointer-type (C-pointer) (target) (size))
 
-(defcl C-closure  (C-pointer)) ;; To be implemented...
-(defcl C-named-type (C-pointer) (name)) ;; ???
+(defcl C-pointer-type (C-pointer) (target) (size) (bang))
+(defcl C-struct       (C-pointer) (name))
+(defcl C-closure      (C-pointer)) ;; To be implemented...
+(defcl C-named-type   (C-pointer) (name)) ;; ???
 
 
 ;; Some instances of the classes above (to avoid over-instanciating)
@@ -73,7 +73,7 @@
 ;; Translating PVS types to C types
 (defmethod pvs2C-type ((type recordtype) &optional tbindings)
   (with-slots (print-type) type
-    (if (type-name? print-type)
+     (if (type-name? print-type)
 	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
 	  (if entry (make-instance 'C-struct :name (cadr entry))
 	      (let* ((formatted-fields (loop for fld in (fields type)
@@ -98,6 +98,7 @@
       (let ((range (subrange-index (domain type))))
 	(make-instance 'C-pointer-type
 		       :target (pvs2C-type (range type))
+		       :bang nil
 		       :size
 		         (when (and (car range)
 				    (cadr range)
@@ -105,6 +106,12 @@
 				    (not (eq (cadr range) '*)))
 			   (1+ (- (cadr range) (car range))))))
     (make-instance 'C-closure)))
+
+(defmethod bang-type ((type C-pointer-type))
+  (setf (slot-value type 'bang) t)
+  type)
+(defmethod bang-type ((type C-type)) type)
+
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)
   (let ((range (subrange-index type)))
@@ -157,6 +164,8 @@
 (defgeneric is-in-range? (e inf sup))
 (defmethod is-in-range? ((interval list) inf sup)
   (and interval (car interval) (cadr interval)
+       (not (eql (car  interval) '*))
+       (not (eql (cadr interval) '*))
        (<= inf (car interval))
        (<=     (cadr interval) sup)))
 (defmethod is-in-range? ((t type-expr) inf sup)
@@ -185,6 +194,7 @@
       (let ((range (subrange-index (domain type))))
 	(make-instance 'C-pointer-type
 		       :target (pvs2C-type expression)
+		       :bang nil ;; Find here when this can be set to t
 		       :size (1+ (- (cadr range) (car range)))))
     (make-instance 'C-closure))))
 
@@ -209,14 +219,7 @@
 
 
 
-(defstruct C-var name type)
-(defun C-var (type name) (make-C-var :name name :type type))
-(defmethod print-object ((obj C-var) out)
-  (format out "~a" (slot-value obj 'name)))
-(defun var-type (arg) (slot-value arg 'type))
-(defun var-name (arg) (slot-value arg 'name))
-(defun gen-C-var (type prefix)
-  (C-var type (gentemp prefix)))
+
 
 
 (defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
@@ -245,7 +248,7 @@
 ;;;;        arr[i] = ...;
 ;;;; !!!! Make sure there is no other way to create arrays !!!!
 (defun array-malloc (type)
-  (assert (C-pointer-type type))
+  (assert (C-pointer-type? type))
   (with-slots (target size) type
      (cons (format nil "~~a = GC_malloc( ~a );" (m-size type))
 	   (when (C-gmp? target)
@@ -253,8 +256,7 @@
 		    (name-i (format nil "~~a[~a]" i)))
 	       (append
 		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
-		(mapcar #'(lambda (x) (format nil "  ~a" x))
-			(apply-argument (C-alloc target) name-i))
+		(indent (apply-argument (C-alloc target) name-i))
 		(list "}")))))))
 ;; (defun need-C-alloc (type)
 ;;   (or (C-gmp? type)
@@ -264,11 +266,9 @@
 
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
-  (let ((type (var-type v))
-	(name (slot-value v 'name)))
-    (cons
-     (format nil "~a ~a;" type name)
-     (apply-argument (C-alloc type) name))))
+  (with-slots (type name) v
+    (cons (format nil "~a ~a;" type name)
+	  (apply-argument (C-alloc type) name))))
 
 ;; C variables memory deallocation
 (defgeneric C-free (arg))
@@ -284,41 +284,62 @@
 
 ;; -------- Converting a C expression to an other type --------
 
+
 ;; Getting a object of typeA representing nameB of typeB
 (defun get-typed-copy (typeA nameA typeB nameB)
+  (assert (and (C-type? typeA) (C-type? typeB)))
   (cond ((C-gmp? typeA)
 	 (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
+	((and (C-pointer? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
+	 (get-bang-copy typeA nameA typeB nameB))
 	(t (list (format nil "~a = ~a;" nameA
 			 (if (and (type= typeA typeB) (not (C-pointer-type? typeA)))
 			     nameB
 			   (format nil (convertor typeA typeB) nameB)))))))
 
-;; Getting a copy of the array (if needed)
-(defmethod get-content-copy ((typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
+;; Getting a bang version of the array (copy if needed)
+(defmethod get-bang-copy ((typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
   (let* ((i (gentemp "i"))
 	 (nameAi (format nil "~a[~a]" nameA i))
 	 (nameBi (format nil "~a[~a]" nameB i))
 	 (copy-bloc (append
 		(apply-argument (array-malloc typeA) nameA)
 		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++)" i i (size typeB) i))
-		(get-typed-copy (target typeA) nameAi (target typeB) nameBi)
+		(indent (get-typed-copy (target typeA) nameAi (target typeB) nameBi))
 		(list "}"))))
 ;;		(mapcar #'(lambda (x) (format nil "  ~a" x))
     ;;			(get-typed-copy (target typeA) nameAi (target typeB) nameBi))
     ;;		(list "}"))))
     (append
-     (list (format nil "if ( GC_count( ~a ) == 1 )" nameA)
+     (list (format nil "if ( GC_count( ~a ) == 1 )" nameB)
 	   (format nil "  ~a = ~a;" nameA nameB)
 	   (format nil "else {"))
-     (mapcar #'(lambda (x) (format nil "  ~a" x))
-	     copy-bloc)
+     (indent copy-bloc)
      (list "}"))))
 
-(defmethod get-content-copy ((typeA C-struct) nameA (typeB C-struct) nameB)
+(defmethod get-bang-copy ((typeA C-struct) nameA (typeB C-struct) nameB)
   (get-typed-copy typeA nameA typeB nameB)) ;; Needs to be properly implemented...
+
+
+;; Convert a (not unnamed) Cexpr to an other with different type
+(defun convert (type e)
+  (cond ((type= type (type e)) e)
+	((C-base? type)
+	 (set-name e (format nil (convertor type (type e)) (name e)))
+	 (set-type e type)
+	 e)
+	(t
+	 (let ((n (gen-C-var type "conv")))
+	   (mk-Cexpr type n
+		     (append (instr e)
+			     (C-alloc n)
+			     (get-typed-copy type n (type e) (name e))
+			     (destr e))
+		     (C-free n))))))
 
   
 (defgeneric convertor (typeA typeB))
+;; ---------- GMP library conversions ---------------
 (defmethod convertor ((typeA C-mpz) (typeB C-mpz)) (list "mpz_set(~a, ~a);"))
 (defmethod convertor ((typeA C-mpz) (typeB C-mpq)) (list "mpq_get_num(~a, ~a);"))
 (defmethod convertor ((typeA C-mpz) (typeB C-uli)) (list "mpz_set_ui(~a, ~a);"))
@@ -335,17 +356,21 @@
 (defmethod convertor ((typeA C-int) (typeB C-mpz)) "( (int) mpz_get_si(~a) )")
 (defmethod convertor ((typeA C-uli) (typeB C-mpq)) "( (unsigned long) mpq_get_d(~a) )")
 (defmethod convertor ((typeA C-int) (typeB C-mpq)) "( (int) mpq_get_d(~a) )")
+;; ---------- base types ------------------------
 (defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
 (defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
+(defmethod convertor ((typeA C-uli) (typeB C-uli)) "~a")
+(defmethod convertor ((typeA C-int) (typeB C-int)) "~a")
+;; ---------- arrays pointer copy -----------------
 (defmethod convertor ((typeA C-pointer-type) (typeB C-pointer-type))
-  (format nil "(~a*) GC( ~a )" (target typeA)))
-
+  (format nil "(~a*) GC( ~~a )" (target typeA)))
+;; ---------- other cases (basically unimplemented) --------------
 (defmethod convertor (typeA typeB)
   (let ((func (if (type= typeA typeB)
 		  (format nil "copy_~a" typeA)
 		(format nil "~a_from_~a" typeA typeB))))
-    (if (C-pointer? typeA)
-	(list (format nil "~a(~~a, ~~a);" func))
+    (if (C-gmp? typeA)
+	(list (format nil "~a(~~{~~a~~^, ~~});" func))
       (format nil "~a(~~a)" func))))
 
 
@@ -403,30 +428,47 @@
   (mk-Cexpr type name nil nil))
 
 (defmethod set-type ((Cexpr Cexpr) (type C-type))
-  (setf (type C-expr) type))
+  (setf (type Cexpr) type))
 (defmethod set-name ((Cexpr Cexpr) name)
-  (setf (name C-expr) name))
-(defmethod set-instr ((C-expr Cexpr) instr)
-  (setf (instr C-expr)
-	instr))
-(defmethod set-destr ((C-expr Cexpr) destr)
-  (setf (destr C-expr)
-	destr))
+  (setf (name Cexpr) name))
+(defmethod set-instr ((Cexpr Cexpr) instr)
+  (setf (instr Cexpr) instr))
+(defmethod set-destr ((Cexpr Cexpr) destr)
+  (setf (destr Cexpr) destr))
 
-(defun unnamed? (C-expr)
-  (null (cadr C-expr)))
+(defmethod unnamed? ((Cexpr Cexpr))
+  (null (name Cexpr)))
 
-(defmethod apply-name ((Cexpr Cexpr) name)
+(defmethod define-name ((Cexpr Cexpr) name)
   (set-name Cexpr name)
-  (set-instr (mapcar #'(lambda (x) (format nil x name))
-		     (instr Cexpr)))
-  (set-destr (mapcar #'(lambda (x) (format nil x name))
-		     (destr Cexpr)))
+  (set-instr Cexpr (mapcar #'(lambda (x) (format nil x name))
+			   (instr Cexpr)))
+  (set-destr Cexpr (mapcar #'(lambda (x) (format nil x name))
+			  (destr Cexpr)))
   Cexpr)
 
 
 
 (defmethod print-object ((obj Cexpr) out) (format out "~a" (name obj)))
+
+
+
+
+
+
+
+;; TODO   Turn that into a defcl !!!
+
+
+(defstruct C-var name type)
+(defun C-var (type name) (make-C-var :name name :type type))
+(defmethod print-object ((obj C-var) out)
+  (format out "~a" (slot-value obj 'name)))
+(defun var-type (arg) (slot-value arg 'type))
+(defun var-name (arg) (slot-value arg 'name))
+(defun gen-C-var (type prefix)
+  (C-var type (gentemp prefix)))
+
 
 
 
@@ -445,3 +487,9 @@
 
 
 
+;; Should be moved to "utils.pvs" 
+(defun indent (bloc)
+  (if (listp bloc)
+      (mapcar #'(lambda (x) (format nil "  ~a" x))
+	      bloc)
+    (format nil "  ~a" bloc)))

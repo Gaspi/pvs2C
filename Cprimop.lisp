@@ -45,7 +45,10 @@
 		  (mk-C-funcall function C-args)))))
 
 (defmethod apply-argument ((instructions list) arg)
-  (mapcar #'(lambda (x) (format nil x arg)) instructions))
+  (when (consp instructions)
+    (cons (apply-argument (car instructions) arg)
+	  (apply-argument (cdr instructions) arg))))
+;; TODO make that depend on the type of instruction
 (defmethod apply-argument (instructions arg)
   (format nil instructions arg))
 
@@ -91,17 +94,17 @@
 
 
 
-(defun Cprocess (info args binding livevars)
-  (let* ((args (pvs2C args bindings livevars (cadr info)))
-	 (func (caddr args))
+(defun Cprocess (info args bindings livevars)
+  (let* ((C-args (pvs2C args bindings livevars (cadr info)))
+	 (func (caddr info))
 	 (instr (apply-argument func
 				(append (when (listp func) (list "~a"))
-					(name args)))))
-    (set-type args (car info))
-    (set-name args (unless (listp instr) instr))
-    (set-instr args (append (instr args)
-			    (when (listp instr) instr)))
-    args))
+					(name C-args)))))
+    (set-type  C-args (car info))
+    (set-name  C-args (unless (listp instr) instr))
+    (set-instr C-args (append (instr C-args)
+			      (when (listp instr) instr)))
+    C-args))
 
 
 ;; ------------- Boolean functions (2 arguments - number or bool / result bool) ----------
@@ -128,7 +131,7 @@
   (Cprocess (list *C-int*
 		 (list *C-int* *C-int*)
 		 (format nil "(~~{~~a~~^ ~a ~~})" (if (eq op '||) "||" op)))
-	   args binding livevars))
+	   args bindings livevars))
 
 ;; -------- Equality (2 arguments - could be anything / result int) --------
 (defun equality-function? (name args)
@@ -151,7 +154,7 @@
   (member name '(< <= > >=)))
 (defun pvs2C*-comparison (op type-args args bindings livevars)
   (Cprocess (cons *C-int* (pvs2C-comp (car type-args) (cadr type-args) op))
-	   args binding livevars))
+	   args bindings livevars))
 (defun pvs2C-comp (typeA typeB op)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
 	 (list (list *C-mpq* *C-mpq*)
@@ -171,9 +174,9 @@
 ;; ------------- Negation (1 argument - number / result number) ----------
 (defun negation-function? (name args)
   (and (eq name 'pvsSub) (= (length args) 1)))
-(defun pvs2C*-negation (type arg binding livevars)
+(defun pvs2C*-negation (type arg bindings livevars)
   (Cprocess (pvs2C-neg (car type))
-	   arg binding livevars))
+	   arg bindings livevars))
 (defun pvs2C-neg (type)
   (cond ((C-int? type)
 	 (list *C-int* (list *C-int*) "(-~{~a~})"))
@@ -193,7 +196,7 @@
   (let ((info (pvs2C-add typeR typeA typeB args)))
     (Cprocess (cdr info) (car info) bindings livevars)))
 (defun pvs2C-add (typeR typeA typeB args)
-  (cond ((or (C-mpq? typeA) (C-mpq typeB))
+  (cond ((or (C-mpq? typeA) (C-mpq? typeB))
 	 (list args *C-mpq*
 	       (list *C-mpq* *C-mpq*)
 	       (list "mpq_add(~{~a~^, ~});")))
@@ -222,9 +225,9 @@
 
 (defun sub-function? (op args)
   (and (eq op 'pvsSub) (eq (length args) 2)))
-(defun pvs2C*-sub (typeA typeB typeR args binding livevars)
+(defun pvs2C*-sub (typeA typeB typeR args bindings livevars)
   (Cprocess (pvs2C-sub typeR typeA typeB args)
-	   args binding livevars))
+	   args bindings livevars))
 (defun pvs2C-sub (typeR typeA typeB args)
   (cond ((every #'C-base? (list typeA typeB typeR))
 	 (list typeR (list typeA typeB) "(~{~a~^ + ~})"))
@@ -245,9 +248,9 @@
 
 (defun times-function? (op args)
   (and (eq op 'pvsTimes) (eq (length args) 2)))
-(defun pvs2C*-times (typeA typeB typeR args binding livevars)
+(defun pvs2C*-times (typeA typeB typeR args bindings livevars)
   (let ((info (pvs2C-times typeR typeA typeB args)))
-    (Cprocess (cdr info) (car info) binding livevars)))
+    (Cprocess (cdr info) (car info) bindings livevars)))
 (defun pvs2C-times (typeR typeA typeB args)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
 	 (list args *C-mpq* (list *C-mpq* *C-mpq*)
@@ -277,7 +280,7 @@
 
 (defun div-function? (op args)
   (and (eq op 'pvsDiv) (eq (length args) 2)))
-(defun pvs2C*-div (typeA typeB typeR args binding livevars)
+(defun pvs2C*-div (typeA typeB typeR args bindings livevars)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
 	 (Cprocess (list *C-mpq* (list *C-mpq* *C-mpq*)
 			(list "mpq_div(~{~a~^, ~});"))))
