@@ -283,24 +283,29 @@
 
 
 ;; -------- Converting a C expression to an other type --------
-(defmethod get-typed-copy ( (typeA C-gmp) nameA typeB nameB)
-  (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
-(defmethod get-typed-copy (  typeA            nameA typeB nameB)
-  (list (format nil "~a = ~a;" nameA
-		(if (type= typeA typeB) nameB
-		  (format nil (convertor typeA typeB) nameB)))))
 
-;; Converting Arrays
-(defmethod get-typed-copy ( (typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
+;; Getting a object of typeA representing nameB of typeB
+(defun get-typed-copy (typeA nameA typeB nameB)
+  (cond ((C-gmp? typeA)
+	 (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
+	(t (list (format nil "~a = ~a;" nameA
+			 (if (and (type= typeA typeB) (not (C-pointer-type? typeA)))
+			     nameB
+			   (format nil (convertor typeA typeB) nameB)))))))
+
+;; Getting a copy of the array (if needed)
+(defmethod get-content-copy ((typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
   (let* ((i (gentemp "i"))
 	 (nameAi (format nil "~a[~a]" nameA i))
 	 (nameBi (format nil "~a[~a]" nameB i))
 	 (copy-bloc (append
 		(apply-argument (array-malloc typeA) nameA)
-		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (size typeB) i))
-		(mapcar #'(lambda (x) (format nil "  ~a" x))
-			(get-typed-copy (target typeA) nameAi (target typeB) nameBi))
+		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++)" i i (size typeB) i))
+		(get-typed-copy (target typeA) nameAi (target typeB) nameBi)
 		(list "}"))))
+;;		(mapcar #'(lambda (x) (format nil "  ~a" x))
+    ;;			(get-typed-copy (target typeA) nameAi (target typeB) nameBi))
+    ;;		(list "}"))))
     (append
      (list (format nil "if ( GC_count( ~a ) == 1 )" nameA)
 	   (format nil "  ~a = ~a;" nameA nameB)
@@ -309,7 +314,10 @@
 	     copy-bloc)
      (list "}"))))
 
+(defmethod get-content-copy ((typeA C-struct) nameA (typeB C-struct) nameB)
+  (get-typed-copy typeA nameA typeB nameB)) ;; Needs to be properly implemented...
 
+  
 (defgeneric convertor (typeA typeB))
 (defmethod convertor ((typeA C-mpz) (typeB C-mpz)) (list "mpz_set(~a, ~a);"))
 (defmethod convertor ((typeA C-mpz) (typeB C-mpq)) (list "mpq_get_num(~a, ~a);"))
@@ -329,6 +337,9 @@
 (defmethod convertor ((typeA C-int) (typeB C-mpq)) "( (int) mpq_get_d(~a) )")
 (defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
 (defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
+(defmethod convertor ((typeA C-pointer-type) (typeB C-pointer-type))
+  (format nil "(~a*) GC( ~a )" (target typeA)))
+
 (defmethod convertor (typeA typeB)
   (let ((func (if (type= typeA typeB)
 		  (format nil "copy_~a" typeA)
@@ -388,29 +399,30 @@
 			:instr instr
 			:destr destr))
 
-(defun set-type (Cexpr type)
-  (setq (type C-expr) type))
-(defun set-name (Cexpr name)
-  (setq (name C-expr) name))
-(defun set-instr (C-expr instr)
-  (setq (instr C-expr)
+(defun mk-simple-Cexpr (type name)
+  (mk-Cexpr type name nil nil))
+
+(defmethod set-type ((Cexpr Cexpr) (type C-type))
+  (setf (type C-expr) type))
+(defmethod set-name ((Cexpr Cexpr) name)
+  (setf (name C-expr) name))
+(defmethod set-instr ((C-expr Cexpr) instr)
+  (setf (instr C-expr)
 	instr))
-(defun set-destr (C-expr destr)
-  (setq (destr C-expr)
+(defmethod set-destr ((C-expr Cexpr) destr)
+  (setf (destr C-expr)
 	destr))
 
 (defun unnamed? (C-expr)
   (null (cadr C-expr)))
 
-(defun apply-name (C-expr name)
-  (set-name C-expr name)
-  (setq (instr C-expr)
-	(mapcar #'(lambda (x) (format nil x name))
-		(instr C-expr)))
-  (setq (destr C-expr)
-	(mapcar #'(lambda (x) (format nil x name))
-		(destr C-expr)))
-  C-expr)
+(defmethod apply-name ((Cexpr Cexpr) name)
+  (set-name Cexpr name)
+  (set-instr (mapcar #'(lambda (x) (format nil x name))
+		     (instr Cexpr)))
+  (set-destr (mapcar #'(lambda (x) (format nil x name))
+		     (destr Cexpr)))
+  Cexpr)
 
 
 

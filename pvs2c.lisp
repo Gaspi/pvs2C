@@ -721,88 +721,111 @@
     (pvs2C (translate-update-to-if! expr) bindings livevars)))) ;; When does that happen ?
 
 
-;; -------------------- Huge refactoring here -------------------------------
-
 
 (defun pvs2C-update (expr bindings livevars)
   (with-slots (type expression assignments) expr
     (let* ((C-type (pvs2C-type type))
-	   (assign-exprs (mapcar #'expression assignments)))
-      (cons C-type
-	    (append (pvs2C2-getdef expression bindings
-				   (append (updateable-free-formal-vars
-					      assign-exprs) ;;assign-args can be ignored
-					   livevars)
-				   C-type "~a" nil)
-		    ;; First we create a copy of the array named "~a" without malloc
-		    (pvs2C-update* (type expression)
+	   (assign-exprs (mapcar #'expression assignments))
+	   (C-expr (pvs2C2 expression bindings
+			   (append (updateable-free-formal-vars
+				    assign-exprs) ;;assign-args can be ignored
+				   livevars)
+			   C-type "~a" nil))
+	   (C-update (pvs2C-update* (type expression)
 				   (mapcar #'arguments assignments)
 				   assign-exprs
 				   bindings
 				   (append (updateable-vars expression)
-					   livevars)
-				   )))))) ;; Then we update it
+					   livevars))))
+      (set-name C-expr nil) ;; type is already C-type
+      (set-instr C-expr
+		 (append (instr C-update)  ;; Defining update key / value
+			 (instr C-expr)    ;; Getting an updateable array
+			 (name C-update)   ;; Performing the update (destructively)
+			 (destr C-update)));; Destroying
+      C-expr)))  ;; destr of C-expr is still to be destroyed
+
 
 ;;recursion over updates in an update expression
 (defun pvs2C-update* (type assign-args assign-exprs bindings livevars)
-  (when (consp assign-args)
-    (append (pvs2C-update-nd-type
+  (if (consp assign-args)
+    (let ((C-car (pvs2C-update-nd-type
 	        type "~a"
 		(car assign-args )
 		(car assign-exprs)
 		bindings
 		(append (append (updateable-vars (cdr assign-exprs))
 				(updateable-vars (cdr assign-args ))
-				livevars)))
-	    (pvs2C-update* type
+				livevars))))
+	  (C-cdr (pvs2C-update* type
 			   (cdr assign-args)
 			   (cdr assign-exprs)
 			   bindings
 			   (append (updateable-free-formal-vars (car assign-exprs))
-				   livevars)))))
+				   livevars))))
+      (set-name  C-car (append (name  C-car) (name  C-cdr)))
+      (set-instr C-car (append (instr C-car) (instr C-cdr)))
+      (set-destr C-car (append (destr C-car) (destr C-cdr)))
+      C-car)
+    (mk-Cexpr nil nil nil nil)))
+
 
 ;; ---- Recursion over nested update arguments in a single update ----
 (defun pvs2C-update-nd-type (type exprvar args assign-expr bindings livevars)
   (if (consp args)
       (pvs2C-update-nd-type* type exprvar (car args) (cdr args) assign-expr
 			      bindings livevars)
-    (let ((C-type (pvs2C-type type))) ;; Should not happen... (a priori)
-      (break)
-      (get-typed-copy C-type exprvar
-		      C-type (pvs2C assign-expr bindings livevars C-type)))))
+    (break))) ;; Should never happen... (a priori)
+;; (let ((C-type (pvs2C-type type)))
+;;   (get-typed-copy C-type exprvar
+;; 		  C-type (pvs2C assign-expr bindings livevars C-type)))))
 
 (defmethod pvs2C-update-nd-type* ((type funtype) expr arg1 restargs
 				   assign-expr bindings livevars)
   (let ((arg1var (gentemp "L"))
-	(Ctype (pvs2C-type type)))
-    (pvs2C2 (car arg1) bindings
-	    (append (updateable-vars restargs)
-		    (updateable-free-formal-vars assign-expr)
-		    livevars)
-	    (pvs2C-type (domain type)) arg1var t)
+	(Ctype (pvs2C-type type))
+	(C-arg1 (pvs2C2 (car arg1) bindings
+			(append (updateable-vars restargs)
+				(updateable-free-formal-vars assign-expr)
+				livevars)
+			(pvs2C-type (domain type)) arg1var t)))
     (if (consp restargs)
-	(let ((exprvar (gentemp "E")))
-	  (append (updateable-get Ctype exprvar expr arg1var)
-		  (pvs2C-update-nd-type (range type) exprvar
+	(let ((exprvar (gentemp "E"))
+	      (C-expr (pvs2C-update-nd-type (range type) exprvar
 					restargs assign-expr
 					bindings livevars)))
-      (pvs2C2-getdef assign-expr bindings livevars
-		     (target Ctype)
-		     (format nil "~a[~a]" expr arg1var)
-		     nil))))
+	  (set-instr C-expr
+		     (append (get-typed-copy Ctype exprvar
+					     Ctype (format nil "~a[~a]" expr arg1var))
+			     (instr C-expr)))
+	  C-expr)
+      (let ((C-expr (pvs2C2 assign-expr bindings livevars
+			    (target Ctype)
+			    (format nil "~a[~a]" expr arg1var)
+			    nil)))
+	(mk-Cexpr nil (instr C-expr) nil (destr C-expr))))))
 
 
 (defmethod pvs2C-update-nd-type* ((type recordtype) expr arg1 restargs
 				   assign-expr bindings livevars)
   (let* ((id (id (car arg1)))
-	 (field-type (type (find id (fields type) :key #'id) )))
+	 (field-type (type (find id (fields type) :key #'id) ))
+	 (C-target-type (pvs2C-type field-type)))
     (if (consp restargs)
-	(let ((exprvar (gentemp "E")))
-	  (cons (format nil "~a ~a = ~a.~a;" (pvs2C-type field-type) exprvar expr id)
-		(pvs2C-update-nd-type field-type exprvar restargs assign-expr
+	(let ((exprvar (gentemp "E"))
+	      (C-expr (pvs2C-update-nd-type field-type exprvar restargs assign-expr
 				      bindings livevars)))
-      (list (format nil "~a.~a = ~a;" expr id
-		    (pvs2C assign-expr bindings livevars (pvs2C-type field-type)))))))
+	  (set-instr C-expr
+		     (append (get-typed-copy C-target-type exprvar
+					     C-target-type (format nil "~a.~a" expr id))
+			     (instr C-expr)))
+	  Cexpr)
+      (let ((C-expr (pvs2C2 assign-expr bindings livevars
+			    C-target-type
+			    (format nil "~a.~a" expr id)
+			    nil)))
+	
+	(mk-Cexpr nil (instr C-expr) nil (destr C-expr))))))
 
 
 (defmethod pvs2C-update-nd-type* ((type subtype) expr arg1 restargs
@@ -812,6 +835,8 @@
 
 
 ;; Function to get and set arrays
+
+;; Dead code...
 (defun updateable-set (type array index value)
   (if (and *destructive?* *C-livevars-table*) ;; Destructive update
       (list (format nil "~a[~a] = ~a; +++" array index value))
@@ -827,9 +852,15 @@
 
 
 ;; Get array[index] to modify it's fields later
+;; Dead code...
 (defmethod updateable-get ((type C-pointer-type) result array index)
-  (list (format nil "~a ~a = ~a[~a];" (target type) result array index)))
+  (list (format nil "~a ~a;" (target type) result)
+	(format nil "if ( GC_count( ~a[~a] ) == 1 )" array index)
+	(format nil "  ~a = ~a[~a];" result array index)
+	
+	(format nil "~a ~a = ~a[~a];" (target type) result array index)))
 
+;;Dead code...
 (defmethod pvs2C*-updateable-get ((type C-pointer-type) array index)
   (cons (target type)
 	(if (C-pointer? (target type))
@@ -875,20 +906,17 @@
 
 
 
-(defun pvs2C-theory (theory)
-  (reset-instructions)
-  (reset-destructions)
-  (let* ((theory (get-theory theory))
+(defun pvs2C-theory (theory-name)
+  (let* ((theory (get-theory theory-name))
 	 (*current-theory* theory)
-	 (*current-context* (context theory)))
+	 (*current-context* (context theory-name)))
     (cond ((datatype? theory)
-	   (pvs2C-datatype theory)
+	   (pvs2C-datatype theory))
 	   ;;(pvs2C-theory (adt-theory theory))
 	   ;;(let ((map-theory (adt-map-theory theory))
 	   ;;   (reduce-theory (adt-reduce-theory theory)))
 	   ;;   (when map-theory (pvs2C-theory (adt-map-theory theory)))
 	   ;;   (when reduce-theory (pvs2C-theory (adt-reduce-theory theory))))
-	   )
 	  (t (loop for decl in (theory theory)
 		   do (cond ((type-eq-decl? decl)
 			     (let ((dt (find-supertype (type-value decl))))
@@ -899,8 +927,7 @@
 			       (pvs2C-constructors (constructors adt) adt)))
 			    ((const-decl? decl)
 			     (unless (eval-info decl)
-			       (progn
-				 (pvs2C-declaration decl))))
+			       (pvs2C-declaration decl)))
 			    (t nil)))))))
 
 ;;; maps to AlgebraicTypeDef
@@ -944,11 +971,10 @@
   (setq *C-record-defns* nil)
   (clrhash *C-nondestructive-hash*)
   (clrhash *C-destructive-hash*)
-  (reset-destructions)
-  (reset-definitions)
   (let ((theories (cdr (gethash filename *pvs-files*))))
     ;; Sets the hash-tables
     (dolist (theory theories)
+      (break)
       (pvs2C-theory theory))
     (with-open-file (outputH (format nil "~a.h" filename)
 			    :direction :output

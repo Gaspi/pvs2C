@@ -1,17 +1,10 @@
 draft : THEORY
 BEGIN
   
-  rec : TYPE = [# n : int,
-      	       	  arr : [below(n) -> int]
-		   #]
+  % Cint : TYPE = subrange(-1000, 1000)
+  % Culi : type = below(1000000)
   
-  f(t: rec ) : rec = t with [ `n := 0 ]
-
-  Arr : TYPE = [below(10) -> int ]
-
-  f(t:Arr):Arr =
-    let a = lambda(x:below(10)): t(x) in
-      a
-
+  a:below(10) = 2
+  
 END draft
 
