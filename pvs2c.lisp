@@ -396,7 +396,7 @@
 		 (C-expr (pvs2C* (expression operator) newbind nil)))
 	    (set-instr C-expr (append (mapcar
 				         #'(lambda (x) (format nil "~{~a ~a = ~a;~}" x))
-					 (pair3lis type-args (bindings operator) C-arg))
+					 (pair3lis type-args (bindings operator) (name C-arg)))
 				      (instr C-expr)))
 	    C-expr)
 	(let* ((type-op (pvs2C-type (type operator)))
@@ -608,10 +608,12 @@
 		       (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (array-bound type) i))
 		       (indent (instr body))
 		       (list "}"))
-		      (append
-		       (list (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {" i i (array-bound type) i))
-		       (indent (destr body))
-		       (list "}"))))
+		      (when (destr body)
+			(append
+			 (list (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {"
+				       i i (array-bound type) i))
+			 (indent (destr body))
+			 (list "}")))))
 	(pvs2C-lambda bind-decls expression bindings)))))
 
 ;; (list (format nil "if ( GC_count( ~~a ) == 1) {")
@@ -770,23 +772,24 @@
 				   assign-expr bindings livevars)
   (let* ((arg1var (gentemp "L"))
 	 (Ctype (pvs2C-type type))
+	 (C-dom-type )
 	 (C-arg1 (pvs2C2 (car arg1) bindings
 			 (append (updateable-vars restargs)
 				 (updateable-free-formal-vars assign-expr)
 				 livevars)
 			 (pvs2C-type (domain type)) arg1var t)))
     (if (consp restargs)
-	(let ((exprvar (gentemp "E"))
-	      (C-expr (pvs2C-update-nd-type (range type) exprvar
-					restargs assign-expr
-					bindings livevars)))
-	  (set-instr C-expr
-		     (append (instr C-arg1)
-			     (get-typed-copy (bang-type Ctype) exprvar
-					     Ctype (format nil "~a[~a]" expr arg1var))
-			     (destr C-arg1)
-			     (instr C-expr)))
-	  C-expr)
+	(let* ((exprvar (gen-C-var (pvs2C-type (range type)) "E"))
+	       (C-expr (pvs2C-update-nd-type (range type) exprvar
+					     restargs assign-expr
+					     bindings livevars)))
+	  (mk-Cexpr nil
+		    (append (C-alloc exprvar)
+			    (get-typed-copy (bang-type Ctype) exprvar
+					    Ctype (format nil "~a[~a]" expr arg1var))
+			    (name C-expr))
+		    (append (instr C-expr) (instr C-arg1) )
+		    (append (destr C-arg1) (destr C-expr))))
       (let* ((res (gentemp "res"))
 	     (C-expr (pvs2C2 assign-expr bindings livevars
 			    (target Ctype) res t)))
@@ -805,14 +808,14 @@
 	(let ((exprvar (gentemp "E"))
 	      (C-expr (pvs2C-update-nd-type field-type exprvar restargs assign-expr
 				      bindings livevars)))
-	  (set-instr C-expr
+	  (set-name C-expr
 		     (append (get-typed-copy (bang-type C-target-type) exprvar
 					     C-target-type (format nil "~a.~a" expr id))
-			     (instr C-expr)))
+			     (name C-expr)))
 	  Cexpr)
       (let* ((res (gentemp "res"))
 	     (C-expr (pvs2C2 assign-expr bindings livevars
-			    C-target-type res t)))
+			     C-target-type res t)))
 	(mk-Cexpr nil (get-typed-copy C-target-type (format nil "~a.~a" expr id)
 				      C-target-type res)
 		  (instr C-expr)
@@ -978,12 +981,13 @@
 	    "// ---------------------------------------------"
 	    "//        C file generated from ~a.pvs"
 	    "// ---------------------------------------------"
-	    "//   Make sure to link GMP in compilation:"
-	    "//      gcc -o ~a ~:*~a.c -lgmp"
+	    "//   Make sure to link GC.c and GMP in compilation:"
+	    "//      gcc -o ~a ~:*~a.c GC/GC.c -lgmp"
 	    "//      ./~a"
 	    "// ---------------------------------------------"
 	    "~%#include<stdio.h>"
 	    "#include<gmp.h>"
+	    "#include\"GC.h\""
 	    "#include \"~a.h\""
 	    "~%#define TRUE 1"
 	    "#define FALSE 0"

@@ -195,6 +195,7 @@
 
 
 ;; An expression to represent the memory size of a type
+;; Deprecated
 (defmethod m-size ((type C-pointer-type))
   (format nil "~a * sizeof(~a)" (size type) (target type)))
 (defmethod m-size ((type C-type))
@@ -217,19 +218,29 @@
 (defun array-malloc (type)
   (assert (C-pointer-type? type))
   (with-slots (target size) type
-     (cons (format nil "~~a = GC_malloc( ~a );" (m-size type))
-	   (when (C-gmp? target)
-	     (let* ((i (gentemp "i"))
-		    (name-i (format nil "~~a[~a]" i)))
-	       (append
-		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
-		(indent (apply-argument (C-alloc target) name-i))
-		(list "}")))))))
-;; (defun need-C-alloc (type)
-;;   (or (C-gmp? type)
-;;       (C-pointer? type)))
-;; (defmethod C-alloc ((type C-pointer))
-;;   (list (format nil "~~a = malloc( ~a );" (m-size type))))
+     (cons (format nil "~~a = GC_malloc(~a, sizeof(~a));" (size type) (target type))
+	   (create-loop (C-alloc target) "~~a[~a]"size))))
+	   
+	   ;; (let ((body-alloc (C-alloc target)))
+	   ;;   (when body-alloc
+	   ;;     (let ((i (gentemp "i")))
+	   ;; 	 (append
+	   ;; 	  (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
+	   ;; 	  (indent (apply-argument body-alloc
+	   ;; 				  (format nil "~~a[~a]" i)))
+	   ;; 	  (list "}")))))))
+
+
+;; TODO  create function loop
+(defun create-loop (body arg size &optional (prefix "i"))
+  (when body
+       (let ((i (gentemp prefix)))
+ 	 (append
+ 	  (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
+ 	  (indent (apply-argument body (format nil arg i)))
+ 	  (list "}")))))
+
+
 
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
@@ -241,11 +252,18 @@
 (defgeneric C-free (arg))
 (defmethod C-free ((type C-mpz))     (list "mpz_clear(~a);"))
 (defmethod C-free ((type C-mpq))     (list "mpq_clear(~a);"))
+(defmethod C-free ((type C-pointer-type))
+  (append
+   (when (C-pointer? (target type))
+     (create-loop (C-free (target type)) "~~a[~a]" (size type)))
+   (list "GC_free(~a);")))
 (defmethod C-free ((type C-pointer)) (list "free(~a);"))
 (defmethod C-free ((type C-type))    nil)
 (defmethod C-free ((v C-var))
   (apply-argument (C-free (type v)) (name v)))
 
+
+;; TODO freeing an array should free all its elements first
 
 
 
@@ -341,12 +359,15 @@
       (format nil "~a(~~a)" func))))
 
 
+
 (defgeneric smaller-type (typeA typeB))
 (defmethod smaller-type ((typeA C-mpq) typeB) typeB)
-(defmethod smaller-type ((typeA C-mpz) (typeB C-mpq)) *C-mpz*)
+(defmethod smaller-type ((typeA C-mpz) (typeB C-mpq)) typeA)
 (defmethod smaller-type ((typeA C-mpz) typeB) typeB)
-(defmethod smaller-type ((typeA C-int) typeB) C-int)
-(defmethod smaller-type ((typeA C-uli) typeB) C-int)
+(defmethod smaller-type ((typeA C-uli) (typeB C-gmp)) typeA)
+(defmethod smaller-type ((typeA C-uli) typeB) typeB)
+(defmethod smaller-type ((typeA C-int) typeB) typeA)
+
 
 (defmethod smaller-type ((typeA C-closure) (typeB C-closure))
   (make-instance 'C-closure))

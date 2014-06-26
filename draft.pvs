@@ -5,26 +5,35 @@ BEGIN
   Cint : TYPE = below(1000)
   Culi : type = below(1000000)
 
-  
+  % Testing types
   a:Culi = 2
   b:Cint = 3+1
   c:int  = 3*(1+2)
   
+  % Testing basic arithmetic
   incr(x:Cint):Cint = x + 1
   zero(x:int):Cint = 0
   f(a:Cint, b:Cint):Cint = zero(b) * incr(a)
   
+  % Testing tests
+  f(x:Cint):Cint =
+    if x <= 1 then
+      if x = 0 then 0 else x endif
+    else 
+      if x > 10 then 10 else x - 5 endif
+    endif
+   
+  % Testing simple arrays
   Arr : TYPE = [ Cint -> Cint ]
   t:Arr = lambda(x:Cint) : x
   f(x:Cint):Arr = t
   update(x:Arr):Arr = x with [(0) := 0]
   
-  f(x:Cint):Cint =
-    if x <= 1 then
-      if x = 0 then 0 else x endif
-    else
-      if x > 10 then 10 else x - 5 endif
-   endif
-   
+  % More complicated arrays
+  Arr2: TYPE = [Cint -> Arr ]
+  t2:Arr2 = lambda (x:Cint) (y:Cint) : x + y
+  
+  update(x:Arr2):Arr2 = x with [(0)(1) := 0 , (1) := lambda (x:Cint): x ]
+  
 END draft
 

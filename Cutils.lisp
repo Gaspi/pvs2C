@@ -13,39 +13,53 @@
 (in-package :pvs)
 
 
+;; ------- Simple arithmetic on Z bar : { -, numbers, + } ---------
+(defun <=zb (a b)
+  (or (eql a '-)
+      (eql b '+)
+      (and (not (eql a '+))
+	   (not (eql b '-))
+	   (<= a b))))
+(defun sign-zb (a)
+  (if (eql a 0) 0 (if (<=zb a 0) -1 1)))
+(defun min-zb (a b) (if (<=zb a b) a b))
+(defun max-zb (a b) (if (<=zb a b) b a))
+(defun add-zb (a b) (if (eql '- (min-zb a b)) '-
+		    (if (eql '+ (max-zb a b)) '+ (+ a b))))
+(defun neg-zb (a) (if (eql a '-) '+
+		  (if (eql a '+) '- (- a))))
+(defun sub-zb (a b) (add-zb a (neg-zb b)))
+(defun mul-zb (a b)
+  (let ((sign (* (sign-zb a) (sign-zb b))))
+    (cond ((eql sign 0) 0)
+	  ((not (and (numberp a)(numberp b)))
+	   (if (> sign 0) '+ '-))
+	  (t (* a b)))))
+
 
 ;; --------------- Classe to describe a range ----------------
 (defcl C-range () (inf) (sup))
 (defmethod C-range ((l list))
   (if (consp l)
       (make-instance 'C-range
-		     :inf (when (not (eql (car l) '*)) (car l))
+		     :inf (if (and (car l) (not (eql (car l) '*)))
+			      (car l) '-)
 		     :sup (if (consp (cdr l))
-			      (when (not (eql (cadr l) '*)) (cadr l))
-			    (cdr l)))
-    (make-instance 'C-range :inf nil :sup nil)))
+			      (if (and (cadr l) (not (eql (cadr l) '*)))
+				  (cadr l) '+)
+			    (if (and (cdr l) (not (eql (cdr l) '*)))
+				(cdr l) '+)))
+    (make-instance 'C-range :inf '- :sup '+)))
 
-(defun inter-range (range)
-  (C-range
-   (when (consp range)
-     (let ((hd (car range))
-	   (tl (inter-range (cdr range))))
-       (cons
-	(cond ((and (inf hd) (inf tl))
-	       (max (inf hd) (inf tl)))
-	      ((inf hd) (inf hd))
-	      ((inf tl) (inf tl))
-		(t nil))
-	(cond ((and (sup hd) (sup tl))
-	       (min (sup hd) (sup tl)))
-	      ((sup hd) (sup hd))
-	      ((sup tl) (sup tl))
-	      (t nil)))))))
+(defun inter-range (ranges)
+  (C-range (when (consp ranges)
+	     (let ((tl (inter-range (cdr ranges))))
+	       (cons (max-zb (inf (car ranges)) (inf tl))
+		     (min-zb (sup (car ranges)) (sup tl)))))))
 
 (defun range-included (rangeA rangeB)
-  (let ((inter (inter-range (list rangeA rangeB))))
-    (and (eql (inf inter) (inf rangeA))
-	 (eql (sup inter) (sup rangeA)))))
+  (and (<=zb (inf rangeB) (inf rangeA))
+       (<=zb (sup rangeA) (sup rangeB))))
 
 
 
@@ -71,15 +85,6 @@
 (defmethod C-range ((expr expr))
   (inter-range (mapcar #'C-range (get-PVS-types expr))))
 
-;; TODO add new C-range function for add, mul, ...
-
-;; TODO implement a search for the smallest type
-;; using bounds on integer expr :
-;;  number-expr x -> bounds = (x x)
-;;  (add, mul, sub, etc)
-;;  (nil x) for half a bound
-
-
 (defmethod C-range ((expr application))
   (inter-range (list (C-range (type expr))
 		     (C-range
@@ -87,20 +92,29 @@
      (let* ((op (pvs2C-primitive-op (operator expr)))
 	    (args (mapcar #'C-range (arguments expr))))
        (cond ((negation-function? op args)
-	      (cons (when (sup (car args)) (- (sup (car args))))
-		    (when (inf (car args)) (- (inf (car args))))))
-	     ((add-function? op args)
-	      (cons (when (and (inf (car args)) (inf (cadr args)))
-		            (+ (inf (car args)) (inf (cadr args))))
-		    (when (and (sup (car args)) (sup (cadr args)))
-		            (+ (sup (car args)) (sup (cadr args))))))
-	     ((sub-function? op args)
-	      (cons (when (and (inf (car args)) (sup (cadr args)))
-		            (- (inf (car args)) (sup (cadr args))))
-		    (when (and (sup (car args)) (inf (cadr args)))
-		            (- (sup (car args)) (inf (cadr args))))))
+	      (cons (neg-zb (sup (car args)))
+		    (neg-zb (inf (car args)))))
+	     ((= (length args) 2)
+	      (let ((i1 (inf (car  args)))
+		    (s1 (sup (car  args)))
+		    (i2 (inf (cadr args)))
+		    (s2 (sup (cadr args))))
+		(cond ((eql op 'pvsAdd)
+		       (cons (add-zb i1 i2) (add-zb s1 s2)))
+		      ((eql op 'pvsSub)
+		       (cons (sub-zb i1 s2) (sub-zb s1 i2)))
+		      ((eql op 'pvsTimes)
+		       (cons (min-zb (min-zb (mul-zb i1 i2)
+					     (mul-zb i1 s2))
+				     (min-zb (mul-zb s1 i2)
+					     (mul-zb s1 s2)))
+			     (max-zb (max-zb (mul-zb i1 i2)
+					     (mul-zb i1 s2))
+				     (max-zb (mul-zb s1 i2)
+					     (mul-zb s1 s2)))))
+		      (t nil))))
 	     (t nil))))))))
-      
+
 
 
 ;; -------- Simple indentation function ---------
