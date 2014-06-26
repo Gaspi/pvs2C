@@ -4,7 +4,7 @@
 ;;     Author: Gaspard ferey
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This requires "pvs2c.lisp" and "Ctypes.lisp" files both available at
+;; This requires "pvs2c.lisp", "Cutils.lisp" and "Ctypes.lisp" files both available at
 ;;               https://github.com/Gaspi/pvs2c.git
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -216,7 +216,7 @@
 	((or (C-int? typeR) (C-uli? typeR))
 	 (list args typeR
 	       (list typeA typeB)
-	       (format nil "(~{~a~^ + ~})")))
+	       "(~{~a~^ + ~})"))
 	(t
 	 (list args *C-mpq*
 	       (list *C-mpq* *C-mpq*)

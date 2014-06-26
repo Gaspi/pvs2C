@@ -5,7 +5,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This requires "Cprimop.lisp" and "Ctypes.lisp" files both available at
+;; This requires "Cutiles", "Cprimop.lisp" and "Ctypes.lisp" files all available at
 ;;               https://github.com/Gaspi/pvs2c.git
 ;;
 ;; To use:
@@ -42,6 +42,7 @@
 (in-package :pvs)
 
 ;; Bad practice ???
+(load "Cutils")
 (load "Ctypes")
 (load "Cprimop")
 
@@ -184,14 +185,15 @@
 	     (set-var-to-Cexpr res-var e need-malloc)))))
 
 (defmethod set-var-to-Cexpr ((var C-var) (e Cexpr) &optional need-malloc)
-  (mk-Cexpr (var-type var)
-	    (var-name var)
-	    (append
-	     (instr e)
-	     (when need-malloc (C-alloc var))
-	     (get-typed-copy (var-type var) (var-name var) (type e) (name e))
-	     (destr e))
-	    (when need-malloc (C-free var)))) 
+  (with-slots (type name) var
+    (mk-Cexpr type name
+	      (append
+	       (instr e)
+	       (when need-malloc (C-alloc var))
+	       (get-typed-copy (type var) (name var)
+			       (type e)   (name e))
+	       (destr e))
+	      (when need-malloc (C-free var)))))
 
     ;; (when need-malloc (add-destructions (C-free (C-var type name)))))))))
 
@@ -222,8 +224,8 @@
 	       (append (C-alloc if-name)
 		       (instr if-bloc)
 		       (destr if-bloc)))
-    (set-destr (C-free if-name))
-    (convert exp-type if-name)))
+    (set-destr if-bloc (C-free if-name))
+    (convert exp-type if-bloc)))
 
 
 ;; Returns a Cexpr
@@ -600,9 +602,10 @@
 			       range-type
 			       (format nil "~~a[~a]" i)
 			       nil)))
-	    (mk-Cexpr (pvs2C-type expr) nil
+	    (mk-Cexpr (pvs2C-type type) nil
 		      (append
-		       (list (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {" i i (array-bound type) i))
+		       (array-malloc (pvs2C-type type))
+		       (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (array-bound type) i))
 		       (indent (instr body))
 		       (list "}"))
 		      (append

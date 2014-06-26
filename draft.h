@@ -1,37 +1,41 @@
 // C file generated from draft.pvs
 
-unsigned long int pvs_a185();
+unsigned long int pvs_a431();
 
-unsigned long int pvs_d_a186();
+unsigned long int pvs_d_a432();
 
-int pvs_b187();
+int pvs_b433();
 
-int pvs_d_b188();
+int pvs_d_b434();
 
-void pvs_c193(mpz_t result);
+void pvs_c435(mpz_t result);
 
-void pvs_d_c194(mpz_t result);
+void pvs_d_c436(mpz_t result);
 
-int pvs_incr199(int x);
+int pvs_incr439(int x);
 
-int pvs_d_incr200(int x);
+int pvs_d_incr440(int x);
 
-int pvs_zero205(mpz_t x);
+int pvs_zero441(mpz_t x);
 
-int pvs_d_zero206(mpz_t x);
+int pvs_d_zero442(mpz_t x);
 
-int pvs_f207(int a, int b);
+int pvs_f443(int a, int b);
 
-int pvs_d_f208(int a, int b);
+int pvs_d_f444(int a, int b);
 
-int pvs_t215(int x);
+int pvs_t451(int x);
 
-int pvs_d_t216(int x);
+int pvs_d_t452(int x);
 
-int* pvs_f217(int x);
+int* pvs_f453(int x);
 
-int* pvs_d_f218(int x);
+int* pvs_d_f454(int x);
 
-int* pvs_update221(int* x);
+int* pvs_update457(int* x);
 
-int* pvs_d_update222(int* x);
+int* pvs_d_update458(int* x);
+
+int pvs_f468(int x);
+
+int pvs_d_f469(int x);

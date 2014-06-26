@@ -4,7 +4,7 @@
 ;;     Author: Gaspard ferey
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This requires "pvs2c.lisp" and "Cprimop.lisp" files both available at
+;; This requires "pvs2c.lisp", "Cutils.lisp" and "Cprimop.lisp" files both available at
 ;;               https://github.com/Gaspi/pvs2c.git
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,7 +18,7 @@
 (defcl C-gmp     (C-type))
 
 (defcl C-number ())
-(defcl C-integer (C-number))
+(defcl C-integer (C-number) (range))
 
 (defcl C-int (C-base C-integer))
 (defcl C-uli (C-base C-integer))
@@ -31,18 +31,22 @@
 (defcl C-named-type   (C-pointer) (name)) ;; ???
 
 
+;; A C variable is a type and a string to represent it
+(defcl C-var () (name) (type))
+(defun C-var (type name) (make-instance 'C-var :name name :type type))
+(defmethod print-object ((obj C-var) out)
+  (format out "~a" (name obj)))
+(defun gen-C-var (type prefix) (C-var type (gentemp prefix)))
+
+
 ;; Some instances of the classes above (to avoid over-instanciating)
 (defvar *C-type* (make-instance 'C-type))  ;; Type undefined
-(defvar *C-int* (make-instance 'C-int))
-(defvar *C-uli* (make-instance 'C-uli))
+(defvar *C-int* (make-instance 'C-int :range *C-int-range*))
+(defvar *C-uli* (make-instance 'C-uli :range *C-uli-range*))
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
 
-;; These constantas are C implementation dependent
-(defvar *min-C-int* (- (expt 2 15)))
-(defvar *max-C-int* (- (expt 2 15) 1))
-(defvar *min-C-uli* 0)
-(defvar *max-C-uli* (- (expt 2 32) 1))
+
 
 ;; Type equality  (mainly used to know if conversion is needed)
 (defmethod type= ((typeA C-int) (typeB C-int)) t)
@@ -114,14 +118,14 @@
 
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)
-  (let ((range (subrange-index type)))
-    (cond ((subtype-of? type *boolean*) *C-int*)
-	  ((subtype-of? type *integer*)
-	     (cond ((is-in-range? range *min-C-int* *max-C-int*) *C-int*)
-		   ((is-in-range? range *min-C-uli* *max-C-uli*) *C-uli*)
-		   (t *C-mpz*)))
-	  ((subtype-of? type *number* ) *C-mpq*)
-	  (t (pvs2C-type (find-supertype type))))))
+  (cond ((subtype-of? type *boolean*) *C-int*)
+	((subtype-of? type *integer*)
+	 (let ((range (C-range type)))
+	   (cond ((range-included range *C-int-range*) *C-int*)
+		 ((range-included range *C-uli-range*) *C-uli*)
+		 (t *C-mpz*))))
+	 ((subtype-of? type *number*) *C-mpq*)
+	 (t (pvs2C-type (find-supertype type)))))
 
 (defmethod pvs2C-type ((type type-name) &optional tbindings)
   (with-slots (id) type
@@ -138,55 +142,20 @@
       (list (pvs2C-type dom-type)))))
 
 
+
 (defun is-expr-subtype? (expr type)
   (some #'(lambda (jty) (subtype-of? jty type))
 	(get-PVS-types expr)))
-
-(defmethod get-bounds ((expr number-expr))
-  (list (number expr) (number expr)))
-
-(defmethod get-bounds ((expr expr))
-  (get-inner-bounds-list (get-PVS-types expr) nil nil))
-
-(defun get-inner-bounds-list (l inf sup)
-  (if (consp l)
-      (let ((range (subrange-index (car l))))
-	(if range
-	    (let ((ninf (car range))
-		  (nsup (cadr range)))
-	      (get-inner-bounds-list
-	                  (cdr l)
-			  (if inf (max inf ninf) ninf)
-			  (if sup (min sup nsup) nsup)))
-	  (get-inner-bounds-list (cdr l) inf sup)))
-    (list inf sup)))
-
-(defgeneric is-in-range? (e inf sup))
-(defmethod is-in-range? ((interval list) inf sup)
-  (and interval (car interval) (cadr interval)
-       (not (eql (car  interval) '*))
-       (not (eql (cadr interval) '*))
-       (<= inf (car interval))
-       (<=     (cadr interval) sup)))
-(defmethod is-in-range? ((t type-expr) inf sup)
-  (is-in-range? (subrange-index t) inf sup))
-(defmethod is-in-range? ((e expr) inf sup)
-  (is-in-range? (get-bounds e) inf sup))
-
 (defun C-integer-type? (expr)
   (is-expr-subtype? expr *integer*))
+
 (defun C-unsignedlong-type? (expr)
   (and (C-integer-type? expr)
-       (is-in-range? expr *min-C-uli* *max-C-uli*)))
+       (range-included (C-range expr) *C-uli-range*)))
 (defun C-int-type? (expr)
   (and (C-integer-type? expr)
-       (is-in-range? expr *min-C-int* *max-C-int*)))
+       (range-included (C-range expr) *C-int-range*)))
 
-(defmethod pvs2C-type ((e number-expr) &optional tbindings)
-  (let ((n (number e)))
-    (cond ((<= *min-C-int* n *max-C-int*) *C-int*)
-	  ((<= 0 n *max-C-uli*) *C-uli*)
-	  (t (pvs2C-type (type e))))))
 
 (defmethod pvs2C-type ((e lambda-expr) &optional tbindings)
   (with-slots (type expression) e
@@ -200,9 +169,10 @@
 
 (defmethod pvs2C-type ((e expr) &optional tbindings)
   (if (C-integer-type? e)
-      (cond ((C-int-type? e) *C-int*)
-	    ((C-unsignedlong-type? e) *C-uli*)
-	    (t *C-mpz*))
+      (let ((range (C-range e)))
+	(cond ((range-included range *C-int-range*) *C-int*)
+	      ((range-included range *C-uli-range*) *C-uli*)
+	      (t *C-mpz*)))
     (pvs2C-type (type e))))
 
 
@@ -219,10 +189,7 @@
 
 
 
-
-
-
-(defmethod pointer? ((obj C-var)) (C-pointer? (var-type obj)))
+(defmethod pointer? ((obj C-var)) (C-pointer? (type obj)))
 (defmethod pointer? ((e expr)) (C-pointer? (pvs2C-type (type e))))
 
 
@@ -277,7 +244,7 @@
 (defmethod C-free ((type C-pointer)) (list "free(~a);"))
 (defmethod C-free ((type C-type))    nil)
 (defmethod C-free ((v C-var))
-  (apply-argument (C-free (var-type v)) (var-name v)))
+  (apply-argument (C-free (type v)) (name v)))
 
 
 
@@ -457,20 +424,6 @@
 
 
 
-;; TODO   Turn that into a defcl !!!
-
-
-(defstruct C-var name type)
-(defun C-var (type name) (make-C-var :name name :type type))
-(defmethod print-object ((obj C-var) out)
-  (format out "~a" (slot-value obj 'name)))
-(defun var-type (arg) (slot-value arg 'type))
-(defun var-name (arg) (slot-value arg 'name))
-(defun gen-C-var (type prefix)
-  (C-var type (gentemp prefix)))
-
-
-
 
 ;; (defcl Cvar () (name) (type))
 
@@ -485,11 +438,3 @@
 
 ;; (defcl Cif (Cinstr) (condition) (if-part) (then-part))
 
-
-
-;; Should be moved to "utils.pvs" 
-(defun indent (bloc)
-  (if (listp bloc)
-      (mapcar #'(lambda (x) (format nil "  ~a" x))
-	      bloc)
-    (format nil "  ~a" bloc)))
