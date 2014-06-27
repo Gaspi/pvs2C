@@ -39,6 +39,33 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+;; Every Function has the resposnability to free it's array arguments !!!
+
+
+;; TODO flattennning free variables
+;; f(a , a(0), a )
+;; -> x = GC( a )
+;; -> y = GC( a )
+;; -> z = y(0)
+;; -> free(y)     ;; to last line <=> apply(y, 0)   (so y is freed)
+;; -> f(a, x ,z)    ;; and everything is freed
+;; 
+;; 
+;; Bump up the reference count by one so that no argument use a as a mutable variable
+;; Move the free to just after the last occurence of the variable
+;;
+;; Every Function has the resposnability to free it's array arguments !!!
+;; 
+;; 
+;; (lambda(x): a with [0 = x(0) ]  )( a with [0=0] )
+;; -> x = GC( a )
+;; -> y = a with [0=0]    ;; done non destructively
+;; -> 
+;; 
+
+
 (in-package :pvs)
 
 ;; Bad practice ???
@@ -804,14 +831,15 @@
 				 livevars)
 			 (pvs2C-type (domain type)) arg1var t)))
     (if (consp restargs)
-	(let* ((exprvar (gen-C-var (pvs2C-type (range type)) "E"))
+	(let* ((C-range-type (pvs2C-type (range type)))
+	       (exprvar (gen-C-var C-range-type "E"))
 	       (C-expr (pvs2C-update-nd-type (range type) exprvar
 					     restargs assign-expr
 					     bindings livevars)))
 	  (mk-Cexpr nil
 		    (append (C-alloc exprvar)
-			    (get-typed-copy (bang-type Ctype) exprvar
-					    Ctype (format nil "~a[~a]" expr arg1var))
+			    (get-typed-copy (bang-type C-range-type) exprvar
+					    C-range-type (format nil "~a[~a]" expr arg1var))
 			    (name C-expr))
 		    (append (instr C-expr) (instr C-arg1) )
 		    (append (destr C-arg1) (destr C-expr))))
