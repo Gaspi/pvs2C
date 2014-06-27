@@ -119,9 +119,9 @@
 	((comparison-function? op)
 	 (pvs2C*-comparison op type-args args bindings livevars))
 	(t
-	 (mk-Cexpr *C-int*
-		   (mk-C-funcall op (pvs2C args bindings livevars type-args))
-		   nil nil))))
+	 (Cprocess (list *C-int* type-args
+			 (format nil "~a(~~{~~a~~^, ~~})" op))
+		   args bindings livevars))))
 
 
 ;; ------------ boolean operator (arguments int / result int ) ---------------
@@ -145,7 +145,7 @@
 	((or (C-mpz? typeA) (C-mpz? typeB))
 	 (list (list *C-mpz* *C-mpz*) "(mpz_cmp(~{~a~^, ~}) == 0)"))
 	((and (C-base? typeA) (C-base? typeB))
-	 (list (list typeA typeB) "~{~a~^ == ~})"))
+	 (list (list typeA typeB) "(~{~a~^ == ~})"))
 	(t
 	 (list (list typeA typeB) "pvsCmp(~{~a~^, ~})"))))
 

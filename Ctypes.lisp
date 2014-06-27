@@ -236,7 +236,8 @@
   (when body
        (let ((i (gentemp prefix)))
  	 (append
- 	  (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
+ 	  (list (format nil "int ~a;" i)
+		(format nil "for(~a = 0; ~a < ~a; ~a++) {" i i size i))
  	  (indent (apply-argument body (format nil arg i)))
  	  (list "}")))))
 
@@ -289,7 +290,8 @@
 	 (nameBi (format nil "~a[~a]" nameB i))
 	 (copy-bloc (append
 		(apply-argument (array-malloc typeA) nameA)
-		(list (format nil "for(int ~a = 0; ~a < ~a; ~a++)" i i (size typeB) i))
+		(list (format nil "int ~a;" i)
+		      (format nil "for(~a = 0; ~a < ~a; ~a++) {" i i (size typeB) i))
 		(indent (get-typed-copy (target typeA) nameAi (target typeB) nameBi))
 		(list "}"))))
 ;;		(mapcar #'(lambda (x) (format nil "  ~a" x))

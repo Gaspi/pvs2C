@@ -166,7 +166,22 @@
 
 ;; --- Should be renamed "pvs2C-set" ---
 ;; Returns a Cexpr with type = type and name = name
-(defun pvs2C2 (expr bindings livevars type name &optional need-malloc)
+(defmethod pvs2C2 ((expr list) bindings livevars type name &optional need-malloc)
+  (if (consp expr)
+      (let ((hd (pvs2C2 (car expr) bindings
+			(append (updateable-vars (cdr expr)) livevars)
+			(car type) (car name) need-malloc))
+	    (tl (pvs2C2 (cdr expr) bindings
+			(append (updateable-vars (car expr)) livevars)
+			(cdr type) (cdr name) need-malloc)))
+	(mk-Cexpr (cons   (type  hd) (type  tl))
+		  (cons   (name  hd) (name  tl))
+		  (append (instr hd) (instr tl))
+		  (append (destr hd) (destr tl))))
+    (mk-Cexpr nil nil nil nil)))
+
+
+(defmethod pvs2C2 (expr bindings livevars type name &optional need-malloc)
   (let ((res-var (C-var type name))
 	(e (if (C-base? type)
 	       (pvs2C expr bindings livevars type)
@@ -183,6 +198,7 @@
 		 (set-instr e (append (C-alloc n) (instr e) (destr e)))
 		 (set-destr e (C-free n))))
 	     (set-var-to-Cexpr res-var e need-malloc)))))
+
 
 (defmethod set-var-to-Cexpr ((var C-var) (e Cexpr) &optional need-malloc)
   (with-slots (type name) var
@@ -387,17 +403,22 @@
 		 (bind-ids (pvs2cl-make-bindings bind-decls bindings))
 		 (newbind (append (pairlis bind-decls bind-ids) bindings))
 		 (type-args (C-type-args operator))
-		 (C-arg (pvs2C (if (tuple-expr? argument)
-				   (exprs argument)
-				   (list argument))
-			       bindings
-			       (append (updateable-free-formal-vars operator) livevars)
-			       type-args))
+		 (C-arg (pvs2C2 (if (tuple-expr? argument)
+				    (exprs argument)
+				  (list argument))
+				bindings
+				(append (updateable-free-formal-vars operator) livevars)
+				type-args
+				(mapcar #'id (bindings operator)) t))
 		 (C-expr (pvs2C* (expression operator) newbind nil)))
-	    (set-instr C-expr (append (mapcar
-				         #'(lambda (x) (format nil "~{~a ~a = ~a;~}" x))
-					 (pair3lis type-args (bindings operator) (name C-arg)))
-				      (instr C-expr)))
+	    (set-instr C-expr
+		       (append (instr C-arg)
+			       ;; (mapcar
+			       ;; 	#'(lambda (x) (format nil "~{~a ~a = ~a;~}" x))
+			       ;; 	(pair3lis type-args (bindings operator) (name C-arg)))
+			       (instr C-expr)))
+	    (set-destr C-expr (append (destr C-expr)
+				      (destr C-arg)))
 	    C-expr)
 	(let* ((type-op (pvs2C-type (type operator)))
 	       (type (pvs2C-type (range (type operator))))
@@ -589,10 +610,12 @@
 (defmethod pvs2C* ((expr lambda-expr) bindings livevars)
   (declare (ignore livevars))
   (with-slots (type expression) expr
-    (let* ((range-type (pvs2C-type expression))
-	   (bind-decls (bindings expr)))
+    (let ((bind-decls (bindings expr)))
       (if (and (C-updateable? type) (funtype? type))  ;; If it could be represented as an array
-	  (let* ((i (gentemp "i"))
+	  (let* ((Ctype (pvs2C-type type)) ;; Should we use the type of the range-expr ?
+;;	         (range-type (pvs2C-type expression))  ;; Should we built Ctype from that ?
+		 (range-type (target Ctype))
+		 (i (gentemp "i"))
 		 (new-bind (append (pairlis bind-decls ;; bind-decls must have length 1
 					    (list i))
 				   bindings))
@@ -602,15 +625,17 @@
 			       range-type
 			       (format nil "~~a[~a]" i)
 			       nil)))
-	    (mk-Cexpr (pvs2C-type type) nil
+	    (mk-Cexpr Ctype nil
 		      (append
-		       (array-malloc (pvs2C-type type))
-		       (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i (array-bound type) i))
+		       (array-malloc Ctype)
+		       (list (format nil "int ~a;" i)
+			     (format nil "for(~a = 0; ~a < ~a; ~a++) {"
+				     i i (array-bound type) i))
 		       (indent (instr body))
 		       (list "}"))
 		      (when (destr body)
 			(append
-			 (list (format nil "for(int ~a = 0; ~a < ~a;;; ~a++) {"
+			 (list (format nil "for(~a = 0; ~a < ~a;;; ~a++) {"
 				       i i (array-bound type) i))
 			 (indent (destr body))
 			 (list "}")))))
@@ -1033,7 +1058,9 @@
 
 
 
-
+;; TODO handle the duplication of variable
+;; f(x:int) = let x = 2 in x
+;; x#0 generated  -> x_0 for isntance
 
 
 ;; Useless functions ?/

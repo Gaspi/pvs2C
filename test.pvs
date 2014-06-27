@@ -11,9 +11,9 @@ BEGIN
   b: boolean = true
   
   bar(n:int):bool =
-    if even?(n+3) and n < 12
+    if n+3 > 6 and n < 12
     then n = 6
-    else even?(n) endif
+    else n < 5 endif
 
   adda(i:int):int = let c = 3 in c
   
@@ -28,7 +28,7 @@ BEGIN
   
   
   f(x:int):int =
-    (lambda(x:int): x + 2)(12)
+    (lambda(y:int): y + 2)(12)
   
   % Recursivity testing
   

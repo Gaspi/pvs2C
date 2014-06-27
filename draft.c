@@ -1,13 +1,14 @@
 // ---------------------------------------------
 //        C file generated from draft.pvs
 // ---------------------------------------------
-//   Make sure to link GMP in compilation:
-//      gcc -o draft draft.c -lgmp
+//   Make sure to link GC.c and GMP in compilation:
+//      gcc -o draft draft.c GC/GC.c -lgmp
 //      ./draft
 // ---------------------------------------------
 
 #include<stdio.h>
 #include<gmp.h>
+#include"GC.h"
 #include "draft.h"
 
 #define TRUE 1
@@ -19,298 +20,314 @@ int main(void) {
 }
 
 
-unsigned long int pvs_a792() {
+unsigned long int pvs_a594() {
   unsigned long int result;
   result = (unsigned long) 2;
   return result;
 }
 
-unsigned long int pvs_d_a793() {
+unsigned long int pvs_d_a595() {
   unsigned long int result;
   result = (unsigned long) 2;
   return result;
 }
 
-int pvs_b794() {
+int pvs_b596() {
   int result;
   result = (3 + 1);
   return result;
 }
 
-int pvs_d_b795() {
+int pvs_d_b597() {
   int result;
   result = (3 + 1);
   return result;
 }
 
-void pvs_c796(mpz_t result) {
+void pvs_c598(mpz_t result) {
   mpz_set_si(result, (long) (3 * (1 + 2)));
 }
 
-void pvs_d_c797(mpz_t result) {
+void pvs_d_c599(mpz_t result) {
   mpz_set_si(result, (long) (3 * (1 + 2)));
 }
 
-int pvs_incr798(int x) {
+int pvs_incr600(int x) {
   int result;
   result = (x + 1);
   return result;
 }
 
-int pvs_d_incr799(int x) {
+int pvs_d_incr601(int x) {
   int result;
   result = (x + 1);
   return result;
 }
 
-int pvs_zero800(mpz_t x) {
+int pvs_zero602(mpz_t x) {
   int result;
   result = 0;
   return result;
 }
 
-int pvs_d_zero801(mpz_t x) {
+int pvs_d_zero603(mpz_t x) {
   int result;
   result = 0;
   return result;
 }
 
-int pvs_f802(int a, int b) {
-  mpz_t conv805;
-  mpz_init(conv805);
-  mpz_set_si(conv805, (long) b);
+int pvs_f604(int a, int b) {
+  mpz_t conv607;
+  mpz_init(conv607);
+  mpz_set_si(conv607, (long) b);
   int result;
-  result = (int) (pvs_d_zero801(conv805) * pvs_d_incr799(a));
-  mpz_clear(conv805);
+  result = (int) (pvs_d_zero603(conv607) * pvs_d_incr601(a));
+  mpz_clear(conv607);
   return result;
 }
 
-int pvs_d_f803(int a, int b) {
-  mpz_t conv805;
-  mpz_init(conv805);
-  mpz_set_si(conv805, (long) b);
+int pvs_d_f605(int a, int b) {
+  mpz_t conv607;
+  mpz_init(conv607);
+  mpz_set_si(conv607, (long) b);
   int result;
-  result = (int) (pvs_d_zero801(conv805) * pvs_d_incr799(a));
-  mpz_clear(conv805);
+  result = (int) (pvs_d_zero603(conv607) * pvs_d_incr601(a));
+  mpz_clear(conv607);
   return result;
 }
 
-int pvs_f806(int x) {
-  int if813;
+int pvs_f608(int x) {
+  int if615;
   if((x <= 1)) {
-    int if811;
-    if(x == 0)) {
-      if811 = 0;
+    int if613;
+    if((x == 0)) {
+      if613 = 0;
     } else {
-      if811 = x;
+      if613 = x;
     }
-    if813 = if811;
+    if615 = if613;
   } else {
-    int if812;
+    int if614;
     if((x > 10)) {
-      if812 = 10;
+      if614 = 10;
     } else {
-      if812 = (x + 5);
+      if614 = (x + 5);
     }
-    if813 = if812;
+    if615 = if614;
   }
   int result;
-  result = if813;
+  result = if615;
   return result;
 }
 
-int pvs_d_f807(int x) {
-  int if813;
+int pvs_d_f609(int x) {
+  int if615;
   if((x <= 1)) {
-    int if811;
-    if(x == 0)) {
-      if811 = 0;
+    int if613;
+    if((x == 0)) {
+      if613 = 0;
     } else {
-      if811 = x;
+      if613 = x;
     }
-    if813 = if811;
+    if615 = if613;
   } else {
-    int if812;
+    int if614;
     if((x > 10)) {
-      if812 = 10;
+      if614 = 10;
     } else {
-      if812 = (x + 5);
+      if614 = (x + 5);
     }
-    if813 = if812;
+    if615 = if614;
   }
   int result;
-  result = if813;
+  result = if615;
   return result;
 }
 
-int pvs_t814(int x) {
+int pvs_t616(int x) {
   int result;
   result = x;
   return result;
 }
 
-int pvs_d_t815(int x) {
+int pvs_d_t617(int x) {
   int result;
   result = x;
   return result;
 }
 
-int* pvs_f816(int x) {
+int* pvs_f618(int x) {
   int* result;
-  result = GC_malloc( 1000 * sizeof(int) );
-  for(int i819 = 0; i819 < 1000; i819++) {
-    result[i819] = pvs_d_t815(i819);
+  result = GC_malloc(1000, sizeof(int));
+  int i621;
+  for(i621 = 0; i621 < 1000; i621++) {
+    result[i621] = pvs_d_t617(i621);
   }
   return result;
 }
 
-int* pvs_d_f817(int x) {
+int* pvs_d_f619(int x) {
   int* result;
-  result = GC_malloc( 1000 * sizeof(int) );
-  for(int i819 = 0; i819 < 1000; i819++) {
-    result[i819] = pvs_d_t815(i819);
+  result = GC_malloc(1000, sizeof(int));
+  int i621;
+  for(i621 = 0; i621 < 1000; i621++) {
+    result[i621] = pvs_d_t617(i621);
   }
   return result;
 }
 
-int* pvs_update820(int* x) {
+int* pvs_update622(int* x) {
   int* result;
-  int L829;
-  L829 = 0;
-  int res830;
-  res830 = 0;
+  int L631;
+  L631 = 0;
+  int res632;
+  res632 = 0;
   if ( GC_count( x ) == 1 )
     result = x;
   else {
-    result = GC_malloc( 1000 * sizeof(int) );
-    for(int i828 = 0; i828 < 1000; i828++)
-      result[i828] = x[i828];
+    result = GC_malloc(1000, sizeof(int));
+    int i630;
+    for(i630 = 0; i630 < 1000; i630++) {
+      result[i630] = x[i630];
     }
   }
-  result[L829] = res830;
+  result[L631] = res632;
   return result;
 }
 
-int* pvs_d_update821(int* x) {
+int* pvs_d_update623(int* x) {
   int* result;
-  int L829;
-  L829 = 0;
-  int res830;
-  res830 = 0;
+  int L631;
+  L631 = 0;
+  int res632;
+  res632 = 0;
   if ( GC_count( x ) == 1 )
     result = x;
   else {
-    result = GC_malloc( 1000 * sizeof(int) );
-    for(int i828 = 0; i828 < 1000; i828++)
-      result[i828] = x[i828];
+    result = GC_malloc(1000, sizeof(int));
+    int i630;
+    for(i630 = 0; i630 < 1000; i630++) {
+      result[i630] = x[i630];
     }
   }
-  result[L829] = res830;
+  result[L631] = res632;
   return result;
 }
 
-int* pvs_t2831(int x) {
-  mpq_t* set838;
-  set838 = GC_malloc( 1000 * sizeof(mpq_t) );
-  for(int i837 = 0; i837 < 1000; i837++) {
-    mpq_init(set838[i837]);
+int* pvs_t2633(int x) {
+  mpq_t* set640;
+  set640 = GC_malloc(1000, sizeof(mpq_t));
+  int i639;
+  for(i639 = 0; i639 < 1000; i639++) {
+    mpq_init(set640[i639]);
   }
-  for(int i836 = 0; i836 < 1000; i836++) {
-    set838[i836] = (x + i836);
+  int i638;
+  for(i638 = 0; i638 < 1000; i638++) {
+    mpq_set_d(set640[i638], (double) (x + i638) );
+    mpq_canonicalize(set640[i638]);
   }
   int* result;
-  result = (int*) GC( set838 );
-  GC_free(set838);
+  result = (int*) GC( set640 );
+  GC_free(set640);
   return result;
 }
 
-int* pvs_d_t2832(int x) {
-  mpq_t* set838;
-  set838 = GC_malloc( 1000 * sizeof(mpq_t) );
-  for(int i837 = 0; i837 < 1000; i837++) {
-    mpq_init(set838[i837]);
+int* pvs_d_t2634(int x) {
+  mpq_t* set640;
+  set640 = GC_malloc(1000, sizeof(mpq_t));
+  int i639;
+  for(i639 = 0; i639 < 1000; i639++) {
+    mpq_init(set640[i639]);
   }
-  for(int i836 = 0; i836 < 1000; i836++) {
-    set838[i836] = (x + i836);
+  int i638;
+  for(i638 = 0; i638 < 1000; i638++) {
+    mpq_set_d(set640[i638], (double) (x + i638) );
+    mpq_canonicalize(set640[i638]);
   }
   int* result;
-  result = (int*) GC( set838 );
-  GC_free(set838);
+  result = (int*) GC( set640 );
+  GC_free(set640);
   return result;
 }
 
-int** pvs_update839(int** x) {
+int** pvs_update641(int** x) {
   int** result;
-  int L864;
-  L864 = 1;
-  int res865;
-  res865 = 0;
-  int L862;
-  L862 = 0;
-  int L867;
-  L867 = 1;
-  int* res868;
-  res868 = GC_malloc( 1000 * sizeof(int) );
-  for(int i869 = 0; i869 < 1000; i869++) {
-    res868[i869] = i869;
+  int L666;
+  L666 = 1;
+  int res667;
+  res667 = 0;
+  int L664;
+  L664 = 0;
+  int L669;
+  L669 = 1;
+  int* res670;
+  res670 = GC_malloc(1000, sizeof(int));
+  int i671;
+  for(i671 = 0; i671 < 1000; i671++) {
+    res670[i671] = i671;
   }
   if ( GC_count( x ) == 1 )
     result = x;
   else {
-    result = GC_malloc( 1000 * sizeof(int*) );
-    for(int i861 = 0; i861 < 1000; i861++)
-      result[i861] = (int*) GC( x[i861] );
+    result = GC_malloc(1000, sizeof(int*));
+    int i663;
+    for(i663 = 0; i663 < 1000; i663++) {
+      result[i663] = (int*) GC( x[i663] );
     }
   }
-  int* E863;
-  if ( GC_count( result[L862] ) == 1 )
-    E863 = result[L862];
+  int* E665;
+  if ( GC_count( result[L664] ) == 1 )
+    E665 = result[L664];
   else {
-    E863 = GC_malloc( 1000 * sizeof(int*) );
-    for(int i866 = 0; i866 < 1000; i866++)
-      E863[i866] = (int*) GC( result[L862][i866] );
+    E665 = GC_malloc(1000, sizeof(int*));
+    int i668;
+    for(i668 = 0; i668 < 1000; i668++) {
+      E665[i668] = (int*) GC( result[L664][i668] );
     }
   }
-  E863[L864] = res865;
-  result[L867] = (int*) GC( res868 );
-  GC_free(res868);
+  E665[L666] = res667;
+  result[L669] = (int*) GC( res670 );
+  GC_free(res670);
   return result;
 }
 
-int** pvs_d_update840(int** x) {
+int** pvs_d_update642(int** x) {
   int** result;
-  int L864;
-  L864 = 1;
-  int res865;
-  res865 = 0;
-  int L862;
-  L862 = 0;
-  int L867;
-  L867 = 1;
-  int* res868;
-  res868 = GC_malloc( 1000 * sizeof(int) );
-  for(int i869 = 0; i869 < 1000; i869++) {
-    res868[i869] = i869;
+  int L666;
+  L666 = 1;
+  int res667;
+  res667 = 0;
+  int L664;
+  L664 = 0;
+  int L669;
+  L669 = 1;
+  int* res670;
+  res670 = GC_malloc(1000, sizeof(int));
+  int i671;
+  for(i671 = 0; i671 < 1000; i671++) {
+    res670[i671] = i671;
   }
   if ( GC_count( x ) == 1 )
     result = x;
   else {
-    result = GC_malloc( 1000 * sizeof(int*) );
-    for(int i861 = 0; i861 < 1000; i861++)
-      result[i861] = (int*) GC( x[i861] );
+    result = GC_malloc(1000, sizeof(int*));
+    int i663;
+    for(i663 = 0; i663 < 1000; i663++) {
+      result[i663] = (int*) GC( x[i663] );
     }
   }
-  int* E863;
-  if ( GC_count( result[L862] ) == 1 )
-    E863 = result[L862];
+  int* E665;
+  if ( GC_count( result[L664] ) == 1 )
+    E665 = result[L664];
   else {
-    E863 = GC_malloc( 1000 * sizeof(int*) );
-    for(int i866 = 0; i866 < 1000; i866++)
-      E863[i866] = (int*) GC( result[L862][i866] );
+    E665 = GC_malloc(1000, sizeof(int*));
+    int i668;
+    for(i668 = 0; i668 < 1000; i668++) {
+      E665[i668] = (int*) GC( result[L664][i668] );
     }
   }
-  E863[L864] = res865;
-  result[L867] = (int*) GC( res868 );
-  GC_free(res868);
+  E665[L666] = res667;
+  result[L669] = (int*) GC( res670 );
+  GC_free(res670);
   return result;
 }
