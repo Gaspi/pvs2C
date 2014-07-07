@@ -11,6 +11,7 @@ BEGIN
   c:int  = 3*(1+2)
   
   % Testing basic arithmetic
+
   incr(x:Cint):Cint = x + 1
   zero(x:int):Cint = 0
   f(a:Cint, b:Cint):Cint = zero(b) * incr(a)

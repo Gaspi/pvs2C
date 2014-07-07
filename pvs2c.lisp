@@ -71,6 +71,7 @@
 ;; Bad practice ???
 (load "Cutils")
 (load "Ctypes")
+(load "Cexpr")
 (load "Cprimop")
 
 (defvar *C-livevars-table* nil)
@@ -216,8 +217,8 @@
     (if (and (unnamed? e) (type= (type e) type))  ;; Perfect case
 	(progn (define-name e name)
 	       (when need-malloc
-		 (set-instr e (append (C-alloc res-var) (instr e)))
-		 (set-destr e (append (destr e) (C-free  res-var))))
+		 (app-instr e (C-alloc res-var) t)
+		 (app-destr e (C-free  res-var)))
 	       e)
       (progn (when (unnamed? e)
 	       (let ((n (gen-C-var (type e) "set")))
@@ -407,8 +408,7 @@
   (set-type args type)
   (if (C-gmp? type)
       (progn
-	(set-instr args (append (instr args)
-				(set-C-pointer op (name args))))
+	(app-instr args (set-C-pointer op (name args)))
 	(set-name args nil))
     (set-name args (mk-C-funcall op (name args))))
   args)
@@ -438,14 +438,8 @@
 				type-args
 				(mapcar #'id (bindings operator)) t))
 		 (C-expr (pvs2C* (expression operator) newbind nil)))
-	    (set-instr C-expr
-		       (append (instr C-arg)
-			       ;; (mapcar
-			       ;; 	#'(lambda (x) (format nil "~{~a ~a = ~a;~}" x))
-			       ;; 	(pair3lis type-args (bindings operator) (name C-arg)))
-			       (instr C-expr)))
-	    (set-destr C-expr (append (destr C-expr)
-				      (destr C-arg)))
+	    (app-instr C-expr (instr C-arg) t)
+	    (app-destr C-expr (destr C-arg))
 	    C-expr)
 	(let* ((type-op (pvs2C-type (type operator)))
 	       (type (pvs2C-type (range (type operator))))
@@ -804,8 +798,8 @@
 			   (append (updateable-free-formal-vars (car assign-exprs))
 				   livevars))))
       (set-name  C-cdr (append (name  C-car) (name  C-cdr)))
-      (set-instr C-cdr (append (instr C-car) (instr C-cdr)))
-      (set-destr C-cdr (append (destr C-car) (destr C-cdr)))
+      (app-instr C-cdr (instr C-car) t)
+      (app-destr C-cdr (destr C-car) t)
       C-cdr)
     (mk-Cexpr nil nil nil nil)))
 

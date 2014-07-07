@@ -21,7 +21,7 @@
 
 (in-package :pvs)
 
-(defparameter *C-primitives* '(Eq Neq TRUE FALSE pvsImplies pvsImplies == && && || 
+(defparameter *C-primitives* '(Eq Neq 1 0 pvsImplies pvsImplies == && && || 
  ! pvsWhen pvsIff pvsAdd pvsSub pvsTimes pvsDiv pvsNumberFieldPred < <= >
  >= pvsRealPred pvsIntegerPred pvsIntegerPred pvsRationalsPred pvsFloor pvsCeiling
  rem pvsNDiv isEven isOdd pvsCons hd tl isCons null isNull pvsRestrict
@@ -63,7 +63,7 @@
 		(format nil "[set](~~a, ~a);" nop) nil))))
 
 (defun boolean-primitive? (name)
-  (member name '(TRUE FALSE)))
+  (member name '(1 0)))
 (defun pvs2C*-boolean-primitive (op)
   (mk-Cexpr *C-int* (format nil "~a" op) nil nil))
 
