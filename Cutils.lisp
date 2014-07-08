@@ -123,3 +123,13 @@
       (mapcar #'(lambda (x) (format nil "  ~a" x))
 	      bloc)
     (format nil "  ~a" bloc)))
+
+
+
+;; There is probably a Common Lisp function to do that...
+(defun append-lists (l)
+  (when (consp l) (append (car l) (append-lists (cdr l)))))
+
+(defun range-arr (max &key (min 0) (step 1))
+   (loop for n from min below max by step
+      collect n))

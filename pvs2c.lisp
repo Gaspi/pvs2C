@@ -29,13 +29,10 @@
 ;;         or expression of the given type and with the translation
 ;;         of expr as a value.
 ;;
-;;    pvs2C2-getdef expr bindings livevars type name [need-malloc]
+;;    pvs2C2 expr bindings livevars type name [need-malloc]
 ;;      -> a list of instructions setting the C variable with the
 ;;         given name and type to the translation of expr.
 ;;         If need-malloc flag is t, also initialize the variable.
-;;
-;;    pvs2C2 expr bindings livevars type name [need-malloc]
-;;      -> Add the result of pvs2C2-getdef to the current instructions.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -209,6 +206,28 @@
     (mk-Cexpr nil nil nil nil)))
 
 
+
+;; Record expressions are treated seperately
+(defmethod pvs2C2 ((expr record-expr) bindings livevars type name &optional need-malloc)
+  (let ((var (C-var type name))
+	(formatted-fields
+	 (loop for a in (assignments expr)
+	       collect (let ((e (assoc (id (caar (arguments a))) (args type))))
+			 (pvs2C2 (expression a) bindings livevars
+				 (cdr e)
+				 (format nil "~a.~a" name (car e)))))))
+    (mk-Cexpr type name
+	      (append (when need-malloc (C-alloc var))
+		      (append-lists (mapcar #'instr formatted-fields)))
+	      (append (C-free var)))))
+
+(defmethod pvs2C ((expr record-expr) bindings livevars &optional (exp-type (pvs2C-type expr)))
+  (pvs2C2 expr bindings livevars exp-type (gentemp "aux") t))
+
+
+
+
+
 (defmethod pvs2C2 (expr bindings livevars type name &optional need-malloc)
   (let ((res-var (C-var type name))
 	(e (if (C-base? type)
@@ -241,24 +260,8 @@
 
     ;; (when need-malloc (add-destructions (C-free (C-var type name)))))))))
 
-;(defun pvs2C2 (expr bindings livevars type name &optional need-malloc)
-;  (add-instructions (pvs2C2 expr bindings livevars type name need-malloc)))
 
-
-;; Deprecated
-(defun pvs2C2-getdef (expr bindings livevars exp-type name &optional (need-malloc t))
-  (let ((previous-instr *C-instructions*))
-    (reset-instructions)
-    (pvs2C2 expr bindings livevars exp-type name need-malloc)
-    (let ((res *C-instructions*))
-      (reset-instructions)
-      (add-instructions previous-instr)
-      res)))
-
-
-;; Return a Cexpr
-;; name is "if" name
-;; destr is only free(name)
+;; Return a Cexpr (  name : "if" name  ,  destr : only free(name)  )
 (defmethod pvs2C ((expr if-expr) bindings livevars &optional (exp-type (pvs2C-type expr)))
   (let* ((type (smaller-type (pvs2C-type expr) exp-type))
 	 (if-bloc (pvs2C-if expr bindings livevars type))
@@ -351,18 +354,6 @@
     (set-name args
 	      (mk-C-funcall "createTuple" (cons "~a" (name args))))
     args))
-
-(defmethod pvs2C* ((expr record-expr) bindings livevars)
-  (let* ((sorted-assignments (sort-assignments (assignments expr)))
-	 (formatted-fields
-	  (loop for entry in sorted-assignments
-		collect (format nil "~~a.~a = ~a;"
-			  (caar (arguments entry))
-			  (pvs2C (expression entry)
-				 bindings livevars)))))
-    (cons (pvs2C-type expr)
-	  (cons "struct record ~~a;"
-		formatted-fields))))
 
 (defmacro pvs2C_tuple (args)
   `(format nil "(~{~a~^, ~})" ,args))
@@ -617,15 +608,6 @@
 	(mk-Cexpr-funcall (pvs2C-type (type expr))
 			  (C_nondestructive_id expr)
 			  (pvs2C actuals bindings livevars))))))
-
-
-(defun range-arr (max &key (min 0) (step 1))
-   (loop for n from min below max by step
-      collect n))
-
-(defun append-lists (l)
-  (when (consp l) (append (car l) (append-lists (cdr l)))))
-
 
 
 (defmethod pvs2C* ((expr lambda-expr) bindings livevars)
@@ -1034,7 +1016,7 @@
 	    "// ---------------------------------------------"
 	    "~%#include<stdio.h>"
 	    "#include<gmp.h>"
-	    "#include\"GC.h\""
+	    "#include \"GC.h\""
 	    "#include \"~a.h\""
 	    "~%#define TRUE 1"
 	    "#define FALSE 0"
@@ -1141,7 +1123,7 @@
 ;; (defun pvs-find-C-file (filename)
 ;;   (let ((buf (get-buffer (format "%s.c" filename))))
 ;;     (when buf
-;;       (kill-buffer buf)))
+;;       (kill-buffer buf)))(format 
 ;;   (let ((C-file (format "%s%s.c" pvs-current-directory filename)))
 ;;     (when (file-exists-p C-file)
 ;;       (find-file-read-only-other-window C-file))))

@@ -1,57 +1,69 @@
 // C file generated from draft.pvs
 
-unsigned long int pvs_a47();
+struct pair892 pvs_a890();
 
-unsigned long int pvs_d_a48();
+struct pair892 pvs_d_a891();
 
-int pvs_b49();
+int pvs_first893(struct pair892 a);
 
-int pvs_d_b50();
+int pvs_d_first894(struct pair892 a);
 
-void pvs_c51(mpz_t result);
+struct pair892 pvs_zero895(struct pair892 a);
 
-void pvs_d_c52(mpz_t result);
+struct pair892 pvs_d_zero896(struct pair892 a);
 
-int pvs_incr53(int x);
+unsigned long int pvs_a900();
 
-int pvs_d_incr54(int x);
+unsigned long int pvs_d_a901();
 
-int pvs_zero55(mpz_t x);
+int pvs_b902();
 
-int pvs_d_zero56(mpz_t x);
+int pvs_d_b903();
 
-int pvs_f57(int a, int b);
+void pvs_c904(mpz_t result);
 
-int pvs_d_f58(int a, int b);
+void pvs_d_c905(mpz_t result);
 
-int pvs_f61(int x);
+int pvs_incr906(int x);
 
-int pvs_d_f62(int x);
+int pvs_d_incr907(int x);
 
-int pvs_t69(int x);
+int pvs_zero908(mpz_t x);
 
-int pvs_d_t70(int x);
+int pvs_d_zero909(mpz_t x);
 
-int* pvs_id71(int* t55798);
+int pvs_f910(int a, int b);
 
-int* pvs_d_id72(int* t55798);
+int pvs_d_f911(int a, int b);
 
-int* pvs_f73(int x);
+int pvs_f914(int x);
 
-int* pvs_d_f74(int x);
+int pvs_d_f915(int x);
 
-int* pvs_update77(int* x);
+int pvs_t922(int x);
 
-int* pvs_d_update78(int* x);
+int pvs_d_t923(int x);
 
-int* pvs_t288(int x);
+int* pvs_id924(int* t55793);
 
-int* pvs_d_t289(int x);
+int* pvs_d_id925(int* t55793);
 
-int* pvs_id96(int** t55798);
+int* pvs_f926(int x);
 
-int* pvs_d_id97(int** t55798);
+int* pvs_d_f927(int x);
 
-int** pvs_update100(int** x);
+int* pvs_update930(int* x);
 
-int** pvs_d_update101(int** x);
+int* pvs_d_update931(int* x);
+
+int* pvs_t2941(int x);
+
+int* pvs_d_t2942(int x);
+
+int* pvs_id949(int** t55793);
+
+int* pvs_d_id950(int** t55793);
+
+int** pvs_update953(int** x);
+
+int** pvs_d_update954(int** x);

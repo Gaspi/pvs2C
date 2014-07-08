@@ -26,7 +26,7 @@
 (defcl C-mpq (C-gmp  C-number ))
 
 (defcl C-pointer-type (C-pointer) (target) (size) (bang))
-(defcl C-struct       (C-pointer) (name))
+(defcl C-struct       (C-pointer) (name) (args))
 (defcl C-closure      (C-pointer)) ;; To be implemented...
 (defcl C-named-type   (C-pointer) (name)) ;; ???
 
@@ -45,6 +45,7 @@
 (defvar *C-uli* (make-instance 'C-uli :range *C-uli-range*))
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
+(defvar *C-struct* (make-instance 'C-struct :name nil :args nil))
 
 
 
@@ -79,18 +80,22 @@
   (with-slots (print-type) type
      (if (type-name? print-type)
 	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
-	  (if entry (make-instance 'C-struct :name (cadr entry))
-	      (let* ((formatted-fields (loop for fld in (fields type)
-				  collect
-				  (format nil "~a ~a;" 
-					  (pvs2C-type (type fld)) (id fld))))
-		     (C-rectype-name (gentemp (format nil "pvs~a" (id print-type))))
-		     (C-rectype (format nil "struct ~a {~%~{  ~a~%~}};"
-					C-rectype-name formatted-fields)))
-		(push (list (declaration print-type) C-rectype-name C-rectype)
-		      *C-record-defns*)
-		(make-instance 'C-struct :name C-rectype-name))))
-	(pvs2C-error "~%Record type ~a must be declared." type))))
+	  (if entry (make-instance 'C-struct :name (cadr entry) :args (cadddr entry))
+	    (let* ((flds  (fields type))
+		   (ids   (mapcar #'id flds))
+		   (types (pvs2C-type (mapcar #'declared-type flds)))
+		   (args (pairlis ids types))
+		   (formatted-fields (loop for arg in args
+					   collect (format nil "~a ~a;" (cdr arg) (car arg))))
+		   (C-rectype-name (gentemp (format nil "~a" (id print-type))))
+		   (C-rectype (format nil "struct ~a {~%~{  ~a~%~}};"
+				      C-rectype-name formatted-fields)))
+	      (push (list (declaration print-type) C-rectype-name C-rectype args)
+		    *C-record-defns*)
+	      (make-instance 'C-struct
+			     :name C-rectype-name
+			     :args args ))))
+       (pvs2C-error "~%Record type ~a must be declared." type))))
 
 (defmethod pvs2C-type ((type tupletype) &optional tbindings)
   (make-instance 'C-named-type
@@ -127,20 +132,12 @@
 	 ((subtype-of? type *number*) *C-mpq*)
 	 (t (pvs2C-type (find-supertype type)))))
 
-(defmethod pvs2C-type ((type type-name) &optional tbindings)
-  (with-slots (id) type
-     (if (eq id 'boolean) *C-int*
-       (make-instance 'C-named-type
-		 :name (or (cdr (assoc type tbindings :test #'tc-eq))
-			   (id type))))))
-
 
 (defun C-type-args (operator)
   (let ((dom-type (domain (type operator))))
     (if (tupletype? dom-type)
 	(pvs2C-type (types dom-type))
       (list (pvs2C-type dom-type)))))
-
 
 
 (defun is-expr-subtype? (expr type)
@@ -175,12 +172,18 @@
 	      (t *C-mpz*)))
     (pvs2C-type (type e))))
 
-
 (defmethod pvs2C-type ((l list) &optional tbindings)
-  (if (consp l)
-      (cons (pvs2C-type (car l))
-	    (pvs2C-type (cdr l)))
-    nil))
+  (when (consp l)
+    (cons (pvs2C-type (car l))
+	  (pvs2C-type (cdr l)))))
+
+(defmethod pvs2C-type ((type type-name) &optional tbindings)
+  (if (eql (id type) 'boolean) *C-int*
+    (pvs2C-type (type (car (resolutions type))))))
+       ;; (or (call-next-method)
+       ;; 	   (make-instance 'C-named-type
+       ;; 			  :name (or (cdr (assoc type tbindings :test #'tc-eq))
+       ;; 				    (id type)))))))
 
 (defun get-PVS-types (expr)
   (let ((*generate-tccs* t))
@@ -242,12 +245,17 @@
  	  (list "}")))))
 
 
-
+(defmethod C-alloc ((type C-struct))
+  (append-lists
+   (loop for a in (args type)
+	collect (apply-argument (C-alloc (cdr a)) (format nil "~~a.~a" (car a))))))
 (defmethod C-alloc ((type C-type)) nil)
 (defmethod C-alloc ((v C-var))
   (with-slots (type name) v
     (cons (format nil "~a ~a;" type name)
 	  (apply-argument (C-alloc type) name))))
+(defmethod C-alloc ((l list))
+  (when (consp l) (append (C-alloc (car l)) (C-alloc (cdr l)))))
 
 ;; C variables memory deallocation
 (defgeneric C-free (arg))
@@ -258,6 +266,11 @@
    (when (C-pointer? (target type))
      (create-loop (C-free (target type)) "~~a[~a]" (size type)))
    (list "GC_free(~a);")))
+(defmethod C-free ((type C-struct))
+  (append (append-lists
+	   (loop for e in (args type)
+		 collect (C-free (C-var (cdr e) (format nil "~~a.~a" (cdr e))))))
+	  (list "free(~a);")))
 (defmethod C-free ((type C-pointer)) (list "free(~a);"))
 (defmethod C-free ((type C-type))    nil)
 (defmethod C-free ((v C-var))
@@ -278,6 +291,11 @@
 	 (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
 	((and (C-pointer? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
 	 (get-bang-copy typeA nameA typeB nameB))
+	((and (C-struct? typeA) (C-struct? typeB))
+	 (append-lists
+	  (loop for a in (args typeA)
+		collect (get-typed-copy (cdr a) (format nil "~a.~a" nameA (car a))
+					(cdr a) (format nil "~a.~a" nameB (car a))))))
 	(t (list (format nil "~a = ~a;" nameA
 			 (if (and (type= typeA typeB) (not (C-pointer-type? typeA)))
 			     nameB

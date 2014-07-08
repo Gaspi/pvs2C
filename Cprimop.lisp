@@ -190,6 +190,8 @@
 
 
 ;; -------- Arithmetic (2 arguments - numbers / result number) ---------------
+
+;; ---------- Addition ------------
 (defun add-function? (op args)
   (and (eq op 'pvsAdd) (eq (length args) 2)))
 (defun pvs2C*-add (typeA typeB typeR args bindings livevars)
@@ -223,6 +225,7 @@
 	       (list "mpq_add(~{~a~^, ~});")))))
 
 
+;; ---------- Substraction ------------
 (defun sub-function? (op args)
   (and (eq op 'pvsSub) (eq (length args) 2)))
 (defun pvs2C*-sub (typeA typeB typeR args bindings livevars)
@@ -246,6 +249,7 @@
 
 
 
+;; ---------- Multiplication ------------
 (defun times-function? (op args)
   (and (eq op 'pvsTimes) (eq (length args) 2)))
 (defun pvs2C*-times (typeA typeB typeR args bindings livevars)
@@ -278,6 +282,7 @@
 	       (list "mpq_mul(~{~a~^, ~});")))))
 
 
+;; ---------- Division ------------
 (defun div-function? (op args)
   (and (eq op 'pvsDiv) (eq (length args) 2)))
 (defun pvs2C*-div (typeA typeB typeR args bindings livevars)

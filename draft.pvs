@@ -1,10 +1,18 @@
 draft : THEORY
 BEGIN
   
+  
+  
 %  Cint : TYPE = subrange(-1000, 1000)
   Cint : TYPE = below(1000)
   Culi : type = below(1000000)
-
+  
+  pair : TYPE = [# x: Cint, y:nat  #]
+  
+  a:pair = (# x := 2, y := 12  #)
+  first(a:pair):Cint = a`x
+  zero(a:pair):pair = a with [ `x := 0 ]
+  
   % Testing types
   a:Culi = 2
   b:Cint = 3+1
