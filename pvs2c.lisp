@@ -60,16 +60,27 @@
 ;; -> x = GC( a )
 ;; -> y = a with [0=0]    ;; done non destructively
 ;; -> 
-;; 
+;;
+;;
+;;Page 5 Guarded Optim
+;; frec deosn't terminate
+;; and the C update deosn't seems to be done destructively
+
 
 
 (in-package :pvs)
 
-;; Bad practice ???
-(load "Cutils")
-(load "Ctypes")
-(load "Cexpr")
-(load "Cprimop")
+;; ------------------- Loading the other files ---------------------
+(pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
+(lf "Cutils.lisp")  
+(lf "Ctypes.lisp")
+(lf "Cexpr.lisp")    
+(lf "Cprimop.lisp")
+;; (load "Cutils")
+;; (load "Ctypes")
+;; (load "Cexpr")
+;; (load "Cprimop")
+
 
 (defvar *C-livevars-table* nil)
 (defvar *C-record-defns* nil)
