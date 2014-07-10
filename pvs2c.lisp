@@ -71,15 +71,15 @@
 (in-package :pvs)
 
 ;; ------------------- Loading the other files ---------------------
-(pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
-(lf "Cutils.lisp")  
-(lf "Ctypes.lisp")
-(lf "Cexpr.lisp")    
-(lf "Cprimop.lisp")
-;; (load "Cutils")
-;; (load "Ctypes")
-;; (load "Cexpr")
-;; (load "Cprimop")
+;; (pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
+;; (lf "Cutils.lisp")  
+;; (lf "Ctypes.lisp")
+;; (lf "C-expr.lisp")    
+;; (lf "Cprimop.lisp")
+(load "Cexpr")
+(load "Cutils")
+(load "Ctypes")
+(load "Cprimop")
 
 
 (defvar *C-livevars-table* nil)
@@ -136,11 +136,11 @@
 (defvar *C-destructive-hash* (make-hash-table :test #'eq))
 
 
-;; Return a trivial Cexpr if possible
+;; Return a trivial C-expr if possible
 (defun getConstantName (expr bindings)
   (when (name-expr? expr)
     (let ((e (assoc (declaration expr) bindings :key #'declaration)))
-      (when e (mk-Cexpr (pvs2C-type (type (car e))) (cdr e) nil nil)))))
+      (when e (mk-C-expr (pvs2C-type (type (car e))) (cdr e) nil nil)))))
 
 
 
@@ -148,7 +148,7 @@
 ; --- set and conversion functions need to be implemented correctly here ---
 
 
-;; Returns a Cexpr
+;; Returns a C-expr
 ;; type is the list of the types
 ;; name is the list of the names
 ;; instr and destr are the concatenation of the instrs and destrs
@@ -160,16 +160,16 @@
 	    (tl (pvs2C (cdr expr) bindings
 		       (append (updateable-vars (car expr)) livevars)
 		       (cdr exp-type))))
-	(mk-Cexpr (cons   (type  hd) (type  tl))
+	(mk-C-expr (cons   (type  hd) (type  tl))
 		  (cons   (name  hd) (name  tl))
 		  (append (instr hd) (instr tl))
 		  (append (destr hd) (destr tl))))
-    (mk-Cexpr nil nil nil nil)))
+    (mk-C-expr nil nil nil nil)))
 
 
 
 ;; If expressions
-;; Return a Cexpr
+;; Return a C-expr
 ;; type is given type
 ;; name is nil
 ;; destr contains the destructions for the condition
@@ -192,7 +192,7 @@
 		 (indent (instr C-else-part))
 		 (indent (destr C-else-part))
 		 (list "}"))))
-    (mk-Cexpr exp-type nil instr (destr C-cond-part))))
+    (mk-C-expr exp-type nil instr (destr C-cond-part))))
 
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
   (let* ((type (pvs2C-type expr)))    ;; TODO could be improved to find a smaller type
@@ -201,7 +201,7 @@
 
 
 ;; --- Should be renamed "pvs2C-set" ---
-;; Returns a Cexpr with type = type and name = name
+;; Returns a C-expr with type = type and name = name
 (defmethod pvs2C2 ((expr list) bindings livevars type name &optional need-malloc)
   (if (consp expr)
       (let ((hd (pvs2C2 (car expr) bindings
@@ -210,11 +210,11 @@
 	    (tl (pvs2C2 (cdr expr) bindings
 			(append (updateable-vars (car expr)) livevars)
 			(cdr type) (cdr name) need-malloc)))
-	(mk-Cexpr (cons   (type  hd) (type  tl))
+	(mk-C-expr (cons   (type  hd) (type  tl))
 		  (cons   (name  hd) (name  tl))
 		  (append (instr hd) (instr tl))
 		  (append (destr hd) (destr tl))))
-    (mk-Cexpr nil nil nil nil)))
+    (mk-C-expr nil nil nil nil)))
 
 
 
@@ -227,7 +227,7 @@
 			 (pvs2C2 (expression a) bindings livevars
 				 (cdr e)
 				 (format nil "~a.~a" name (car e)))))))
-    (mk-Cexpr type name
+    (mk-C-expr type name
 	      (append (when need-malloc (C-alloc var))
 		      (append-lists (mapcar #'instr formatted-fields)))
 	      (append (C-free var)))))
@@ -255,12 +255,12 @@
 		 (define-name e n)
 		 (set-instr e (append (C-alloc n) (instr e) (destr e)))
 		 (set-destr e (C-free n))))
-	     (set-var-to-Cexpr res-var e need-malloc)))))
+	     (set-var-to-C-expr res-var e need-malloc)))))
 
 
-(defmethod set-var-to-Cexpr ((var C-var) (e Cexpr) &optional need-malloc)
+(defmethod set-var-to-C-expr ((var C-var) (e C-expr) &optional need-malloc)
   (with-slots (type name) var
-    (mk-Cexpr type name
+    (mk-C-expr type name
 	      (append
 	       (instr e)
 	       (when need-malloc (C-alloc var))
@@ -272,7 +272,7 @@
     ;; (when need-malloc (add-destructions (C-free (C-var type name)))))))))
 
 
-;; Return a Cexpr (  name : "if" name  ,  destr : only free(name)  )
+;; Return a C-expr (  name : "if" name  ,  destr : only free(name)  )
 (defmethod pvs2C ((expr if-expr) bindings livevars &optional (exp-type (pvs2C-type expr)))
   (let* ((type (smaller-type (pvs2C-type expr) exp-type))
 	 (if-bloc (pvs2C-if expr bindings livevars type))
@@ -286,12 +286,12 @@
     (convert exp-type if-bloc)))
 
 
-;; Returns a Cexpr
+;; Returns a C-expr
 ;; name is a variable of a simple expression
 ;; destr is only  free(name)
 (defmethod pvs2C (expr bindings livevars &optional (exp-type (pvs2C-type expr)))
-  (let ((cst-Cexpr (getConstantName expr bindings)))
-    (if cst-Cexpr (convert exp-type cst-Cexpr)
+  (let ((cst-C-expr (getConstantName expr bindings)))
+    (if cst-C-expr (convert exp-type cst-C-expr)
       (let ((e (pvs2C* expr bindings livevars))) ;; Returns an instructions (ends with *)
 	(if (unnamed? e)
 	    (let ((n (gen-C-var (type e) "aux")))
@@ -349,10 +349,10 @@
   (declare (ignore bindings livevars))
   (let ((type (pvs2C-type expr)))
     (if (C-gmp? type)
-	(mk-Cexpr type nil
+	(mk-C-expr type nil
 		  (list (format nil  "mpz_set_str(~~a, \"~a\")" (number expr)))
 		  nil)
-      (mk-Cexpr type (format nil "~a" (number expr)) nil nil))))
+      (mk-C-expr type (format nil "~a" (number expr)) nil nil))))
 
 
 ;; -------------------------- Unsafe code down ----------------------------
@@ -406,7 +406,7 @@
     (cons (list (car l1) (car l2) (car l3))
 	  (pair3lis (cdr l1) (cdr l2) (cdr l3)))))
 
-(defun mk-Cexpr-funcall (type op args)
+(defun mk-C-expr-funcall (type op args)
   (set-type args type)
   (if (C-gmp? type)
       (progn
@@ -421,7 +421,7 @@
       (if (pvs2cl-primitive? operator)
 	    (pvs2C*-primitive-app expr bindings livevars)
 	  (if (datatype-constant? operator)
-	      (mk-Cexpr-funcall (pvs2C-type (range (type operator)))
+	      (mk-C-expr-funcall (pvs2C-type (range (type operator)))
 				(pvs2C-resolution operator)
 				(pvs2C (arguments expr)
 				       bindings
@@ -451,16 +451,16 @@
 			    (append (updateable-vars argument) livevars)
 			    type-op)))
 	  (if (C-pointer-type? type-op) ;; if the operator is an array
-	      (mk-Cexpr (target type-op)
+	      (mk-C-expr (target type-op)
 			(format nil "~a[~a]" (name C-op) (name C-arg))
 			(append (instr C-op) (instr C-arg))
 			(append (destr C-op) (destr C-arg)))
 	    (if (C-gmp? type)
-		(mk-Cexpr type nil
+		(mk-C-expr type nil
 			  (append (instr C-op) (instr C-arg)
 				  (set-C-pointer C-op C-arg))
 			  (append (destr C-op) (destr C-arg)))
-	      (mk-Cexpr type
+	      (mk-C-expr type
 			(mk-C-funcall C-op C-arg)
 			(append (instr C-op) (instr C-arg))
 			(append (destr C-op) (destr C-arg))))))))))
@@ -490,8 +490,8 @@
 		 (check (check-output-vars analysis alist livevars))
 		 (id-op (if check (C_id operator)
 			          (C_nondestructive_id operator))))
-	    (mk-Cexpr-funcall ret-type id-op C-args))
-	(mk-Cexpr-funcall ret-type (C_id operator) C-args)))))
+	    (mk-C-expr-funcall ret-type id-op C-args))
+	(mk-C-expr-funcall ret-type (C_id operator) C-args)))))
 
 (defun pvs2C-resolution (op)
   (let* ((op-decl (declaration op)))
@@ -594,7 +594,7 @@
 	 (prim (pvs2cl-primitive? expr)))
     (assert (not (and bnd (const-decl? decl))))
     (cond (bnd
-	   (mk-Cexpr type-e (cdr bnd) nil nil))
+	   (mk-C-expr type-e (cdr bnd) nil nil))
 	  (prim (pvs2C*-primitive-cste expr bindings livevars))
 	  ((const-decl? decl)
 	        (pvs2C*-constant expr decl bindings livevars))
@@ -616,7 +616,7 @@
 			     collect (mk-name-expr bd))))))
 	  (pvs2C* eta-expansion bindings livevars))
       (let ((actuals (expr-actuals (module-instance expr))))
-	(mk-Cexpr-funcall (pvs2C-type (type expr))
+	(mk-C-expr-funcall (pvs2C-type (type expr))
 			  (C_nondestructive_id expr)
 			  (pvs2C actuals bindings livevars))))))
 
@@ -639,7 +639,7 @@
 			       range-type
 			       (format nil "~~a[~a]" i)
 			       nil)))
-	    (mk-Cexpr Ctype nil
+	    (mk-C-expr Ctype nil
 		      (append
 		       (array-malloc Ctype)
 		       (list (format nil "int ~a;" i)
@@ -684,7 +684,7 @@
 			    range-type name
 			    (append param-def (instr C-body) (destr C-body))
 			    (name C-body)))
-    (mk-Cexpr (make-instance 'C-closure)
+    (mk-C-expr (make-instance 'C-closure)
 	      nil
 	      (append (list (format nil "void ~a[~d];" env-name nb-args))
 		      (append-lists (mapcar
@@ -703,7 +703,7 @@
 ;; Doesn't work  / Should look like if-expr
 (defmethod pvs2C* ((expr cases-expr) bindings livevars)
   (let ((type (pvs2C-type expr)))
-    (mk-Cexpr type nil
+    (mk-C-expr type nil
 	      (append (list (format nil "switch( ~a ) {"
 				    (pvs2C (expression expr) bindings livevars type)))
 		  (pvs2C-cases (selections expr) (else-part expr) bindings livevars)
@@ -794,7 +794,7 @@
       (app-instr C-cdr (instr C-car) t)
       (app-destr C-cdr (destr C-car) t)
       C-cdr)
-    (mk-Cexpr nil nil nil nil)))
+    (mk-C-expr nil nil nil nil)))
 
 
 ;; ---- Recursion over nested update arguments in a single update ----
@@ -823,7 +823,7 @@
 	       (C-expr (pvs2C-update-nd-type (range type) exprvar
 					     restargs assign-expr
 					     bindings livevars)))
-	  (mk-Cexpr nil
+	  (mk-C-expr nil
 		    (append (C-alloc exprvar)
 			    (get-typed-copy (bang-type C-range-type) exprvar
 					    C-range-type (format nil "~a[~a]" expr arg1var))
@@ -833,7 +833,7 @@
       (let* ((res (gentemp "res"))
 	     (C-expr (pvs2C2 assign-expr bindings livevars
 			    (target Ctype) res t)))
-	(mk-Cexpr nil (get-typed-copy (target Ctype) (format nil "~a[~a]" expr arg1var)
+	(mk-C-expr nil (get-typed-copy (target Ctype) (format nil "~a[~a]" expr arg1var)
 				      (target Ctype) res)
 		  (append (instr C-arg1) (instr C-expr))
 		  (append (destr C-arg1) (destr C-expr)))))))
@@ -852,11 +852,11 @@
 		     (append (get-typed-copy (bang-type C-target-type) exprvar
 					     C-target-type (format nil "~a.~a" expr id))
 			     (name C-expr)))
-	  Cexpr)
+	  C-expr)
       (let* ((res (gentemp "res"))
 	     (C-expr (pvs2C2 assign-expr bindings livevars
 			     C-target-type res t)))
-	(mk-Cexpr nil (get-typed-copy C-target-type (format nil "~a.~a" expr id)
+	(mk-C-expr nil (get-typed-copy C-target-type (format nil "~a.~a" expr id)
 				      C-target-type res)
 		  (instr C-expr)
 		  (destr C-expr))))))

@@ -31,12 +31,7 @@
 (defcl C-named-type   (C-pointer) (name)) ;; ???
 
 
-;; A C variable is a type and a string to represent it
-(defcl C-var () (name) (type))
-(defun C-var (type name) (make-instance 'C-var :name name :type type))
-(defmethod print-object ((obj C-var) out)
-  (format out "~a" (name obj)))
-(defun gen-C-var (type prefix) (C-var type (gentemp prefix)))
+
 
 
 ;; Some instances of the classes above (to avoid over-instanciating)
@@ -277,9 +272,6 @@
   (apply-argument (C-free (type v)) (name v)))
 
 
-;; TODO freeing an array should free all its elements first
-
-
 
 ;; -------- Converting a C expression to an other type --------
 
@@ -326,7 +318,7 @@
   (get-typed-copy typeA nameA typeB nameB)) ;; Needs to be properly implemented...
 
 
-;; Convert a (not unnamed) Cexpr to an other with different type
+;; Convert a (not unnamed) C-expr to an other with different type
 (defun convert (type e)
   (cond ((type= type (type e)) e)
 	((C-base? type)
@@ -335,7 +327,7 @@
 	 e)
 	(t
 	 (let ((n (gen-C-var type "conv")))
-	   (mk-Cexpr type n
+	   (mk-C-expr type n
 		     (append (instr e)
 			     (C-alloc n)
 			     (get-typed-copy type n (type e) (name e))

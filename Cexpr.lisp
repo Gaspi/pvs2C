@@ -10,49 +10,50 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Defining here a intermediate language between C and PVS
-;;
 
-(defcl Cexpr () (type) (name) (instr) (destr))
-(defun mk-Cexpr (type name instr destr)
-  (make-instance 'Cexpr :type type
+
+;; -------- Classe result of translating functions -------------------
+(defcl C-expr () (type) (name) (instr) (destr))
+(defun mk-C-expr (type name instr destr)
+  (make-instance 'C-expr :type type
 		        :name name
 			:instr instr
 			:destr destr))
 
-(defun mk-simple-Cexpr (type name)
-  (mk-Cexpr type name nil nil))
+(defun mk-simple-C-expr (type name)
+  (mk-C-expr type name nil nil))
 
-(defmethod print-object ((obj Cexpr) out) (format out "~a" (name obj)))
+(defmethod print-object ((obj C-expr) out) (format out "~a" (name obj)))
 
-(defmethod set-type ((Cexpr Cexpr) (type C-type))
-  (setf (type Cexpr) type))
-(defmethod set-name ((Cexpr Cexpr) name)
-  (setf (name Cexpr) name))
-(defmethod set-instr ((Cexpr Cexpr) instr)
-  (setf (instr Cexpr) instr))
-(defmethod set-destr ((Cexpr Cexpr) destr)
-  (setf (destr Cexpr) destr))
+(defmethod set-type ((C-expr C-expr) (type C-type))
+  (setf (type C-expr) type))
+(defmethod set-name ((C-expr C-expr) name)
+  (setf (name C-expr) name))
+(defmethod set-instr ((C-expr C-expr) instr)
+  (setf (instr C-expr) instr))
+(defmethod set-destr ((C-expr C-expr) destr)
+  (setf (destr C-expr) destr))
 
-(defmethod app-instr ((Cexpr Cexpr) instr &optional first)
-  (setf (instr Cexpr)
+(defmethod app-instr ((C-expr C-expr) instr &optional first)
+  (setf (instr C-expr)
 	(if first
-	    (append instr (instr Cexpr))
-	  (append (instr Cexpr) instr))))
-(defmethod app-destr ((Cexpr Cexpr) destr &optional first)
-  (setf (destr Cexpr)
+	    (append instr (instr C-expr))
+	  (append (instr C-expr) instr))))
+(defmethod app-destr ((C-expr C-expr) destr &optional first)
+  (setf (destr C-expr)
 	(if first
-	    (append destr (destr Cexpr))
-	    (append (destr Cexpr) destr))))
+	    (append destr (destr C-expr))
+	    (append (destr C-expr) destr))))
 
 
-(defmethod unnamed? ((Cexpr Cexpr))
-  (null (name Cexpr)))
+(defmethod unnamed? ((C-expr C-expr))
+  (null (name C-expr)))
 
-(defmethod define-name ((Cexpr Cexpr) name)
-  (set-name Cexpr name)
-  (set-instr Cexpr (define-name (instr Cexpr) name))
-  (set-destr Cexpr (define-name (destr Cexpr) name))
-  Cexpr)
+(defmethod define-name ((C-expr C-expr) name)
+  (set-name C-expr name)
+  (set-instr C-expr (define-name (instr C-expr) name))
+  (set-destr C-expr (define-name (destr C-expr) name))
+  C-expr)
 
 (defmethod define-name ((str string) name)
   (format nil str name))
@@ -63,13 +64,36 @@
 
 
 
+;; ------------ CLOS representation of a fragment of C code -----------
+(defcl Cexpr () (list-var))
+(defun mk-Cexpr () (make-instance 'Cexpr :list-var nil))
+
+;; A C variable is a type and a string to represent it
+(defcl C-var (Cexpr) (name) (type))
+(defun C-var (type name &optional list-var)
+  (make-instance 'C-var :name name :type type :list-var list-var))
+(defmethod print-object ((obj C-var) out)
+  (format out "~a" (name obj)))
+(defun gen-C-var (type prefix)
+  (let ((res (C-var type (gentemp prefix))))
+    (setf (list-var res) (list res))
+    res))
+
+
+
+;; ------------ CLOS representation of a full line of C code ----------
+(defcl Cinstr ())
+
+;; Should not be used
+(defcl Caux (Cinstr) (body))
+(defun mk-Caux (body) (make-instance 'Caux :body body))
 
 
 
 ;; (defcl Cvar () (name) (type))
 
-;; (defcl Cexpr () (body) (type) (vars))
-;; (defcl Cexpr-var (Cexpr) (var))
+;; (defcl C-expr () (body) (type) (vars))
+;; (defcl C-expr-var (C-expr) (var))
 
 
 

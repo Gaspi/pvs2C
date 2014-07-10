@@ -59,13 +59,13 @@
   (let ((nop (pvs2C-primitive-op expr)))
     (if (boolean-primitive? nop)
 	(pvs2C*-boolean-primitive nop)
-      (mk-Cexpr *C-type* nil  ;; If unimplemented ...
+      (mk-C-expr *C-type* nil  ;; If unimplemented ...
 		(format nil "[set](~~a, ~a);" nop) nil))))
 
 (defun boolean-primitive? (name)
   (member name '(1 0)))
 (defun pvs2C*-boolean-primitive (op)
-  (mk-Cexpr *C-int* (format nil "~a" op) nil nil))
+  (mk-C-expr *C-int* (format nil "~a" op) nil nil))
 
 
 ;; --------- Primitive function call ----------------
@@ -300,7 +300,7 @@
 	((and (C-integer? typeA) (C-integer? typeB))
 	 (let ((arg1 (pvs2C2 (car args)  bindings livevars *C-mpz* "mpq_numref(~a)" nil))
 	       (arg2 (pvs2C2 (cadr args) bindings livevars *C-mpz* "mpq_denref(~a)" nil)))
-	   (mk-Cexpr *C-mpq* nil
+	   (mk-C-expr *C-mpq* nil
 		     (append (instr arg1) (instr arg2) (list "mpq_canonicalize(~a);"))
 		     (append (destr arg1) (destr arg2)))))
 	(t (Cprocess (list *C-mpq* (list *C-mpq* *C-mpq*)
