@@ -31,6 +31,14 @@
 (defcl C-named-type   (C-pointer) (name)) ;; ???
 
 
+;; -------- C constants (implementation dependent) --------
+(defvar *min-C-int* (- (expt 2 15)))
+(defvar *max-C-int* (- (expt 2 15) 1))
+(defvar *min-C-uli* 0)
+(defvar *max-C-uli* (- (expt 2 32) 1))
+
+(defvar *C-int-range* (C-range (cons *min-C-int* *max-C-int*)))
+(defvar *C-uli-range* (C-range (cons *min-C-uli* *max-C-uli*)))
 
 
 
@@ -186,8 +194,6 @@
 
 
 
-
-(defmethod pointer? ((obj C-var)) (C-pointer? (type obj)))
 (defmethod pointer? ((e expr)) (C-pointer? (pvs2C-type (type e))))
 
 
@@ -199,13 +205,6 @@
 (defmethod m-size ((type C-type))
   (format nil "sizeof(~a)" type))
 
-
-;; C variables memory allocation
-(defgeneric C-alloc (arg))
-(defmethod C-alloc ((type C-mpz))
-  (list "mpz_init(~a);"))
-(defmethod C-alloc ((type C-mpq))
-  (list "mpq_init(~a);"))
 
 ;;;; Arrays are never malloc this way :
 ;;;;   - arr = f(...);           ;; result of function containing malloc
@@ -224,7 +223,7 @@
 	   ;;     (let ((i (gentemp "i")))
 	   ;; 	 (append
 	   ;; 	  (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
-	   ;; 	  (indent (apply-argument body-alloc
+	   ;; 	  (indent (define-name body-alloc
 	   ;; 				  (format nil "~~a[~a]" i)))
 	   ;; 	  (list "}")))))))
 
@@ -236,40 +235,8 @@
  	 (append
  	  (list (format nil "int ~a;" i)
 		(format nil "for(~a = 0; ~a < ~a; ~a++) {" i i size i))
- 	  (indent (apply-argument body (format nil arg i)))
+ 	  (indent (define-name body (format nil arg i)))
  	  (list "}")))))
-
-
-(defmethod C-alloc ((type C-struct))
-  (append-lists
-   (loop for a in (args type)
-	collect (apply-argument (C-alloc (cdr a)) (format nil "~~a.~a" (car a))))))
-(defmethod C-alloc ((type C-type)) nil)
-(defmethod C-alloc ((v C-var))
-  (with-slots (type name) v
-    (cons (format nil "~a ~a;" type name)
-	  (apply-argument (C-alloc type) name))))
-(defmethod C-alloc ((l list))
-  (when (consp l) (append (C-alloc (car l)) (C-alloc (cdr l)))))
-
-;; C variables memory deallocation
-(defgeneric C-free (arg))
-(defmethod C-free ((type C-mpz))     (list "mpz_clear(~a);"))
-(defmethod C-free ((type C-mpq))     (list "mpq_clear(~a);"))
-(defmethod C-free ((type C-pointer-type))
-  (append
-   (when (C-pointer? (target type))
-     (create-loop (C-free (target type)) "~~a[~a]" (size type)))
-   (list "GC_free(~a);")))
-(defmethod C-free ((type C-struct))
-  (append (append-lists
-	   (loop for e in (args type)
-		 collect (C-free (C-var (cdr e) (format nil "~~a.~a" (cdr e))))))
-	  (list "free(~a);")))
-(defmethod C-free ((type C-pointer)) (list "free(~a);"))
-(defmethod C-free ((type C-type))    nil)
-(defmethod C-free ((v C-var))
-  (apply-argument (C-free (type v)) (name v)))
 
 
 
@@ -299,7 +266,7 @@
 	 (nameAi (format nil "~a[~a]" nameA i))
 	 (nameBi (format nil "~a[~a]" nameB i))
 	 (copy-bloc (append
-		(apply-argument (array-malloc typeA) nameA)
+		(define-name (array-malloc typeA) nameA)
 		(list (format nil "int ~a;" i)
 		      (format nil "for(~a = 0; ~a < ~a; ~a++) {" i i (size typeB) i))
 		(indent (get-typed-copy (target typeA) nameAi (target typeB) nameBi))

@@ -63,16 +63,6 @@
 
 
 
-;; -------- C constants (implementation dependent) --------
-(defvar *min-C-int* (- (expt 2 15)))
-(defvar *max-C-int* (- (expt 2 15) 1))
-(defvar *min-C-uli* 0)
-(defvar *max-C-uli* (- (expt 2 32) 1))
-
-(defvar *C-int-range* (C-range (cons *min-C-int* *max-C-int*)))
-(defvar *C-uli-range* (C-range (cons *min-C-uli* *max-C-uli*)))
-
-
 ;; ------- C range computations ------------------
 (defmethod C-range ((type type-expr))
   (C-range (when (subtype-of? type *integer*)
@@ -133,3 +123,70 @@
 (defun range-arr (max &key (min 0) (step 1))
    (loop for n from min below max by step
       collect n))
+
+
+
+
+
+
+
+
+
+
+;; ---------- Draft / old functions ---------------------
+
+
+(defun C_type (op)
+  (let ((hashentry (gethash (declaration op) (C-hashtable))))
+    (when hashentry (format nil "~a -> ~a"
+	 (C-info-type-arg hashentry)
+	 (C-info-type-out hashentry)))))
+
+(defun C_definition (op)
+  (let ((hashentry (gethash (declaration op) (C-hashtable))))
+    (when hashentry (C-info-definition hashentry))))
+
+
+
+
+
+
+
+(defmacro C-reset (array)
+  `(setq ,array nil))
+(defmacro C-save (array)
+  `(setq ,array (list ,array)))
+(defmacro C-load (array)
+  `(if (listp (car ,array))
+       (let ((res (cdr ,array)))
+	 (setq ,array (car ,array))
+	 res)
+     (break)))
+(defmacro C-add (array args)
+  `(setq ,array (append ,array
+	    (if (listp ,args) ,args (list ,args)))))
+(defmacro C-flush (array)
+  `(let ((res ,array))
+     (setq ,array nil)
+     res))
+
+
+
+
+;; Instructions to allocate memory for new variables
+(defvar *C-instructions* nil)
+(defun reset-instructions () (C-reset *C-instructions*))
+(defun add-instructions (instructions)
+  (C-add *C-instructions* instructions))
+(defun add-instruction (instruction)
+  (C-add *C-instructions* (list instruction)))
+(defun add-instructions-first (instructions)
+  (setq *C-instructions* (append instructions *C-instructions*)))
+
+;; Instructions to destruct previously allocated memory
+(defvar *C-destructions* nil)
+(defun reset-destructions () (C-reset *C-destructions*))
+(defun add-destructions (destructions)
+  (C-add *C-destructions* destructions))
+(defun add-destruction (destruction)
+  (C-add *C-destructions* (list destruction)))

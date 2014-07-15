@@ -36,7 +36,7 @@ BEGIN
   Arr : TYPE = [ Cint -> Cint ]
   t:Arr = lambda(x:Cint) : x
 
-  id(t:Arr):Arr = t
+  id2(t:Arr):Arr = t
 
   f(x:Cint):Arr = t
   update(x:Arr):Arr = x with [(0) := 0]
@@ -46,6 +46,8 @@ BEGIN
   t2:Arr2 = lambda (x:Cint) (y:Cint) : x + y
   
   id(t:Arr2): Arr = let a = t in a(0)
+  
+  te:Arr = update(update(t))
   
   update(x:Arr2):Arr2 = x with [(0)(1) := 0 , (1) := lambda (x:Cint): x ]
   

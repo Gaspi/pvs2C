@@ -63,7 +63,7 @@
 ;;
 ;;
 ;;Page 5 Guarded Optim
-;; frec deosn't terminate
+;; frec doesn't terminate
 ;; and the C update deosn't seems to be done destructively
 
 
@@ -76,51 +76,15 @@
 ;; (lf "Ctypes.lisp")
 ;; (lf "C-expr.lisp")    
 ;; (lf "Cprimop.lisp")
-(load "Cexpr")
 (load "Cutils")
 (load "Ctypes")
+(load "Cexpr")
 (load "Cprimop")
 
 
 (defvar *C-livevars-table* nil)
 (defvar *C-record-defns* nil)
 
-
-(defmacro C-reset (array)
-  `(setq ,array nil))
-(defmacro C-save (array)
-  `(setq ,array (list ,array)))
-(defmacro C-load (array)
-  `(if (listp (car ,array))
-       (let ((res (cdr ,array)))
-	 (setq ,array (car ,array))
-	 res)
-     (break)))
-(defmacro C-add (array args)
-  `(setq ,array (append ,array
-	    (if (listp ,args) ,args (list ,args)))))
-(defmacro C-flush (array)
-  `(let ((res ,array))
-     (setq ,array nil)
-     res))
-
-;; Instructions to allocate memory for new variables
-(defvar *C-instructions* nil)
-(defun reset-instructions () (C-reset *C-instructions*))
-(defun add-instructions (instructions)
-  (C-add *C-instructions* instructions))
-(defun add-instruction (instruction)
-  (C-add *C-instructions* (list instruction)))
-(defun add-instructions-first (instructions)
-  (setq *C-instructions* (append instructions *C-instructions*)))
-
-;; Instructions to destruct previously allocated memory
-(defvar *C-destructions* nil)
-(defun reset-destructions () (C-reset *C-destructions*))
-(defun add-destructions (destructions)
-  (C-add *C-destructions* destructions))
-(defun add-destruction (destruction)
-  (C-add *C-destructions* (list destruction)))
 
 (defvar *C-definitions* nil)
 (defun reset-definitions () (C-reset *C-definitions*))
@@ -134,6 +98,26 @@
 
 (defvar *C-nondestructive-hash* (make-hash-table :test #'eq))
 (defvar *C-destructive-hash* (make-hash-table :test #'eq))
+
+(defstruct C-info
+  id type-out type-arg definition analysis)
+
+(defmacro C-hashtable ()
+  `(if *destructive?* *C-destructive-hash* *C-nondestructive-hash*))
+
+(defun C_id (op)
+  (let ((hashentry (gethash (declaration op) (C-hashtable))))
+    (when hashentry (C-info-id hashentry))))
+
+(defun C_nondestructive_id (op)
+  (let ((hashentry (gethash (declaration op) *C-nondestructive-hash*)))
+    (when hashentry (C-info-id hashentry))))
+
+(defun C_analysis (op)
+  (let ((hashentry (gethash (declaration op) (C-hashtable))))
+    (when hashentry (C-info-analysis hashentry))))
+
+
 
 
 ;; Return a trivial C-expr if possible
@@ -220,13 +204,13 @@
 
 ;; Record expressions are treated seperately
 (defmethod pvs2C2 ((expr record-expr) bindings livevars type name &optional need-malloc)
-  (let ((var (C-var type name))
-	(formatted-fields
-	 (loop for a in (assignments expr)
-	       collect (let ((e (assoc (id (caar (arguments a))) (args type))))
-			 (pvs2C2 (expression a) bindings livevars
+  (let* ((var (C-var type name))
+	 (formatted-fields
+	  (loop for a in (assignments expr)
+		collect (let ((e (assoc (id (caar (arguments a))) (args type))))
+			  (pvs2C2 (expression a) bindings livevars
 				 (cdr e)
-				 (format nil "~a.~a" name (car e)))))))
+				 (Crecord-get var (car e)))))))
     (mk-C-expr type name
 	      (append (when need-malloc (C-alloc var))
 		      (append-lists (mapcar #'instr formatted-fields)))
@@ -314,45 +298,17 @@
 
 
 
-
-(defstruct C-info
-  id type-out type-arg definition analysis)
-
-(defmacro C-hashtable ()
-  `(if *destructive?* *C-destructive-hash* *C-nondestructive-hash*))
-
-(defun C_id (op)
-  (let ((hashentry (gethash (declaration op) (C-hashtable))))
-    (when hashentry (C-info-id hashentry))))
-
-(defun C_nondestructive_id (op)
-  (let ((hashentry (gethash (declaration op) *C-nondestructive-hash*)))
-    (when hashentry (C-info-id hashentry))))
-
-(defun C_type (op)
-  (let ((hashentry (gethash (declaration op) (C-hashtable))))
-    (when hashentry (format nil "~a -> ~a"
-	 (C-info-type-arg hashentry)
-	 (C-info-type-out hashentry)))))
-
-(defun C_definition (op)
-  (let ((hashentry (gethash (declaration op) (C-hashtable))))
-    (when hashentry (C-info-definition hashentry))))
-
-(defun C_analysis (op)
-  (let ((hashentry (gethash (declaration op) (C-hashtable))))
-    (when hashentry (C-info-analysis hashentry))))
-
-
 ;; number-expr is a non negative integer
 (defmethod pvs2C* ((expr number-expr) bindings livevars)
   (declare (ignore bindings livevars))
   (let ((type (pvs2C-type expr)))
     (if (C-gmp? type)
 	(mk-C-expr type nil
-		  (list (format nil  "mpz_set_str(~~a, \"~a\")" (number expr)))
-		  nil)
-      (mk-C-expr type (format nil "~a" (number expr)) nil nil))))
+		   (list (Cfuncall "mpz_set_str" (list "~a" (number expr))))
+		;; (list (format nil  "mpz_set_str(~~a, \"~a\")" (number expr)))
+		   nil)
+      (mk-C-expr type (Caux (number expr))
+		 nil nil))))
 
 
 ;; -------------------------- Unsafe code down ----------------------------
@@ -363,7 +319,7 @@
 	 (args (pvs2C elts bindings livevars
 		      (mapcar #'pvs2C-type elts))))
     (set-name args
-	      (mk-C-funcall "createTuple" (cons "~a" (name args))))
+	      (Cfuncall "createTuple" (cons "~a" (name args))))
     args))
 
 (defmacro pvs2C_tuple (args)
@@ -395,7 +351,7 @@
   (let* ((clarg (pvs2C (argument expr) bindings livevars))
 	 (id (id expr))
 	 (type (pvs2C-type expr)))
-    (set-name clarg (format nil "~a.~a" (name clarg) id))
+    (set-name clarg (Crecord-get (C-var (type clarg) (name clarg)) id))
     (set-type clarg type)
     clarg))
 
@@ -412,7 +368,7 @@
       (progn
 	(app-instr args (set-C-pointer op (name args)))
 	(set-name args nil))
-    (set-name args (mk-C-funcall op (name args))))
+    (set-name args (Cfuncall op (name args))))
   args)
 
 (defmethod pvs2C* ((expr application) bindings livevars)
@@ -452,16 +408,17 @@
 			    type-op)))
 	  (if (C-pointer-type? type-op) ;; if the operator is an array
 	      (mk-C-expr (target type-op)
-			(format nil "~a[~a]" (name C-op) (name C-arg))
-			(append (instr C-op) (instr C-arg))
-			(append (destr C-op) (destr C-arg)))
+			 (Carray-get (get-C-var C-op) (get-C-var C-arg))
+		       ;;(format nil "~a[~a]" (name C-op) (name C-arg))
+			 (append (instr C-op) (instr C-arg))
+			 (append (destr C-op) (destr C-arg)))
 	    (if (C-gmp? type)
 		(mk-C-expr type nil
 			  (append (instr C-op) (instr C-arg)
 				  (set-C-pointer C-op C-arg))
 			  (append (destr C-op) (destr C-arg)))
 	      (mk-C-expr type
-			(mk-C-funcall C-op C-arg)
+			(Cfuncall C-op C-arg)
 			(append (instr C-op) (instr C-arg))
 			(append (destr C-op) (destr C-arg))))))))))
 
@@ -526,65 +483,58 @@
   (let* ((*destructive?* nil)
 	 (bind-ids (pvs2cl-make-bindings formals nil))
 	 (id-map (pairlis formals bind-ids))
-	 (cl-type-out (pvs2C-type range-type))
-	 (return-void (C-gmp? cl-type-out))
-;;	 (pointer-out (C-pointer? cl-type-out))
-	 (result-var (C-var cl-type-out "result"))
-	 (cl-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" cl-type-out)))
+	 (C-type-out (pvs2C-type range-type))
+	 (return-void (C-gmp? C-type-out))
+	 (result-var (C-var C-type-out "result"))
+	 (C-type-arg (format nil "~{~a~^, ~}"
+	      (append (when return-void (list (format nil "~a result" C-type-out)))
 		      (loop for var in formals
 			    collect (format nil "~a ~a"
 					    (pvs2C-type (type var))
 					    (cdr (assoc var id-map)) )))))
 	 (hash-entry (gethash op-decl *C-nondestructive-hash*))
-	 (C-body (pvs2C2 body id-map nil cl-type-out "result" (not return-void))))
+	 (C-body (pvs2C2 body id-map nil C-type-out "result" (not return-void))))
              ;; If we don't return void, we need to malloc the result
     (format t "~%Defining (nondestructively) ~a with type~%   ~a -> ~a"
-	    (id op-decl) cl-type-arg cl-type-out)
+	    (id op-decl) C-type-arg C-type-out)
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
 ;;    (unless return-void (add-instructions-first (C-alloc result-var)))
-    (setf (C-info-type-out hash-entry) (if return-void "void" cl-type-out)
-	  (C-info-type-arg hash-entry) cl-type-arg
+    (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
+	  (C-info-type-arg hash-entry) C-type-arg
 	  (C-info-definition hash-entry)
 	       (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
 		       (instr C-body)
 		       (when return-void (destr C-body))
-		       return-void))
-      ))
+		       return-void))))
 
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
   (let* ((*destructive?* t)
-	 (*output-vars* nil)
 	 (bind-ids (pvs2cl-make-bindings formals nil))
 	 (id-map (pairlis formals bind-ids))
-	 (cl-type-out (pvs2C-type range-type))
-	 (return-void (C-gmp? cl-type-out))
-;;	 (pointer-out (C-pointer? cl-type-out))
-	 (result-var (C-var cl-type-out "result"))
-	 (cl-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" cl-type-out)))
+	 (C-type-out (pvs2C-type range-type))
+	 (return-void (C-gmp? C-type-out))
+	 (result-var (C-var C-type-out "result"))
+	 (C-type-arg (format nil "~{~a~^, ~}"
+	      (append (when return-void (list (format nil "~a result" C-type-out)))
 		      (loop for var in formals
 		       collect (format nil "~a ~a"
 				       (pvs2C-type (type var))
 				       (cdr (assoc var id-map)))))))
 	 (hash-entry (gethash op-decl *C-destructive-hash*))
 	 (old-output-vars (C-info-analysis hash-entry))
-	 (C-body (pvs2C2 body id-map nil cl-type-out "result" (not return-void))))
+	 (C-body (pvs2C2 body id-map nil C-type-out "result" (not return-void))))
              ;; If we don't return void, we need to malloc the result
     (format t "~%Defining (destructively) ~a with type~%   ~a -> ~a"
-	    (id op-decl) cl-type-arg cl-type-out)
+	    (id op-decl) C-type-arg C-type-out)
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
 ;;    (unless return-void (add-instructions-first (C-alloc result-var)))
-    (setf (C-info-type-out hash-entry) (if return-void "void" cl-type-out)
-	  (C-info-type-arg hash-entry) cl-type-arg
+    (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
+	  (C-info-type-arg hash-entry) C-type-arg
 	  (C-info-definition hash-entry)
 	      (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
 		       (instr C-body)
 		       (when return-void (destr C-body))
-		       return-void)
-	   (C-info-analysis hash-entry) *output-vars*)
-    (unless (equalp old-output-vars *output-vars*)
-      (pvs2C-resolution-destructive op-decl formals body range-type))))
+		       return-void))))
 
 
 (defmethod pvs2C* ((expr name-expr) bindings livevars)
@@ -827,6 +777,8 @@
 		    (append (C-alloc exprvar)
 			    (get-typed-copy (bang-type C-range-type) exprvar
 					    C-range-type (format nil "~a[~a]" expr arg1var))
+			    (get-typed-copy (target Ctype) (format nil "~a[~a]" expr arg1var)
+					    (target Ctype) exprvar)
 			    (name C-expr))
 		    (append (instr C-expr) (instr C-arg1) )
 		    (append (destr C-arg1) (destr C-expr))))
@@ -851,13 +803,15 @@
 	  (set-name C-expr
 		     (append (get-typed-copy (bang-type C-target-type) exprvar
 					     C-target-type (format nil "~a.~a" expr id))
+			     (get-typed-copy C-target-type (format nil "~a.~a" expr id)
+					     C-target-type exprvar)
 			     (name C-expr)))
 	  C-expr)
       (let* ((res (gentemp "res"))
 	     (C-expr (pvs2C2 assign-expr bindings livevars
 			     C-target-type res t)))
 	(mk-C-expr nil (get-typed-copy C-target-type (format nil "~a.~a" expr id)
-				      C-target-type res)
+				       C-target-type res)
 		  (instr C-expr)
 		  (destr C-expr))))))
 
@@ -1017,12 +971,12 @@
 			    :direction :output
 			    :if-exists :supersede
 			    :if-does-not-exist :create)
-      (format output "~{~a~%~}" (apply-argument (list
+      (format output "~{~a~%~}" (define-name (list
 	    "// ---------------------------------------------"
 	    "//        C file generated from ~a.pvs"
 	    "// ---------------------------------------------"
 	    "//   Make sure to link GC.c and GMP in compilation:"
-	    "//      gcc -o ~a ~:*~a.c GC/GC.c -lgmp"
+	    "//      gcc -o ~a ~:*~a.c GC.c -lgmp"
 	    "//      ./~a"
 	    "// ---------------------------------------------"
 	    "~%#include<stdio.h>"
