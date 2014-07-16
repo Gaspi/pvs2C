@@ -252,3 +252,19 @@
 ;;      (cons (format nil "~~a = GC_malloc(~a, sizeof(~a));" (size type) (target type))
 ;; 	   (create-loop (Cdecl (Carray-get (C-var target))) "~~a[~a]" size))))
 
+
+
+;; (defmethod C-free ((type C-mpz))     (list "mpz_clear(~a);"))
+;; (defmethod C-free ((type C-mpq))     (list "mpq_clear(~a);"))
+;; (defmethod C-free ((type C-pointer-type))
+;;   (append
+;;    (when (C-pointer? (target type))
+;;      (create-loop (C-free (target type)) "~~a[~a]" (size type)))
+;;    (list "GC_free(~a);")))
+;; (defmethod C-free ((type C-struct))
+;;   (append (append-lists
+;; 	   (loop for e in (args type)
+;; 		 collect (C-free (C-var (cdr e) (format nil "~~a.~a" (cdr e))))))
+;; 	  (list "free(~a);")))
+;; (defmethod C-free ((type C-pointer)) (list "free(~a);"))
+;; (defmethod C-free ((type C-type))    nil)

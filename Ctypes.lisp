@@ -229,7 +229,7 @@
 			     (list (Cdecl n))
 			     (list (Ccopy n (C-var (type e) (name e))))
 			     (destr e))
-		     (C-free n))))))
+		     (list (Cfree n)))))))
 
 
 (defgeneric convertor (typeA typeB))

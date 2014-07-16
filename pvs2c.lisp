@@ -29,10 +29,9 @@
 ;;         or expression of the given type and with the translation
 ;;         of expr as a value.
 ;;
-;;    pvs2C2 expr bindings livevars type name [need-malloc]
-;;      -> a list of instructions setting the C variable with the
-;;         given name and type to the translation of expr.
-;;         If need-malloc flag is t, also initialize the variable.
+;;    pvs2C2 expr bindings livevars variable [need-malloc]
+;;      -> a list of instructions setting the C variable to the value of expr.
+;;         If need-malloc flag is t, also initializes the variable.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -50,11 +49,11 @@
 ;; -> f(a, x ,z)    ;; and everything is freed
 ;; 
 ;; 
-;; Bump up the reference count by one so that no argument use a as a mutable variable
+;; Bump up the reference count by one so that no argument used as a mutable variable
 ;; Move the free to just after the last occurence of the variable
 ;;
-;; Every Function has the resposnability to free it's array arguments !!!
-;; 
+;; Every Function has the responsability to free it's array arguments !!!
+;;
 ;; 
 ;; (lambda(x): a with [0 = x(0) ]  )( a with [0=0] )
 ;; -> x = GC( a )
@@ -166,17 +165,16 @@
 				      livevars)))
 	 (C-cond-part (pvs2C condition bindings newlivevars *C-int*))
 	 (C-then-part (pvs2C2 then-part bindings livevars (C-var exp-type)))
-	 (C-else-part (pvs2C2 else-part bindings livevars (C-var exp-type)))
-	 (instr (append
-		 (instr C-cond-part)
-		 (list (format nil "if(~a) {" (name C-cond-part)))
-		 (indent (instr C-then-part))
-		 (indent (destr C-then-part))
-		 (list "} else {")
-		 (indent (instr C-else-part))
-		 (indent (destr C-else-part))
-		 (list "}"))))
-    (mk-C-expr exp-type nil instr (destr C-cond-part))))
+	 (C-else-part (pvs2C2 else-part bindings livevars (C-var exp-type))))
+    (mk-C-expr exp-type nil
+	       (append
+		(instr C-cond-part)
+		(list (Cif (C-var *C-int* (name C-cond-part))
+			   (append (instr C-then-part)
+				   (destr C-then-part))
+			   (append (instr C-else-part)
+				   (destr C-else-part)))))
+	       (destr C-cond-part))))
 
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
   (let* ((type (pvs2C-type expr)))    ;; TODO could be improved to find a smaller type
@@ -366,7 +364,7 @@
       (progn
 	(app-instr args (set-C-pointer op (name args)))
 	(set-name args nil))
-    (set-name args (Cfuncall op (name args))))
+    (set-name args (Cfuncall op (name args) type)))
   args)
 
 (defmethod pvs2C* ((expr application) bindings livevars)
@@ -445,8 +443,10 @@
 		 (check (check-output-vars analysis alist livevars))
 		 (id-op (if check (C_id operator)
 			          (C_nondestructive_id operator))))
-	    (mk-C-expr-funcall ret-type id-op C-args))
-	(mk-C-expr-funcall ret-type (C_id operator) C-args)))))
+	    (mk-C-expr-funcall ret-type (declaration operator) C-args))
+	(mk-C-expr-funcall ret-type (declaration operator) C-args)))))
+	;;     (mk-C-expr-funcall ret-type id-op C-args))
+	;; (mk-C-expr-funcall ret-type (C_id operator) C-args)))))
 
 (defun pvs2C-resolution (op)
   (let* ((op-decl (declaration op)))
@@ -566,8 +566,10 @@
 			     collect (mk-name-expr bd))))))
 	  (pvs2C* eta-expansion bindings livevars))
       (let ((actuals (expr-actuals (module-instance expr))))
+	(break) ;;Is that where functions from theory are called ?
 	(mk-C-expr-funcall (pvs2C-type (type expr))
-			  (C_nondestructive_id expr)
+			   (declaration expr)
+;;			  (C_nondestructive_id expr)
 			  (pvs2C actuals bindings livevars))))))
 
 
@@ -587,15 +589,9 @@
 			       new-bind
 			       nil  ;;removed livevars (why ?)
 			       (Carray-get (C-var Ctype) i)
-;;			       (format nil "~~a[~a]" i)
 			       nil)))
 	    (mk-C-expr Ctype nil
 		       (list (Carray-init (C-var Ctype) (instr body) i))
-		       ;; (list (format nil "int ~a;" i)
-		       ;; 	     (format nil "for(~a = 0; ~a < ~a; ~a++) {"
-		       ;; 		     i i (array-bound type) i))
-		       ;; (indent (instr body))
-		       ;; (list "}"))
 		       (when (destr body)
 			 (append
 			  (list (format nil "for(~a = 0; ~a < ~a;;; ~a++) {"
