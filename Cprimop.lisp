@@ -252,10 +252,10 @@
 	((every #'C-integer? (list typeA typeB typeR))
 	 (Cprocess (list *C-mpz* (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_divexact"))))
 	((and (C-integer? typeA) (C-integer? typeB))
-	 (let ((arg1 (pvs2C2 (car args)  bindings livevars *C-mpz*
-			     (Cfuncall "mpq_numref" (C-var *C-mpq*)) nil))
-	       (arg2 (pvs2C2 (cadr args) bindings livevars *C-mpz*
-			     (Cfuncall "mpq_denref" (C-var *C-mpq*)) nil)))
+	 (let ((arg1 (pvs2C2 (car args)  bindings livevars
+			     (Cfuncall "mpq_numref" (C-var *C-mpq*) *C-mpz*) nil))
+	       (arg2 (pvs2C2 (cadr args) bindings livevars
+			     (Cfuncall "mpq_denref" (C-var *C-mpq*) *C-mpz*) nil)))
 	   (mk-C-expr *C-mpq* nil
 ;;		     (append (instr arg1) (instr arg2) (list "mpq_canonicalize(~a);"))
 		     (append (instr arg1) (instr arg2)

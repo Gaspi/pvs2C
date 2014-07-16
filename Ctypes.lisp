@@ -26,7 +26,7 @@
 (defcl C-mpq (C-gmp  C-number ))
 
 (defcl C-pointer-type (C-pointer) (target) (size) (bang))
-(defcl C-struct       (C-pointer) (name) (args))
+(defcl C-struct       (C-pointer) (name) (args) (bang))
 (defcl C-closure      (C-pointer)) ;; To be implemented...
 (defcl C-named-type   (C-pointer) (name)) ;; ???
 
@@ -48,7 +48,7 @@
 (defvar *C-uli* (make-instance 'C-uli :range *C-uli-range*))
 (defvar *C-mpz* (make-instance 'C-mpz))
 (defvar *C-mpq* (make-instance 'C-mpq))
-(defvar *C-struct* (make-instance 'C-struct :name nil :args nil))
+(defvar *C-struct* (make-instance 'C-struct :name nil :args nil :bang nil))
 
 
 
@@ -73,7 +73,7 @@
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
 (defmethod print-object ((obj C-mpq) out) (format out "mpq_t"))
 (defmethod print-object ((obj C-pointer-type) out) (format out "~a*" (slot-value obj 'target)))
-(defmethod print-object ((obj C-struct) out) (format out "struct ~a" (slot-value obj 'name)))
+(defmethod print-object ((obj C-struct) out) (format out "struct_~a" (slot-value obj 'name)))
 (defmethod print-object ((obj C-named-type) out) (format out "~a" (slot-value obj 'name)))
 (defmethod print-object ((obj C-closure) out) (format out "pvsClosure"))
 (defmethod print-object ((obj C-type) out) (format out "[Abstract C type]"))
@@ -91,8 +91,8 @@
 		   (formatted-fields (loop for arg in args
 					   collect (format nil "~a ~a;" (cdr arg) (car arg))))
 		   (C-rectype-name (gentemp (format nil "~a" (id print-type))))
-		   (C-rectype (format nil "struct ~a {~%~{  ~a~%~}};"
-				      C-rectype-name formatted-fields)))
+		   (C-rectype (format nil "~%struct ~a {~%~{  ~a~%~}};~%typedef (struct ~a)* struct_~a;"
+				      C-rectype-name formatted-fields C-rectype-name C-rectype-name)))
 	      (push (list (declaration print-type) C-rectype-name C-rectype args)
 		    *C-record-defns*)
 	      (make-instance 'C-struct
@@ -120,6 +120,9 @@
     (make-instance 'C-closure)))
 
 (defmethod bang-type ((type C-pointer-type))
+  (setf (slot-value type 'bang) t)
+  type)
+(defmethod bang-type ((type C-struct))
   (setf (slot-value type 'bang) t)
   type)
 (defmethod bang-type ((type C-type)) type)
@@ -206,83 +209,10 @@
   (format nil "sizeof(~a)" type))
 
 
-;;;; Arrays are never malloc this way :
-;;;;   - arr = f(...);           ;; result of function containing malloc
-;;;;   - arr = malloc( ...);     ;; copy from an other array
-;;;;     for (int i...)
-;;;;        arr[i] = ...;
-;;;; !!!! Make sure there is no other way to create arrays !!!!
-(defun array-malloc (type)
-  (assert (C-pointer-type? type))
-  (with-slots (target size) type
-     (cons (format nil "~~a = GC_malloc(~a, sizeof(~a));" (size type) (target type))
-	   (create-loop (C-alloc target) "~~a[~a]"size))))
-	   
-	   ;; (let ((body-alloc (C-alloc target)))
-	   ;;   (when body-alloc
-	   ;;     (let ((i (gentemp "i")))
-	   ;; 	 (append
-	   ;; 	  (list (format nil "for(int ~a = 0; ~a < ~a; ~a++) {" i i size i))
-	   ;; 	  (indent (define-name body-alloc
-	   ;; 				  (format nil "~~a[~a]" i)))
-	   ;; 	  (list "}")))))))
-
-
-;; TODO  create function loop
-(defun create-loop (body arg size &optional (prefix "i"))
-  (when body
-       (let ((i (gentemp prefix)))
- 	 (append
- 	  (list (format nil "int ~a;" i)
-		(format nil "for(~a = 0; ~a < ~a; ~a++) {" i i size i))
- 	  (indent (define-name body (format nil arg i)))
- 	  (list "}")))))
-
 
 
 ;; -------- Converting a C expression to an other type --------
 
-
-;; Getting a object of typeA representing nameB of typeB
-(defun get-typed-copy (typeA nameA typeB nameB)
-  (assert (and (C-type? typeA) (C-type? typeB)))
-  (cond ((C-gmp? typeA)
-	 (mapcar #'(lambda (x) (format nil x nameA nameB)) (convertor typeA typeB)))
-	((and (C-pointer? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
-	 (get-bang-copy typeA nameA typeB nameB))
-	((and (C-struct? typeA) (C-struct? typeB))
-	 (append-lists
-	  (loop for a in (args typeA)
-		collect (get-typed-copy (cdr a) (format nil "~a.~a" nameA (car a))
-					(cdr a) (format nil "~a.~a" nameB (car a))))))
-	(t (list (format nil "~a = ~a;" nameA
-			 (if (and (type= typeA typeB) (not (C-pointer-type? typeA)))
-			     nameB
-			   (format nil (convertor typeA typeB) nameB)))))))
-
-;; Getting a bang version of the array (copy if needed)
-(defmethod get-bang-copy ((typeA C-pointer-type) nameA (typeB C-pointer-type) nameB)
-  (let* ((i (gentemp "i"))
-	 (nameAi (format nil "~a[~a]" nameA i))
-	 (nameBi (format nil "~a[~a]" nameB i))
-	 (copy-bloc (append
-		(define-name (array-malloc typeA) nameA)
-		(list (format nil "int ~a;" i)
-		      (format nil "for(~a = 0; ~a < ~a; ~a++) {" i i (size typeB) i))
-		(indent (get-typed-copy (target typeA) nameAi (target typeB) nameBi))
-		(list "}"))))
-;;		(mapcar #'(lambda (x) (format nil "  ~a" x))
-    ;;			(get-typed-copy (target typeA) nameAi (target typeB) nameBi))
-    ;;		(list "}"))))
-    (append
-     (list (format nil "if ( GC_count( ~a ) == 1 )" nameB)
-	   (format nil "  ~a = ~a;" nameA nameB)
-	   (format nil "else {"))
-     (indent copy-bloc)
-     (list "}"))))
-
-(defmethod get-bang-copy ((typeA C-struct) nameA (typeB C-struct) nameB)
-  (get-typed-copy typeA nameA typeB nameB)) ;; Needs to be properly implemented...
 
 
 ;; Convert a (not unnamed) C-expr to an other with different type
@@ -296,12 +226,12 @@
 	 (let ((n (gen-C-var type "conv")))
 	   (mk-C-expr type n
 		     (append (instr e)
-			     (C-alloc n)
-			     (get-typed-copy type n (type e) (name e))
+			     (list (Cdecl n))
+			     (list (Ccopy n (C-var (type e) (name e))))
 			     (destr e))
 		     (C-free n))))))
 
-  
+
 (defgeneric convertor (typeA typeB))
 ;; ---------- GMP library conversions ---------------
 (defmethod convertor ((typeA C-mpz) (typeB C-mpz)) (list "mpz_set(~a, ~a);"))
