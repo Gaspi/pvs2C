@@ -14,7 +14,7 @@
 ;; Classes to represent C types
 (defcl C-type ())
 (defcl C-base    (C-type)) ;; represents int, long, ...
-(defcl C-pointer (C-type) (bang))
+(defcl C-pointer (C-type) (bang))   ;; The bang type is 
 (defcl C-gmp     (C-type))
 
 (defcl C-number ())
@@ -119,7 +119,7 @@
 
 (defmethod bang-type ((type C-pointer)) (setf (bang type) t) type)
 (defmethod bang-type ((type C-type)) type)
-
+(defmethod bang ((e C-type)) nil) ;; The default bang method
 
 (defmethod pvs2C-type ((type subtype) &optional tbindings)
   (cond ((subtype-of? type *boolean*) *C-int*)
@@ -250,7 +250,11 @@
 (defmethod convertor ((typeA C-int) (typeB C-int)) "~a")
 ;; ---------- arrays pointer copy -----------------
 (defmethod convertor ((typeA C-array) (typeB C-array))
-  (format nil "(~a*) GC( ~~a )" (target typeA)))
+  (format nil "(~a) GC( ~~a )" typeA))
+;; ---------- struct pointer copy -----------------
+(defmethod convertor ((typeA C-struct) (typeB C-struct))
+  (format nil "(~a) GC( ~~a )" typeA))
+
 ;; ---------- other cases (basically unimplemented) --------------
 (defmethod convertor (typeA typeB)
   (let ((func (if (type= typeA typeB)
