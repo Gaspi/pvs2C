@@ -80,7 +80,6 @@
 (load "Cexpr")
 (load "Cprimop")
 
-
 (defvar *C-livevars-table* nil)
 (defvar *C-record-defns* nil)
 
@@ -123,7 +122,7 @@
 (defun getConstantName (expr bindings)
   (when (name-expr? expr)
     (let ((e (assoc (declaration expr) bindings :key #'declaration)))
-      (when e (mk-C-expr (pvs2C-type (type (car e))) (cdr e) nil nil)))))
+      (when e (mk-C-expr (pvs2C-type (type (car e))) (format nil "~a" (cdr e)))))))
 
 
 
@@ -143,11 +142,10 @@
 	    (tl (pvs2C (cdr expr) bindings
 		       (append (updateable-vars (car expr)) livevars)
 		       (cdr exp-type))))
-	(mk-C-expr (cons   (type  hd) (type  tl))
-		  (cons   (name  hd) (name  tl))
-		  (append (instr hd) (instr tl))
-		  (append (destr hd) (destr tl))))
-    (mk-C-expr nil nil nil nil)))
+	(C-expr (cons   (var   hd) (var   tl))
+		(append (instr hd) (instr tl))
+		(append (destr hd) (destr tl))))
+    (C-expr nil )))
 
 
 
@@ -166,15 +164,15 @@
 	 (C-cond-part (pvs2C condition bindings newlivevars *C-int*))
 	 (C-then-part (pvs2C2 then-part bindings livevars (C-var exp-type)))
 	 (C-else-part (pvs2C2 else-part bindings livevars (C-var exp-type))))
-    (mk-C-expr exp-type nil
-	       (append
-		(instr C-cond-part)
-		(list (Cif (C-var *C-int* (name C-cond-part))
-			   (append (instr C-then-part)
-				   (destr C-then-part))
-			   (append (instr C-else-part)
-				   (destr C-else-part)))))
-	       (destr C-cond-part))))
+    (C-expr (C-var exp-type)
+	    (append
+	     (instr C-cond-part)
+	     (list (Cif (C-var *C-int* (name C-cond-part))
+			(append (instr C-then-part)
+				(destr C-then-part))
+			(append (instr C-else-part)
+				(destr C-else-part)))))
+	    (destr C-cond-part))))
 
 (defmethod pvs2C* ((expr if-expr) bindings livevars)
   (let* ((type (pvs2C-type expr)))    ;; TODO could be improved to find a smaller type
@@ -192,11 +190,10 @@
 	    (tl (pvs2C2 (cdr expr) bindings
 			(append (updateable-vars (car expr)) livevars)
 			(cdr var) need-malloc)))
-	(mk-C-expr (cons   (type  hd) (type  tl))
-		   (cons   (name  hd) (name  tl))
-		   (append (instr hd) (instr tl))
-		   (append (destr hd) (destr tl))))
-    (mk-C-expr nil nil nil nil)))
+	(C-expr (cons   (var   hd) (var   tl))
+		(append (instr hd) (instr tl))
+		(append (destr hd) (destr tl))))
+    (C-expr nil )))
 
 
 
@@ -208,15 +205,13 @@
 			  (pvs2C2 (expression a) bindings livevars
 				  ;; (cdr e)  ;; This type can be retrieve from the var
 				  (Crecord-get var (car e)))))))
-    (mk-C-expr (type var) (name var)
-	       (append (when need-malloc (Calloc var))
-		       (append-lists (mapcar #'instr formatted-fields)))
-	       (append (C-free var)))))
+    (C-expr var
+	    (append (when need-malloc (Calloc var))
+		    (append-lists (mapcar #'instr formatted-fields)))
+	    (append (list (Cfree var))))))
 
 (defmethod pvs2C ((expr record-expr) bindings livevars &optional (exp-type (pvs2C-type expr)))
   (pvs2C2 expr bindings livevars (gen-C-var exp-type "aux") t))
-
-
 
 
 
@@ -229,27 +224,23 @@
 	(progn (define-name e var)
 	       (when need-malloc
 		 (app-instr e (Calloc var) t)
-		 (app-destr e (C-free var)))
+		 (app-destr e (list (Cfree var))))
 	       e)
       (progn (when (unnamed? e)
 	       (let ((n (gen-C-var (type e) "set")))
 		 (define-name e n)
 		 (set-instr e (append (Calloc n) (instr e) (destr e)))
-		 (set-destr e (C-free n))))
+		 (set-destr e (list (Cfree n)))))
 	     (set-var-to-C-expr var e need-malloc)))))
 
-
 (defmethod set-var-to-C-expr ((var Cexpr) (e C-expr) &optional need-malloc)
-  (let ((type (type var)))
-    (mk-C-expr type var
-	      (append
-	       (instr e)
-	       (when need-malloc (Calloc var))
-	       (list (Ccopy var (C-var (type e) (name e))))
-	       (destr e))
-	      (when need-malloc (C-free var)))))
+  (C-expr var
+	  (append (instr e)
+		  (when need-malloc (Calloc var))
+		  (list (Ccopy var (var e)))
+		  (destr e))
+	  (when need-malloc (list (Cfree var)))))
 
-    ;; (when need-malloc (add-destructions (C-free (C-var type name)))))))))
 
 
 ;; Return a C-expr (  name : "if" name  ,  destr : only free(name)  )
@@ -262,7 +253,7 @@
 	       (append (Calloc if-name)
 		       (instr if-bloc)
 		       (destr if-bloc)))
-    (set-destr if-bloc (C-free if-name))
+    (set-destr if-bloc (list (Cfree if-name)))
     (convert exp-type if-bloc)))
 
 
@@ -279,7 +270,7 @@
 	      (set-instr e (append (Calloc n)
 				   (instr e)
 				   (destr e)))
-	      (set-destr e (C-free n))
+	      (set-destr e (list (Cfree n)))
 	      (convert exp-type e))
 ;;	  (if (not (destr e))  ; If it was a very simple expression
 	  (convert exp-type e))))))
@@ -299,12 +290,9 @@
   (declare (ignore bindings livevars))
   (let ((type (pvs2C-type expr)))
     (if (C-gmp? type)
-	(mk-C-expr type nil
-		   (list (Cfuncall "mpz_set_str" (list "~a" (number expr))))
-		;; (list (format nil  "mpz_set_str(~~a, \"~a\")" (number expr)))
-		   nil)
-      (mk-C-expr type (C-var type (number expr))
-		 nil nil))))
+	(C-expr (C-var type)
+		(list (Cfuncall "mpz_set_str" (list "~a" (number expr)))))
+      (C-expr (C-var type (number expr))))))
 
 
 ;; -------------------------- Unsafe code down ----------------------------
@@ -345,10 +333,8 @@
 
 (defmethod pvs2C*  ((expr field-application) bindings livevars)
   (let* ((clarg (pvs2C (argument expr) bindings livevars))
-	 (id (id expr))
-	 (type (pvs2C-type expr)))
-    (set-name clarg (Crecord-get (C-var (type clarg) (name clarg)) id))
-    (set-type clarg type)
+	 (id (id expr)))
+    (set-var clarg (Crecord-get (var clarg) id))
     clarg))
 
 
@@ -359,12 +345,11 @@
 	  (pair3lis (cdr l1) (cdr l2) (cdr l3)))))
 
 (defun mk-C-expr-funcall (type op args)
-  (set-type args type)
   (if (C-gmp? type)
-      (progn
-	(app-instr args (set-C-pointer op (name args)))
-	(set-name args nil))
-    (set-name args (Cfuncall op (name args) type)))
+      (progn   ;; Rq this should only be called with named arguments
+	(app-instr args (set-C-pointer op (var args)))
+	(set-var args (C-var type)))
+    (set-var args (Cfuncall op (var args) type)))
   args)
 
 (defmethod pvs2C* ((expr application) bindings livevars)
@@ -374,10 +359,10 @@
 	    (pvs2C*-primitive-app expr bindings livevars)
 	  (if (datatype-constant? operator)
 	      (mk-C-expr-funcall (pvs2C-type (range (type operator)))
-				(pvs2C-resolution operator)
-				(pvs2C (arguments expr)
-				       bindings
-				       livevars))
+				 (pvs2C-resolution operator)
+				 (pvs2C (arguments expr)
+					bindings
+					livevars))
 	    (pvs2C-defn-application expr bindings livevars)))
       (if (lambda? operator)
 	  (let* ((bind-decls (bindings operator))
@@ -402,21 +387,18 @@
 	       (C-op (pvs2C operator bindings
 			    (append (updateable-vars argument) livevars)
 			    type-op)))
-	  (if (C-pointer-type? type-op) ;; if the operator is an array
-	      (mk-C-expr (target type-op)
-			 (Carray-get (get-C-var C-op) (get-C-var C-arg))
-		       ;;(format nil "~a[~a]" (name C-op) (name C-arg))
-			 (append (instr C-op) (instr C-arg))
-			 (append (destr C-op) (destr C-arg)))
+	  (if (C-array? type-op) ;; if the operator is an array
+	      (C-expr (Carray-get (var C-op) (var C-arg))
+		      (append (instr C-op) (instr C-arg))
+		      (append (destr C-op) (destr C-arg)))
 	    (if (C-gmp? type)
-		(mk-C-expr type nil
-			  (append (instr C-op) (instr C-arg)
-				  (set-C-pointer C-op C-arg))
-			  (append (destr C-op) (destr C-arg)))
-	      (mk-C-expr type
-			(Cfuncall C-op C-arg)
-			(append (instr C-op) (instr C-arg))
-			(append (destr C-op) (destr C-arg))))))))))
+		(C-expr (C-var type)
+			(append (instr C-op) (instr C-arg)
+				(set-C-pointer C-op C-arg))
+			(append (destr C-op) (destr C-arg)))
+	      (C-expr (Cfuncall C-op C-arg type)
+		      (append (instr C-op) (instr C-arg))
+		      (append (destr C-op) (destr C-arg))))))))))
 
 
 (defun pvs2C-defn-application (expr bindings livevars)
@@ -453,29 +435,29 @@
     (pvs2C-declaration op-decl)))
 
 (defun pvs2C-declaration (op-decl)
-  (let ((nd-hashentry (gethash op-decl *C-nondestructive-hash*))
-	;(d-hashentry (gethash op-decl *C-destructive-hash*))
-	;enough to check one hash-table. 
-	)
+  (let ((nd-hashentry (gethash op-decl *C-nondestructive-hash*)))
+					;enough to check one hash-table. 
     (when (null nd-hashentry)
-      (let ((op-id (gentemp (format nil "pvs_~a" (id op-decl))))
-	    (op-d-id (gentemp (format nil "pvs_d_~a" (id op-decl)))))
-      (setf (gethash op-decl *C-nondestructive-hash*)
-	    (make-C-info :id op-id))
-      (setf (gethash op-decl *C-destructive-hash*)
-	    (make-C-info :id op-d-id))
-      (let* ((defns (def-axiom op-decl))
-	     (defn (when defns (args2 (car (last (def-axiom op-decl))))))
-	     (def-formals (when (lambda-expr? defn)
-			    (bindings defn)))
-	     (def-body (if (lambda-expr? defn) (expression defn) defn))
-	     (module-formals (constant-formals (module op-decl)))
-	     (range-type (if def-formals (range (type op-decl))
+      ;; (let ((op-id   (gentemp (format nil "pvs_~a" (id op-decl))))
+      ;;       (op-d-id (gentemp (format nil "pvs_d_~a" (id op-decl)))))
+      (let ((op-id   (gen-name (id op-decl) nil))
+	    (op-d-id (gen-name (id op-decl) t  )))
+	(setf (gethash op-decl *C-nondestructive-hash*)
+	      (make-C-info :id op-id))
+	(setf (gethash op-decl *C-destructive-hash*)
+	      (make-C-info :id op-d-id))
+	(let* ((defns (def-axiom op-decl))
+	       (defn (when defns (args2 (car (last (def-axiom op-decl))))))
+	       (def-formals (when (lambda-expr? defn)
+			      (bindings defn)))
+	       (def-body (if (lambda-expr? defn) (expression defn) defn))
+	       (module-formals (constant-formals (module op-decl)))
+	       (range-type (if def-formals (range (type op-decl))
 			     (type op-decl))))
-	(pvs2C-resolution-nondestructive op-decl (append module-formals def-formals)
-					     def-body range-type)
-	(pvs2C-resolution-destructive op-decl (append module-formals def-formals)
-					  def-body range-type))))))
+	  (pvs2C-resolution-nondestructive op-decl (append module-formals def-formals)
+					   def-body range-type)
+	  (pvs2C-resolution-destructive op-decl (append module-formals def-formals)
+					def-body range-type))))))
 
 (defun pvs2C-resolution-nondestructive (op-decl formals body range-type)
   (let* ((*destructive?* nil)
@@ -484,27 +466,24 @@
 	 (C-type-out (pvs2C-type range-type))
 	 (return-void (C-gmp? C-type-out))
 	 (result-var (C-var C-type-out "result"))
-	 (C-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" C-type-out)))
-		      (loop for var in formals
-			    collect (format nil "~a ~a"
-					    (pvs2C-type (type var))
-					    (cdr (assoc var id-map)) )))))
+	 (C-args (loop for var in formals
+		       collect (C-var (pvs2C-type (type var))
+				      (cdr (assoc var id-map)))))
+	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
+			     C-args))
 	 (hash-entry (gethash op-decl *C-nondestructive-hash*))
 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
              ;; If we don't return void, we need to malloc the result
-    (format t "~%Defining (nondestructively) ~a with type~%   ~a -> ~a"
-	    (id op-decl) C-type-arg C-type-out)
+    (debug (format nil "Defining (nondestructively) ~a with type~%   ~a -> ~a"
+		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
-;;    (unless return-void (add-instructions-first (Calloc result-var)))
     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
 	  (C-info-type-arg hash-entry) C-type-arg
 	  (C-info-C-code   hash-entry) C-body
 	  (C-info-definition hash-entry)
-	       (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
-		       (get-C-instructions (instr C-body))
-		       (when return-void (destr C-body))
-		       return-void))))
+	  (Cfun-decl (append (instr C-body)
+			     (if return-void (destr C-body) (list (Creturn result-var))))
+		     C-args))))
 
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
   (let* ((*destructive?* t)
@@ -513,29 +492,25 @@
 	 (C-type-out (pvs2C-type range-type))
 	 (return-void (C-gmp? C-type-out))
 	 (result-var (C-var C-type-out "result"))
-	 (C-type-arg (format nil "~{~a~^, ~}"
-	      (append (when return-void (list (format nil "~a result" C-type-out)))
-		      (loop for var in formals
-		       collect (format nil "~a ~a"
-				       (pvs2C-type (type var))
-				       (cdr (assoc var id-map)))))))
+	 (C-args (loop for var in formals
+		       collect (C-var (pvs2C-type (type var))
+				      (cdr (assoc var id-map)))))
+	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
+			     C-args))
 	 (hash-entry (gethash op-decl *C-destructive-hash*))
 	 (old-output-vars (C-info-analysis hash-entry))
 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
              ;; If we don't return void, we need to malloc the result
-    (format t "~%Defining (destructively) ~a with type~%   ~a -> ~a"
-	    (id op-decl) C-type-arg C-type-out)
+    (debug (format nil "Defining (destructively) ~a with type~%   ~a -> ~a"
+		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
-;;    (unless return-void (add-instructions-first (Calloc result-var)))
     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
 	  (C-info-type-arg hash-entry) C-type-arg
 	  (C-info-C-code   hash-entry) C-body
 	  (C-info-definition hash-entry)
-	      (format nil "~{  ~a~%~}~{  ~a~%~}~:[  return result;~%~;~]"
-		       (get-C-instructions (instr C-body))
-		       (when return-void (destr C-body))
-		       return-void))))
-
+	  (Cfun-decl (append (instr C-body)
+			     (if return-void (destr C-body) (list (Creturn result-var))))
+		     C-args))))
 
 (defmethod pvs2C* ((expr name-expr) bindings livevars)
   (let* ((type-e (pvs2C-type expr))
@@ -544,7 +519,7 @@
 	 (prim (pvs2cl-primitive? expr)))
     (assert (not (and bnd (const-decl? decl))))
     (cond (bnd
-	   (mk-C-expr type-e (cdr bnd) nil nil))
+	   (C-expr (C-var type-e (format nil "~a" (cdr bnd)))))
 	  (prim (pvs2C*-primitive-cste expr bindings livevars))
 	  ((const-decl? decl)
 	        (pvs2C*-constant expr decl bindings livevars))
@@ -590,7 +565,7 @@
 			       nil  ;;removed livevars (why ?)
 			       (Carray-get (C-var Ctype) i)
 			       nil)))
-	    (mk-C-expr Ctype nil
+	    (C-expr (C-var Ctype)
 		       (list (Carray-init (C-var Ctype) (instr body) i))
 		       (when (destr body)
 			 (append
@@ -629,14 +604,13 @@
 			    range-type name
 			    (append param-def (instr C-body) (destr C-body))
 			    (name C-body)))
-    (mk-C-expr (make-instance 'C-closure)
-	      nil
-	      (append (list (format nil "void ~a[~d];" env-name nb-args))
-		      (append-lists (mapcar
-				     #'(lambda (x) (save-void x env-name))
-				     assign))
-		      (list (format nil "makeClosure(~~a, ~a, ~a);" name env-name)))
-	      nil)))
+    (C-expr (C-var (make-instance 'C-closure))
+	    (append (list (format nil "void ~a[~d];" env-name nb-args))
+		    (append-lists (mapcar
+				   #'(lambda (x) (save-void x env-name))
+				   assign))
+		    (list (format nil "makeClosure(~~a, ~a, ~a);" name env-name)))
+	    nil)))
 
 
 
@@ -648,11 +622,11 @@
 ;; Doesn't work  / Should look like if-expr
 (defmethod pvs2C* ((expr cases-expr) bindings livevars)
   (let ((type (pvs2C-type expr)))
-    (mk-C-expr type nil
-	      (append (list (format nil "switch( ~a ) {"
-				    (pvs2C (expression expr) bindings livevars type)))
-		  (pvs2C-cases (selections expr) (else-part expr) bindings livevars)
-		  (list "}")))))
+    (C-expr (C-var type)
+	    (append (list (format nil "switch( ~a ) {"
+				  (pvs2C (expression expr) bindings livevars type)))
+		    (pvs2C-cases (selections expr) (else-part expr) bindings livevars)
+		    (list "}")))))
 
 ;; Doesn't work / Should look like if-expr
 (defun pvs2C-cases (selections else-part bindings livevars)
@@ -739,7 +713,7 @@
       (app-instr C-cdr (instr C-car) t)
       (app-destr C-cdr (destr C-car) t)
       C-cdr)
-    (mk-C-expr nil nil nil nil)))
+    (C-expr (C-var nil))))
 
 
 ;; ---- Recursion over nested update arguments in a single update ----
@@ -828,7 +802,7 @@
 
 ;; Get array[index] to modify it's fields later
 ;; Dead code...
-(defmethod updateable-get ((type C-pointer-type) result array index)
+(defmethod updateable-get ((type C-array) result array index)
   (list (format nil "~a ~a;" (target type) result)
 	(format nil "if ( GC_count( ~a[~a] ) == 1 )" array index)
 	(format nil "  ~a = ~a[~a];" result array index)
@@ -836,7 +810,7 @@
 	(format nil "~a ~a = ~a[~a];" (target type) result array index)))
 
 ;;Dead code...
-(defmethod pvs2C*-updateable-get ((type C-pointer-type) array index)
+(defmethod pvs2C*-updateable-get ((type C-array) array index)
   (cons (target type)
 	(if (C-pointer? (target type))
 	    (list (format nil "~~a = ~a[~a];" array index))
@@ -987,29 +961,29 @@
 	    (when ndes-info
 	      (let ((id (C-info-id ndes-info)))
 		;; First the signature
-		(format outputH "~2%~a ~a(~a);"
+		(format outputH "~2%~a ~a(~{~a~^, ~});"
 			(C-info-type-out ndes-info)
 			id
-			(C-info-type-arg ndes-info))
+			(mapcar #'signature (C-info-type-arg ndes-info)))
 		;; Then the defn
-		(format output  "~2%~a ~a(~a) {"
+		(format output  "~2%~a ~a(~{~a~^, ~}) {~%~a}"
 			(C-info-type-out ndes-info)
 			id
-			(C-info-type-arg ndes-info))
-		(format output "~%~a}"  (C-info-definition des-info))))
+			(mapcar #'signature (C-info-type-arg ndes-info))
+			(C-info-definition des-info))))
 	    (when des-info
 	      (let ((id (C-info-id des-info)))
 		;; First the signature
-		(format output  "~2%~a ~a(~a) {"
+		(format outputH "~2%~a ~a(~{~a~^, ~});"
 			(C-info-type-out des-info)
 			id
-			(C-info-type-arg des-info))
-		(format outputH "~2%~a ~a(~a);"
-			(C-info-type-out des-info)
-			id
-			(C-info-type-arg des-info))
+			(mapcar #'signature (C-info-type-arg ndes-info)))
 		;; Then the defn
-		(format output "~%~a}"  (C-info-definition des-info)))))))))))
+		(format output  "~2%~a ~a(~{~a~^, ~}) {~%~a}"
+			(C-info-type-out des-info)
+			id
+			(mapcar #'signature (C-info-type-arg ndes-info))
+			(C-info-definition des-info)))))))))))
 
 
 
@@ -1036,20 +1010,6 @@
 			      (append (updateable-free-formal-vars e)
 				      livevars))))))
 
-
-
-
-(defmacro debug (array str)
-  `(when (eq ',array '*C-destructions*)
-       (break (format nil "~a ~a : ~a~%" ',str ',array ,array))))
-
-
-;; Deprecated
-(defmacro pvsC_update (array index value)
-  `(let ((update-op (if (and *destructive?* *C-livevars-table*)
-			(format nil "pvsDestructiveUpdate")
-			(format nil "pvsNonDestructiveUpdate"))))
-       (format nil  "~a(~a, ~a, ~a);" update-op ,array ,index ,value)))
 
 
 

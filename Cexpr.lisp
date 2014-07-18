@@ -12,69 +12,45 @@
 ;; Defining here a intermediate language between C and PVS
 
 ;; -------- Classe result of translating functions -------------------
-(defcl C-expr () (type) (name) (instr) (destr))
-(defun mk-C-expr (type name instr destr)
-  (make-instance 'C-expr :type type
-		        :name name
-			:instr instr
-			:destr destr))
+(defcl C-expr () (var) (instr) (destr))
+(defun C-expr (var &optional instr destr)
+  (make-instance 'C-expr :var var :instr instr :destr destr))
+(defun mk-C-expr (type name &optional instr destr)
+  (C-expr (C-var type name) instr destr))
 
-(defun mk-simple-C-expr (type name)
-  (mk-C-expr type name nil nil))
-(defmethod get-C-var ((e C-expr))
-  (C-var (type e) (name e)))
+(defmethod type ((e C-expr)) (type (var e)))
+(defmethod name ((e C-expr)) (name (var e)))
+;; (defmethod type ((e list))
+;;   (when (consp e) (cons (type (car e)) (type (cdr e)))))
+;; (defmethod name ((e list))
+;;   (when (consp e) (cons (name (car e)) (name (cdr e)))))
+(defmethod var ((e list))
+  (when (consp e) (cons (var (car e)) (var (cdr e)))))
 
 
-
+(defun set-var (C-expr var) (setf (var C-expr) var))
 (defmethod set-type ((C-expr C-expr) (type C-type))
-  (setf (type C-expr) type))
+  (setf (type (var C-expr)) type))
 (defmethod set-name ((C-expr C-expr) name)
-  (setf (name C-expr) name))
+  (setf (name (var C-expr)) name))
 (defmethod set-instr ((C-expr C-expr) instr)
   (setf (instr C-expr) instr))
 (defmethod set-destr ((C-expr C-expr) destr)
   (setf (destr C-expr) destr))
 
 (defmethod app-instr ((C-expr C-expr) instr &optional first)
-  (setf (instr C-expr)
-	(if first
-	    (append instr (instr C-expr))
-	  (append (instr C-expr) instr))))
+  (set-instr C-expr
+	     (if first
+		 (append instr (instr C-expr))
+	       (append (instr C-expr) instr))))
 (defmethod app-destr ((C-expr C-expr) destr &optional first)
-  (setf (destr C-expr)
-	(if first
-	    (append destr (destr C-expr))
-	    (append (destr C-expr) destr))))
-
+  (set-destr C-expr
+	     (if first
+		 (append destr (destr C-expr))
+	       (append (destr C-expr) destr))))
 
 (defmethod unnamed? ((C-expr C-expr))
-  (null (name C-expr)))
-
-
-
-(defmethod define-name ((C-expr C-expr) name)
-  (when (unnamed? C-expr)
-    (set-name C-expr name)
-    (set-instr C-expr (define-name (instr C-expr) name))
-    (set-destr C-expr (define-name (destr C-expr) name)))
-  C-expr)
-(defmethod define-name ((lst list) name)
-  (when (consp lst)
-    (cons (define-name (car lst) name)
-	  (define-name (cdr lst) name))))
-
-
-;; (defmethod define-name (e name)
-;;   (fill-hole e name))  ;; base case -> call to fill-hole
-
-
-;; (defgeneric fill-hole (e name))
-;; (defmethod fill-hole ((lst list) name)
-;;   (when (consp lst)
-;;     (cons (fill-hole (car lst) name)
-;; 	  (fill-hole (cdr lst) name))))
-;; (defmethod fill-hole ((str string) name)
-;;   (format nil str name))
+  (and (C-var? (var C-expr)) (unnamed? (var C-expr))))
 
 
 
@@ -96,9 +72,12 @@
 ;; --------------------------------------------------------------------
 
 ;; -------- A C variable : is a C type and a name (string or hole) ----
-(defcl C-var (Cexpr) (type) (name))
-(defun C-var (type &optional name exprs)
-  (make-instance 'C-var :type type :name name :exprs exprs))
+(defcl C-var (Cexpr) (type) (name) (safe))
+(defun C-var (type &optional name exprs safe)
+  (make-instance 'C-var :type type
+		 :name (if (listp name) name
+			 (format nil "~a" name)) ;; names must be strings
+		 :exprs exprs :safe safe))
 (defun C-var-list (types names)
   (when (consp types) (cons (C-var (car types) (car names))
 			    (C-var-list (cdr types) (cdr names)))))
@@ -111,6 +90,14 @@
 (defmethod pointer? ((obj C-var)) (C-pointer? (type obj)))
 (defmethod bang-type ((variable C-var))
   (C-var (bang-type (type variable)) (name variable)))
+(defun eq-C-var (x y)
+  (and (C-var? x)
+       (C-var? y)
+       (stringp (name x))
+       (stringp (name y))
+       (string= (name x) (name y))))
+(defun signature (C-var)
+  (format nil "~a ~a" (type C-var) (name C-var)))
 
 
 ;; ------- Accessor to a record type var :  var.e ------
@@ -137,8 +124,8 @@
 (defmethod set-arguments ((Cfuncall Cfuncall) argts)
   (let ((args (if (listp argts) argts (list argts))))
     (setf (args Cfuncall) args)
-    (setf (exprs Cfuncall) (loop for a in args
-				 when (Cexpr? a) collect it))
+    ;; (setf (exprs Cfuncall) (loop for a in args
+    ;; 				 when (Cexpr? a) collect it))
     Cfuncall))
 
 
@@ -199,7 +186,7 @@
 		 :var var :body body :i i :exprs (cons var body)))
 
 ;; --------------- Return instruction ---------------
-(defcl Creturn (var))
+(defcl Creturn (Cinstr) (var))
 (defun Creturn (var) (make-instance 'Creturn :var var))
 
 
@@ -272,13 +259,18 @@
 (defmacro rec-dn (v arg)
   `(setf (,arg ,v) (define-name (,arg ,v) name)))
 
+(defmethod define-name ((C-expr C-expr) name)
+  (when (unnamed? C-expr)
+    (rec-dn C-expr var)
+    (rec-dn C-expr instr)
+    (rec-dn C-expr destr))
+  C-expr)
+
 (defmethod define-name ((v C-var) name)
   (if (unnamed? v)
-      (if (C-expr? name)
-	  name
-	(progn (setf (name v) name) v))
-    (progn (setf (name v) (define-name (name v) name))
-	   v)))
+      (if (Cexpr? name) name
+	(progn (setf (name v) (format nil "~a" name)) v))
+    (progn (rec-dn v name) v)))
 
 (defmethod define-name ((e Crecord-get) name)
   (rec-dn e var)
@@ -295,6 +287,9 @@
   (rec-dn i func) i)
 
 (defmethod define-name ((i Cdecl) name)
+  (rec-dn i var) i)
+
+(defmethod define-name ((i Cinit) name)
   (rec-dn i var) i)
 
 (defmethod define-name ((i Cfree) name)
@@ -318,6 +313,11 @@
 (defmethod define-name ((str string) name)
   (format nil str name))
 
+(defmethod define-name ((lst list) name)
+  (when (consp lst)
+    (cons (define-name (car lst) name)
+	  (define-name (cdr lst) name))))
+
 (defmethod define-name (e name) e)
 
 
@@ -326,7 +326,9 @@
 ;; --------------------------------------------------------------------
 
 (defmethod print-object ((obj C-var) out)
-  (if (name obj) (format out "~a" (name obj)) "~a"))
+  (format out
+	  (if (and *Cshow-safe* (safe obj)) "*~a*" "~a")
+	  (if (name obj) (name obj) "~a")))
 
 (defmethod print-object ((obj Carray-get) out)
   (format out "~a[~a]" (var obj) (arg obj)))
@@ -349,7 +351,7 @@
 
 
 
-;; ------- C lines of code are generated here --------
+;; ------------ C lines of code are generated here ----------
 (defmethod get-C-instructions ((instr Cdecl))
   (let ((var (var instr)))
     (list (format nil "~a ~a;" (type var) var))))
@@ -384,7 +386,7 @@
 	     (append (when arg (append (list (format nil "if( GC_count( ~a ) == 1 ) {" var))
 				       (indent arg)
 				       (list "}")))
-		     (list (format nil "GC_free(~a)" var)))))
+		     (list (format nil "GC_free(~a);" var)))))
 	  (t nil))))
 
 (defmethod get-C-instructions ((instr Cassign))
@@ -393,7 +395,7 @@
 (defmethod get-C-instructions ((instr Cfuncall-mp))
   (list (format out "~a;" (Cfunc instr))))
 
-(defmethod get-C-instructions ((instr return))
+(defmethod get-C-instructions ((instr Creturn))
   (list (format nil "return ~a;" (var instr))))
 
 (defmethod get-C-instructions ((instr Cif))
@@ -435,13 +437,13 @@
 	 (typeB (type varB)))
     (cond ((C-gmp? typeA)
 	   (mapcar #'(lambda (x) (format nil x varA varB)) (convertor typeA typeB)))
-	  ((and (C-pointer-type? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
+	  ((and (C-array? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
 	   (get-bang-copy-array typeA varA typeB varB instr))
 	  ((and (C-struct? typeA) (slot-value typeA 'bang)) ;; If we want a bang version
 	   (get-bang-copy-struct typeA varA typeB varB instr))
 	  (t (list (format nil "~a = ~a;" varA
 			   (if (and (type= typeA typeB)
-				    (not (C-pointer-type? typeA))
+				    (not (C-array? typeA))
 				    (not (C-struct? typeA)))
 			       varB
 			     (format nil (convertor typeA typeB) varB))))))))
@@ -497,17 +499,109 @@
 
 
 ;; vars are lists of var (name is-argument is-bang)
-(defcl Cfunction () (all-vars) (bang-args) (body))
-(defun Cfunction (body args)
-  (make-instance 'Cfunction
-		 :bang-args (mapcar #'name args)
-		 :all-vars (make-hash-table :test #'string=)
+(defcl Cfun-decl () (all-vars) (bang-args) (body))
+(defun Cfun-decl (body args)
+  (safety-analysis body)
+  (make-instance 'Cfun-decl
+		 :bang-args (init-bang-args args)
+		 :all-vars (get-set (all-vars (list args body)))
 		 :body body))
+(defmethod print-object ((obj Cfun-decl) out)
+  (format out "~{  ~a~%~}" (get-C-instructions (body obj))))
+
+(defun init-bang-args (args)
+  (when (consp args)
+    (let ((hd (car args))
+	  (tl (init-bang-args (cdr args))))
+      (if (C-pointer? (type hd))
+	  (cons (name hd) tl)
+	tl))))
+
+(defun unionvar (x y) (union x y :test #'eq-C-var))  
+(defun get-set (l)
+  (if (consp l)
+      (unionvar (get-set (car l)) (get-set (cdr l)))
+    (when l (list l))))
+
+(defmethod all-vars ((l list))
+  (when (consp l)
+    (append (all-vars (car l)) (all-vars (cdr l)))))
+(defmethod all-vars ((v C-var))
+  (cond ((unnamed? v)          (break "Unnamed variable found..."))
+	((Cexpr? (name v))     (break "Variable with wrong name found..."))
+	((C-pointer? (type v)) (list v))
+	(t                     nil)))
+(defmethod all-vars ((e Crecord-get)) (all-vars (var e)))
+(defmethod all-vars ((e Carray-get))  (all-vars (list (var e) (arg e))))
+(defmethod all-vars ((e Cfuncall))    (all-vars (args e)))
+(defmethod all-vars ((i Cfuncall-mp)) (all-vars (func i)))
+(defmethod all-vars ((i Cdecl))       (all-vars (var i)))
+(defmethod all-vars ((i Cinit))       (all-vars (var i)))
+(defmethod all-vars ((i Cfree))       (all-vars (var i)))
+(defmethod all-vars ((i Cassign))     (all-vars (list (var i)  (expr i))))
+(defmethod all-vars ((i Ccopy))       (all-vars (list (varA i) (varB i))))
+(defmethod all-vars ((i Carray-init)) (all-vars (list (var i)  (body i))))
+(defmethod all-vars ((i Creturn))     (all-vars (var i)))
+(defmethod all-vars ((i Cif))
+  (all-vars (list (cond-part i) (then-part i) (else-part i))))
+(defmethod all-vars (e) (break))
 
 
-;; TODO  define correctly the hashtables
-;;    C-info-definition should probably contain a Cfunction object
-;;    print-object of a Cfunction should replace the string
-;;    C-info-type-arg should contain a list of var and should be sent to Cfunction
+;; --------- This function flags all last occurence of a variable -----------
+
+
+
+(defmethod safety-analysis ((l list))
+  (when (consp l)
+    (let* ((safe (safety-analysis (cdr l)))
+	   (vars (all-vars (car l)))
+	   (candidates (set-difference vars safe :test #'eq-C-var))
+	   (set-cand (get-set candidates)))
+      (loop for e in set-cand
+	    do (let ((c (count e candidates :test #'eq-C-var)))
+		 (if (= c 1)
+		     (set-safe (car l) (C-var (type e) (name e) (exprs e) t))
+		   (if (= c 0) (break)))))
+      (unionvar set-cand safe))))
+
+(defmethod set-safe ((v C-var) s)
+  (cond ((unnamed? v)      (break "Unnamed variable found..."))
+	((Cexpr? (name v)) (break "Variable with wrong name found..."))
+	((eq-C-var v s)    s) ;; s is v with the flag safe
+	(t                 v)))
+(defmethod set-safe ((l list) s)
+  (when (consp l)
+    (cons (set-safe (car l) s)
+	  (set-safe (cdr l) s))))
+(defmethod set-safe ((e Crecord-get) s) (setf (var  e) (set-safe (var  e) s)) e)
+(defmethod set-safe ((e Carray-get) s)  (setf (var  e) (set-safe (var  e) s))
+                                        (setf (arg  e) (set-safe (arg  e) s)) e)
+(defmethod set-safe ((e Cfuncall) s)    (setf (args e) (set-safe (args e) s)) e)
+(defmethod set-safe ((i Cfuncall-mp) s) (setf (func i) (set-safe (func i) s)))
+(defmethod set-safe ((i Cdecl) s)       (setf (var  i) (set-safe (var  i) s)))
+(defmethod set-safe ((i Cinit) s)       (setf (var  i) (set-safe (var  i) s)))
+(defmethod set-safe ((i Cfree) s)       (setf (var  i) (set-safe (var  i) s)))
+(defmethod set-safe ((i Cassign) s)     (setf (var  i) (set-safe (var  i) s))
+                                        (setf (expr i) (set-safe (expr i) s)))
+(defmethod set-safe ((i Ccopy) s)       (setf (varA i) (set-safe (varA i) s))
+                                        (setf (varB i) (set-safe (varB i) s)))
+(defmethod set-safe ((i Carray-init) s) (setf (var  i) (set-safe (var  i) s))
+                                        (setf (body i) (set-safe (body i) s)))
+(defmethod set-safe ((i Creturn) s)     (setf (var  i) (set-safe (var  i) s))
+  )
+(defmethod set-safe ((i Cif) s)
+  (setf (cond-part i) (set-safe (cond-part i) s))
+  (setf (then-part i) (set-safe (then-part i) s))
+  (setf (else-part i) (set-safe (else-part i) s)))
+(defmethod set-safe (e s)
+  (break))
+
+
+
+
+
+
+
+
 
 ;; TODO pvs2C et cie should return a C-var instead of type, name

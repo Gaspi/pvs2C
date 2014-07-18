@@ -25,10 +25,10 @@
 (defcl C-mpz (C-gmp  C-integer))
 (defcl C-mpq (C-gmp  C-number ))
 
-(defcl C-pointer-type (C-pointer) (target) (size) (bang))
-(defcl C-struct       (C-pointer) (name) (args) (bang))
-(defcl C-closure      (C-pointer)) ;; To be implemented...
-(defcl C-named-type   (C-pointer) (name)) ;; ???
+(defcl C-array      (C-pointer) (target) (size))
+(defcl C-struct     (C-pointer) (name) (args))
+(defcl C-closure    (C-pointer)) ;; To be implemented...
+(defcl C-named-type (C-pointer) (name)) ;; ???
 
 
 ;; -------- C constants (implementation dependent) --------
@@ -39,8 +39,6 @@
 
 (defvar *C-int-range* (C-range (cons *min-C-int* *max-C-int*)))
 (defvar *C-uli-range* (C-range (cons *min-C-uli* *max-C-uli*)))
-
-
 
 ;; Some instances of the classes above (to avoid over-instanciating)
 (defvar *C-type* (make-instance 'C-type))  ;; Type undefined
@@ -57,7 +55,7 @@
 (defmethod type= ((typeA C-uli) (typeB C-uli)) t)
 (defmethod type= ((typeA C-mpz) (typeB C-mpz)) t)
 (defmethod type= ((typeA C-mpq) (typeB C-mpq)) t)
-(defmethod type= ((typeA C-pointer-type) (typeB C-pointer-type))
+(defmethod type= ((typeA C-array) (typeB C-array))
   (and (type= (target typeA) (target typeB))
        (eq    (size   typeA) (size   typeB))))
 (defmethod type= ((typeA C-struct) (typeB C-struct))
@@ -72,9 +70,9 @@
 (defmethod print-object ((obj C-uli) out) (format out "unsigned long int"))
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
 (defmethod print-object ((obj C-mpq) out) (format out "mpq_t"))
-(defmethod print-object ((obj C-pointer-type) out) (format out "~a*" (slot-value obj 'target)))
-(defmethod print-object ((obj C-struct) out) (format out "struct_~a" (slot-value obj 'name)))
-(defmethod print-object ((obj C-named-type) out) (format out "~a" (slot-value obj 'name)))
+(defmethod print-object ((obj C-array) out) (format out "~a*" (target obj)))
+(defmethod print-object ((obj C-struct) out) (format out "~a" (name obj)))
+(defmethod print-object ((obj C-named-type) out) (format out "~a" (name obj)))
 (defmethod print-object ((obj C-closure) out) (format out "pvsClosure"))
 (defmethod print-object ((obj C-type) out) (format out "[Abstract C type]"))
 
@@ -91,7 +89,7 @@
 		   (formatted-fields (loop for arg in args
 					   collect (format nil "~a ~a;" (cdr arg) (car arg))))
 		   (C-rectype-name (gentemp (format nil "~a" (id print-type))))
-		   (C-rectype (format nil "~%struct ~a {~%~{  ~a~%~}};~%typedef (struct ~a)* struct_~a;"
+		   (C-rectype (format nil "~%struct struct_~a {~%~{  ~a~%~}};~%typedef (struct struct_~a)* ~a;"
 				      C-rectype-name formatted-fields C-rectype-name C-rectype-name)))
 	      (push (list (declaration print-type) C-rectype-name C-rectype args)
 		    *C-record-defns*)
@@ -108,7 +106,7 @@
 (defmethod pvs2C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
       (let ((range (subrange-index (domain type))))
-	(make-instance 'C-pointer-type
+	(make-instance 'C-array
 		       :target (pvs2C-type (range type))
 		       :bang nil
 		       :size
@@ -119,12 +117,7 @@
 			   (1+ (- (cadr range) (car range))))))
     (make-instance 'C-closure)))
 
-(defmethod bang-type ((type C-pointer-type))
-  (setf (slot-value type 'bang) t)
-  type)
-(defmethod bang-type ((type C-struct))
-  (setf (slot-value type 'bang) t)
-  type)
+(defmethod bang-type ((type C-pointer)) (setf (bang type) t) type)
 (defmethod bang-type ((type C-type)) type)
 
 
@@ -164,9 +157,9 @@
   (with-slots (type expression) e
   (if (C-updateable? type)
       (let ((range (subrange-index (domain type))))
-	(make-instance 'C-pointer-type
+	(make-instance 'C-array
 		       :target (pvs2C-type expression)
-		       :bang nil ;; Find here when this can be set to t
+		       :bang nil
 		       :size (1+ (- (cadr range) (car range)))))
     (make-instance 'C-closure))))
 
@@ -203,7 +196,7 @@
 
 ;; An expression to represent the memory size of a type
 ;; Deprecated
-(defmethod m-size ((type C-pointer-type))
+(defmethod m-size ((type C-array))
   (format nil "~a * sizeof(~a)" (size type) (target type)))
 (defmethod m-size ((type C-type))
   (format nil "sizeof(~a)" type))
@@ -256,7 +249,7 @@
 (defmethod convertor ((typeA C-uli) (typeB C-uli)) "~a")
 (defmethod convertor ((typeA C-int) (typeB C-int)) "~a")
 ;; ---------- arrays pointer copy -----------------
-(defmethod convertor ((typeA C-pointer-type) (typeB C-pointer-type))
+(defmethod convertor ((typeA C-array) (typeB C-array))
   (format nil "(~a*) GC( ~~a )" (target typeA)))
 ;; ---------- other cases (basically unimplemented) --------------
 (defmethod convertor (typeA typeB)
@@ -266,7 +259,6 @@
     (if (C-gmp? typeA)
 	(list (format nil "~a(~~{~~a~~^, ~~});" func))
       (format nil "~a(~~a)" func))))
-
 
 
 (defgeneric smaller-type (typeA typeB))

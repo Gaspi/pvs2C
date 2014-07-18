@@ -43,13 +43,13 @@
   (let ((nop (pvs2C-primitive-op expr)))
     (if (boolean-primitive? nop)
 	(pvs2C*-boolean-primitive nop)
-      (mk-C-expr *C-type* nil  ;; If unimplemented ...
-		(format nil "[set](~~a, ~a);" nop) nil))))
+      (C-expr (C-var *C-type*)  ;; If unimplemented ...
+	      (format nil "[set](~~a, ~a);" nop)))))
 
 (defun boolean-primitive? (name)
   (member name '(1 0)))
 (defun pvs2C*-boolean-primitive (op)
-  (mk-C-expr *C-int* (format nil "~a" op) nil nil))
+  (C-expr (C-var *C-int* (format nil "~a" op))))
 
 
 ;; --------- Primitive function call ----------------
@@ -73,19 +73,18 @@
 	  ((div-function? op args)
 	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
 	  (t
-	     (break "Unknown primitive app")
-	     (cons (pvs2C-type expr) ;; This is not even implemented correctly
-		   (set-C-pointer op (pvs2C args bindings livevars type-args)))))))
+	   (break "Unknown primitive app")
+	   (cons (pvs2C-type expr) ;; This is not even implemented correctly
+		 (set-C-pointer op (pvs2C args bindings livevars type-args)))))))
 
 
 (defun Cprocess (info args bindings livevars)
   (let* ((C-args (pvs2C args bindings livevars (cadr info)))
-	 (func (caddr info))
-	 (res (set-arguments func   ;; Here should be an instance of Cfuncall(-mpz)
+	 (func (caddr info))  ;; This should be an instance of Cfuncall(-mpz)
+	 (res (set-arguments func
 			     (append (when (Cfuncall-mp? func) (list (C-var (car info))))
-				     (name C-args)))))
-    (set-type  C-args (car info))
-    (set-name  C-args (unless (Cinstr? res) res))
+				     (var C-args)))))
+    (set-var   C-args (C-var (car info) (unless (Cinstr? res) res)))
     (app-instr C-args (when (Cinstr? res) res))
     C-args))
 
@@ -256,10 +255,9 @@
 			     (Cfuncall "mpq_numref" (C-var *C-mpq*) *C-mpz*) nil))
 	       (arg2 (pvs2C2 (cadr args) bindings livevars
 			     (Cfuncall "mpq_denref" (C-var *C-mpq*) *C-mpz*) nil)))
-	   (mk-C-expr *C-mpq* nil
-;;		     (append (instr arg1) (instr arg2) (list "mpq_canonicalize(~a);"))
-		     (append (instr arg1) (instr arg2)
-			     (list (Cfuncall-mp "mpq_canonicalize" (list (C-var *C-mpq*)))))
-		     (append (destr arg1) (destr arg2)))))
+	   (C-expr (C-var *C-mpq*)
+		   (append (instr arg1) (instr arg2)
+			   (list (Cfuncall-mp "mpq_canonicalize" (list (C-var *C-mpq*)))))
+		   (append (destr arg1) (destr arg2)))))
 	(t (Cprocess (list *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div"))))))
 
