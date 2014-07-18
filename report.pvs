@@ -1,0 +1,19 @@
+report: THEORY
+BEGIN
+
+  Cint : TYPE = subrange(0, 100)
+  Arr: TYPE = [ below(10) -> Cint]
+
+  f1(A:Arr):Arr  = A
+  f2(A:Arr):Arr  = let B = A in B
+  f3(A:Arr):Cint = let B = A in A(0) + B(0)
+  f4(A:Arr):Arr  = let B = A in A WITH [(0) := B(0) ]
+
+  g1(A:Arr):Arr = A WITH [(0) := 0]
+  
+  g2(A:Arr):Arr = let B = A WITH [(0) := 0] in
+    A WITH[(0) := B(0)]
+  
+END report
+
+
