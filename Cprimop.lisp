@@ -2,6 +2,9 @@
 ;;                PVS to C translator
 ;;
 ;;     Author: Gaspard ferey
+;;
+;;  -> https://github.com/Gaspi/pvs2c.git
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This requires "pvs2c.lisp", "Cutils.lisp" and "Ctypes.lisp" files both available at

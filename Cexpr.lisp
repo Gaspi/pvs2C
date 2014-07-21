@@ -2,14 +2,22 @@
 ;;                PVS to C translator
 ;;
 ;;     Author: Gaspard ferey
+;;
+;;  -> https://github.com/Gaspi/pvs2c.git
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This requires "pvs2c.lisp", "Cutils.lisp" and "Cprimop.lisp" files both available at
 ;;               https://github.com/Gaspi/pvs2c.git
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;;
 ;; Defining here a intermediate language between C and PVS
+;;
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 ;; -------- Classe result of translating functions -------------------
 (defcl C-expr () (var) (instr) (destr))
@@ -60,11 +68,9 @@
 ;; --------------------------------------------------------------------
 
 ;; ------- Supertype : list of expressions in that expression --------
-(defcl Cexpr () (exprs))
-(defun Cexpr () (make-instance 'Cexpr :exprs nil))
+(defcl Cexpr ())
+(defun Cexpr () (make-instance 'Cexpr))
 
-;; TODO use that
-(defmethod exprs ((l list)) (mapcar #'exprs l))
 
 
 ;; --------------------------------------------------------------------
@@ -73,11 +79,11 @@
 
 ;; -------- A C variable : is a C type and a name (string or hole) ----
 (defcl C-var (Cexpr) (type) (name) (safe))
-(defun C-var (type &optional name exprs safe)
+(defun C-var (type &optional name safe)
   (make-instance 'C-var :type type
 		 :name (if (listp name) name
 			 (format nil "~a" name)) ;; names must be strings
-		 :exprs exprs :safe safe))
+		 :safe safe))
 (defun C-var-list (types names)
   (when (consp types) (cons (C-var (car types) (car names))
 			    (C-var-list (cdr types) (cdr names)))))
@@ -90,42 +96,51 @@
 (defmethod pointer? ((obj C-var)) (C-pointer? (type obj)))
 (defmethod bang-type ((variable C-var))
   (C-var (bang-type (type variable)) (name variable)))
-(defun eq-C-var (x y)
-  (and (C-var? x)
-       (C-var? y)
-       (stringp (name x))
-       (stringp (name y))
-       (string= (name x) (name y))))
-(defun sign-var (C-var)
-  (format nil "~a ~a" (type C-var) (name C-var)))
-(defun safe-var (v) (C-var (type v) (name v) (exprs v) t))
+
+(defmethod sign-var ((l list))
+  (format nil "~{~a~^, ~}" (mapcar #'sign-var l)))
+(defmethod sign-var (C-var)
+  (format nil "~:[~;!~]~a ~a" (and *Cshow-bang* (bang? C-var)) (type C-var) (name C-var)))
+
+(defun safe-var (v) (C-var (type v) (name v) t))
 
 ;; ------- Accessor to a record type var :  var.e ------
 (defcl Crecord-get (Cexpr) (var) (arg) (type))
 (defun Crecord-get (var arg)
   (make-instance 'Crecord-get :var var :arg arg
-		 :type (cdr (assoc arg (args (type var))))
-		 :exprs (list var)))
+		 :type (cdr (assoc arg (args (type var))))))
+
 
 ;; ------- Accessor to an array type var :  var[e] ------
 (defcl Carray-get (Cexpr) (var) (arg) (type))
 (defun Carray-get (var arg)
   (make-instance 'Carray-get :var var :arg arg
-		 :type (target (type var))
-		 :exprs (list var arg)))
+		 :type (target (type var))))
+
+
+(defmethod safe ((e Crecord-get)) (safe (var e)))
+(defmethod safe ((e Carray-get )) (safe (var e)))
+(defmethod safe (e) nil)
+
+(defmethod eq-C-var ((x string) (y string)) (string= x y))
+(defmethod eq-C-var ((x C-var)   y        ) (eq-C-var (name x) y))
+(defmethod eq-C-var ( x         (y C-var) ) (eq-C-var x (name y)))
+(defmethod eq-C-var ((x Carray-get ) (y Carray-get )) (eq-C-var (var x) (var y)))
+(defmethod eq-C-var ((x Crecord-get) (y Crecord-get)) (eq-C-var (var x) (var y)))
+(defmethod eq-C-var (x y) nil)
+
+
 
 ;; -------- Function call : f(e1, ... , e2) ---------
 ;; May or may not have a valid type
 (defcl Cfuncall (Cexpr) (fun) (args) (type))
 (defun Cfuncall (fun &optional args type)
   (set-arguments
-   (make-instance 'Cfuncall :fun (Cfun fun) :args nil :type type :exprs nil)
+   (make-instance 'Cfuncall :fun (Cfun fun) :args nil :type type)
    args))
 (defmethod set-arguments ((Cfuncall Cfuncall) argts)
   (let ((args (if (listp argts) argts (list argts))))
     (setf (args Cfuncall) args)
-    ;; (setf (exprs Cfuncall) (loop for a in args
-    ;; 				 when (Cexpr? a) collect it))
     Cfuncall))
 
 
@@ -143,30 +158,30 @@
 ;; --------- Declaration of a variable : int* T; ----------------------
 (defcl Cdecl (Cinstr) (var))
 (defun Cdecl (var)
-  (make-instance 'Cdecl :var var :exprs (list var)))
+  (make-instance 'Cdecl :var var))
 
 ;; -------- Initialisation of a variable : mpz_init(a); ---------------
 (defcl Cinit (Cinstr) (var))
 (defun Cinit (var)
-  (make-instance 'Cinit :var var :exprs (list var)))
+  (make-instance 'Cinit :var var))
 ;; This function should be used
 (defun Calloc (v) (list (Cdecl v) (Cinit v)))
 
 
 ;; -------- Free a variable : GC_free(T);  mpz_clear(a); --------------
 (defcl Cfree (Cinstr) (var))
-(defun Cfree (var) (make-instance 'Cfree :var var :exprs nil))
+(defun Cfree (var) (make-instance 'Cfree :var var))
 
 ;; -------- A = 2; ------------  Is not used...
 (defcl Cset (Cinstr) (var) (expr))
 (defun Cset (var expr)
-  (make-instance 'Cset :var var :expr expr :exprs (list expr)))
+  (make-instance 'Cset :var var :expr expr))
 
 ;; ------- MPZ function call (instruction) : mpz_?(res, ...);  --------
 (defcl Cfuncall-mp (Cinstr) (Cfunc))
 (defun Cfuncall-mp (fun &optional args)
   (let ((fc (Cfuncall fun args)))
-    (make-instance 'Cfuncall-mp :Cfunc fc :exprs (list fc))))
+    (make-instance 'Cfuncall-mp :Cfunc fc)))
 (defmethod set-arguments ((Cfuncall Cfuncall-mp) argts)
   (set-arguments (Cfunc Cfuncall) argts))
 
@@ -174,20 +189,18 @@
 ;; -------- If instructions ------------------------------------------
 (defcl Cif (Cinstr) (var) (cond-part) (then-part) (else-part))
 (defun Cif (cond-part then-part else-part)
-  (make-instance 'Cif :exprs (list cond-part then-part else-part)
-		 :cond-part cond-part
-		 :then-part then-part
-		 :else-part else-part))
+  (make-instance 'Cif :cond-part cond-part
+		      :then-part then-part
+		      :else-part else-part))
 
 
 (defcl Carray-init (Cinstr) (var) (body) (i))
 (defun Carray-init (var body i)
-  (make-instance 'Carray-init
-		 :var var :body body :i i :exprs (cons var body)))
+  (make-instance 'Carray-init :var var :body body :i i))
 
 (defcl Crecord-init (Cinstr) (var))
 (defun Crecord-init (var)
-  (make-instance 'Crecord-init :var var :exprs (list var)))
+  (make-instance 'Crecord-init :var var))
 
 
 
@@ -197,13 +210,9 @@
 
 
 ;; ---- Creates a copy of varB and name it varA --------------
-;; Uses the three flags need-bang, safe and arg-bang to know if
-;;   A = B;
-;;   A = copy(B);
-;;   if GC = 1 then A = B else A = copy(B);
 (defcl Ccopy (Cinstr) (varA) (varB) (safe))
 (defun Ccopy (varA varB)
-  (make-instance 'Ccopy :varA varA :varB varB :exprs (list varB)  :safe nil))
+  (make-instance 'Ccopy :varA varA :varB varB :safe nil))
 
 
 
@@ -355,9 +364,8 @@
 ;; ------------ C lines of code are generated here ----------
 (defmethod get-C-instructions ((instr Cdecl))
   (let ((var (var instr)))
-    (list (format nil "~a ~a;" (type var) var))))
+    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang? var)) (type var) var))))
 
-;; 
 (defmethod get-C-instructions ((instr Cinit))
   (let* ((var (var instr))
 	 (type (type var)))
@@ -456,221 +464,45 @@
 	  (t (list (format nil "~a = ~a;" varA
 			   (format nil (convertor typeA typeB) varB)))))))
 
-(defmethod get-bang-copy ((typeA C-array) nameA typeB nameB instr)
+(defmethod get-bang-copy ((typeA C-array) varA typeB varB instr)
   (cond ((not (safe instr))    ;; If we can't reuse B because it appears later in the code
 	 (append (list (format nil "~a = GC_malloc(~a, sizeof(~a) );"
-			       nameA (size typeA) (target typeA)))
+			       varA (size typeA) (target typeA)))
 		 (create-loop (Ccopy (Carray-get (varA instr) (C-var *C-int*))
 				     (Carray-get (varB instr) (C-var *C-int*)))
 			      (size typeB))))
-	((arg-bang instr) ;; If B never appears later and is of type bang
-	 (list (format nil "~a = GC( ~a );" nameA nameB)))
+	((bang? instr) ;; If B never appears later and is of type bang
+	 (list (format nil "~a = GC( ~a );" varA varB)))  ;; Should not happend...
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
-	  (list (format nil "if ( GC_count( ~a ) == 1 )" nameB)
-		(format nil "  ~a = GC( ~a );" nameA nameB)
+	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
+		(format nil "  ~a = GC( ~a );" varA varB)
 		(format nil "else {")
 		(format nil "  ~a = GC_malloc(~a, sizeof(~a) );"
-			nameA (size typeA) (target typeA)))
+			varA (size typeA) (target typeA)))
 	  (indent (create-loop (Ccopy (Carray-get (varA instr) (C-var *C-int*))
 				      (Carray-get (varB instr) (C-var *C-int*)))
 			       (size typeB)))
 	  (list "}")))))
 
-(defmethod get-bang-copy ((typeA C-struct) nameA typeB nameB instr)
+(defmethod get-bang-copy ((typeA C-struct) varA typeB varB instr)
   (cond ((not (safe instr))    ;; If we can't reuse B because it appears later in the code
-	 (append (list (format nil "~a = GC_malloc(1, sizeof(~a));" nameA typeA))
-		 (get-C-instructions
-		  (loop for a in (args typeA)
-			collect (Ccopy (Crecord-get (varA instr) (car a))
-				       (Crecord-get (varB instr) (car a)))))))
-	((arg-bang instr) ;; If B never appears later and is of type bang
-	 (list (format nil "~a = GC( ~a );" nameA nameB)))
+	 (get-C-instructions
+	  (cons (Crecord-init varA)
+		(loop for a in (args typeA) collect
+		      (Ccopy (Crecord-get (varA instr) (car a))
+			     (Crecord-get (varB instr) (car a)))))))
+	((bang? instr) ;; If B never appears later and is of type bang
+	 (list (format nil "~a = GC( ~a );" varA varB)))
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
-	  (list (format nil "if ( GC_count( ~a ) == 1 )" nameB)
-		(format nil "  ~a = GC( ~a );" nameA nameB)
+	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
+		(format nil "  ~a = GC( ~a );" varA varB)
 		(format nil "else {")
-		(format nil "~a = GC_malloc(1, sizeof(~a));" nameA typeA))
+		(format nil "~a = GC_malloc(1, sizeof(~a));" varA typeA))
 	  (indent (get-C-instructions
 		   (loop for a in (args typeA)
 			 collect (Ccopy (Crecord-get (varA instr) (car a))
 					(Crecord-get (varB instr) (car a))))))
 	  (list "}")))))
-
-
-
-
-;; --------------------------------------------------------------------
-;;                 C code analysis
-;; --------------------------------------------------------------------
-
-(defvar *C-bang-vars* nil)
-(defun is-bang (Cvar)
-  (and (C-var? Cvar) (member Cvar *C-bang-vars* :test #'eq-C-var)))
-
-;; vars are lists of var (name is-argument is-bang)
-(defcl Cfun-decl () (all-vars) (bang-vars) (body))
-(defun Cfun-decl (body args)
-  (safety-analysis body)
-  (make-instance 'Cfun-decl
-		 :bang-vars (init-bang-args args)
-		 :all-vars (get-set (get-all-vars (list args body)))
-		 :body body))
-
-(defmethod print-object ((obj Cfun-decl) out)
-  (format out "{~%~{~a~%~}}" (get-C-instructions obj)))
-(defmethod get-C-instructions ((e Cfun-decl))
-  (let ((*C-bang-vars* (bang-vars e)))
-    (indent (get-C-instructions (body e)))))
-
-
-(defun init-bang-args (args)
-  (when (consp args)
-    (let ((hd (car args))
-	  (tl (init-bang-args (cdr args))))
-      (if (C-pointer? (type hd))
-	  (cons (name hd) tl)
-	tl))))
-
-(defun unionvar (x y) (union x y :test #'eq-C-var))  
-(defun get-set (l)
-  (if (consp l)
-      (unionvar (get-set (car l)) (get-set (cdr l)))
-    (when l (list l))))
-
-
-
-
-;; ------- Maps f to all expressions and returns the concatenation of all results --------
-(defmethod map-Cexpr ((l list) f)
-  (when (consp l) (append (map-Cexpr (car l) f) (map-Cexpr (cdr l) f))))
-(defmethod map-Cexpr ((v C-var) f)       (funcall f v))
-(defmethod map-Cexpr ((e Crecord-get) f) (append (funcall f e) (map-Cexpr (var e) f)))
-(defmethod map-Cexpr ((e Carray-get) f)  (append (funcall f e) (map-Cexpr (list (var e) (arg e)) f)))
-(defmethod map-Cexpr ((e Cfuncall) f)    (append (funcall f e) (map-Cexpr (args e) f)))
-(defmethod map-Cexpr ((i Cfuncall-mp) f) (append (funcall f i) (map-Cexpr (func i) f)))
-(defmethod map-Cexpr ((i Cdecl) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cinit) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cfree) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cset) f)     (append (funcall f i) (map-Cexpr (list (var i)  (expr i)) f)))
-(defmethod map-Cexpr ((i Ccopy) f)       (append (funcall f i) (map-Cexpr (list (varA i) (varB i)) f)))
-(defmethod map-Cexpr ((i Carray-init) f) (append (funcall f i) (map-Cexpr (list (var i)  (body i)) f)))
-(defmethod map-Cexpr ((i Crecord-init) f)(append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Creturn) f)     (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cif) f)
-  (append (funcall f i)  (map-Cexpr (list (cond-part i) (then-part i) (else-part i)) f)))
-(defmethod map-Cexpr (e f) (break "Mapvars encountered unknown C expression..."))
-
-;; ------------------- Maps f only to instructions ----------------------
-(defun map-Cinstr (body f)
-  (map-Cexpr body #'(lambda (x) (when (Cinstr? x) (f x)))))
-
-;; --------------- Gets all pointer-type variables -----------------
-(defun get-all-vars (body)
-  (map-Cexpr body #'(lambda (x) (when (and (C-var? x) (C-pointer? (type x))) (list x)))))
-
-
-;; --------- This function flags all last occurence of a variable -----------
-(defmethod safety-analysis ((l list))
-  (when (consp l)
-    (let* ((safe (safety-analysis (cdr l)))
-	   (vars (get-all-vars (car l)))
-	   (candidates (set-difference vars safe :test #'eq-C-var))
-	   (set-cand (get-set candidates)))
-      (loop for e in set-cand
-	    do (let ((c (count e candidates :test #'eq-C-var)))
-		 (if (= c 1) (replace-vars (car l) (name e) (safe-var e))
-		   (if (= c 0) (break)))))
-      (unionvar set-cand safe))))
-
-
-
-
-
-
-
-
-;; --------------- Maps update function f to all C expressions ----------------
-(defmethod upd-Cexpr ((v C-var) f) (funcall f v))
-(defmethod upd-Cexpr ((l list) f)
-  (when (consp l) (cons (upd-Cexpr (car l) f)
-			(upd-Cexpr (cdr l) f))))
-(defmethod upd-Cexpr ((e Carray-get) f)
-  (setf (var  e) (upd-Cexpr (var  e) f))
-  (setf (arg  e) (upd-Cexpr (arg  e) f))
-  (funcall f e))
-(defmethod upd-Cexpr ((e Crecord-get) f) (setf (var  e) (upd-Cexpr (var  e) f)) (funcall f e))
-(defmethod upd-Cexpr ((e Cfuncall) f)    (setf (args e) (upd-Cexpr (args e) f)) (funcall f e))
-(defmethod upd-Cexpr ((i Cfuncall-mp) f) (setf (func i) (upd-Cexpr (func i) f)) (funcall f e))
-(defmethod upd-Cexpr ((i Cdecl) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cinit) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cfree) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cset) f)
-  (setf (var  i) (upd-Cexpr (var  i) f))
-  (setf (expr i) (upd-Cexpr (expr i) f))
-  (funcall f i))
-(defmethod upd-Cexpr ((i Ccopy) f)
-  (setf (varA i) (upd-Cexpr (varA i) f))
-  (setf (varB i) (upd-Cexpr (varB i) f))
-  (funcall f i))
-(defmethod upd-Cexpr ((i Carray-init) f)
-  (setf (var  i) (upd-Cexpr (var  i) f))
-  (setf (body i) (upd-Cexpr (body i) f))
-  (funcall f i))
-(defmethod upd-Cexpr ((i Crecord-init) f) (setf (var i) (upd-Cexpr (var i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Creturn) f)      (setf (var i) (upd-Cexpr (var i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cif) f)
-  (setf (cond-part i) (upd-Cexpr (cond-part i) f))
-  (setf (then-part i) (upd-Cexpr (then-part i) f))
-  (setf (else-part i) (upd-Cexpr (else-part i) f))
-  (funcall f i))
-(defmethod upd-Cexpr (e f) (break "Mapvars encountered unknown C expression..."))
-
-;; --------------- Gets all pointer-type variables -----------------
-(defun replace-vars (body name new-var)
-  (upd-Cexpr body #'(lambda (x) (if (and (C-var? x) (string= (name x) name)) new-var x))))
-
-
-
-;; ----- The main analysis loop. The recursive call should terminate... ------------
-(defun C-analysis (op-decl)
-  (let ((f  (C-info-definition (gethash op-decl *C-nondestructive-hash*)))
-	(fd (C-info-definition (gethash op-decl *C-destructive-hash*))))
-    nil))
-    ;; (and (or (C-analysis* f)
-    ;; 	     (C-analysis* fd))  ;; if both return nil  (no change)  then return nil (lazy and)
-    ;; 	 (C-analysis op-decl)))) ;; else try again
-
-
-
-;; ------------------ Here is the body of the analysis ---------------
-(defun C-analysis* (f)
-  nil)
-
-
-;; TODO This function gets a replace rule (name, var) from an instruction
-;; This is treated by:
-;;  - Deleting the decl and init of name
-;   - Deleting the current set or copy instruction
-;;  - Deleting the free of var
-;;  - Replacing occurences of name by var
-;;  - Unsafing all variables !!!
-;;  - Redo a safe analysis
-(defun get-replace-rule (i)
-  (cond ((and (Cset? i)
-	      (Cvar? (var i))
-	      (Cvar? (expr i))
-	      (safe (expr i)))
-	 (cons (name (var i)) (expr i)))
-	((and (Ccopy? i)
-	      (Cvar? (var i))
-	      (Cvar? (expr i))
-	      (safe (expr i)))
-	 (cons (name (var i)) (expr i)))
-	(t nil)))
-
-
-
-
 

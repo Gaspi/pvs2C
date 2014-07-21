@@ -1,6 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////
+//                PVS to C translator
+//
+//     Author: Gaspard ferey
+//
+//  -> https://github.com/Gaspi/pvs2c.git
+//
+/////////////////////////////////////////////////////////////////////////////
 
 // Hashtable code from :
 // https://gist.github.com/tonious/1377667
+
 
 #define _XOPEN_SOURCE 500 // Enable certain library functions (strdup) on linux.
 #include <stdlib.h>

@@ -43,7 +43,7 @@ BEGIN
 
   % More complicated arrays
   Arr2: TYPE = [Cint -> Arr ]
-  t2:Arr2 = lambda (x:Cint) (y:Cint) : x + y
+  t2:Arr2 = lambda (x:Cint) : (lambda (y:Cint) : x + y)
   
   id(t:Arr2): Arr = let a = t in a(0)
   

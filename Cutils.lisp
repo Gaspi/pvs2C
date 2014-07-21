@@ -3,6 +3,8 @@
 ;;
 ;;     Author: Gaspard ferey
 ;;
+;;  -> https://github.com/Gaspi/pvs2c.git
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This requires "pvs2c.lisp", "Cprimop.lisp" and "Ctypes.lisp" files all available at
@@ -192,6 +194,7 @@
 
 ;; -------------Debugging functions and variables ---------------
 (defvar *Cshow-safe* t)
+(defvar *Cshow-bang* t)
 
 ;; Not working well
 (defvar *Csimple-names* nil)
@@ -201,5 +204,65 @@
 
 (defvar *Cdebug* t)
 (defun debug (str) (when *Cdebug*) (format t "~%Debug: ~a" str))
+
+
+
+
+;; (defun pvs2C-resolution-nondestructive (op-decl formals body range-type)
+;;   (let* ((*destructive?* nil)
+;; 	 (bind-ids (pvs2cl-make-bindings formals nil))
+;; 	 (id-map (pairlis formals bind-ids))
+;; 	 (C-type-out (pvs2C-type range-type))
+;; 	 (return-void (C-gmp? C-type-out))
+;; 	 (result-var (C-var C-type-out "result"))
+;; 	 (C-args (loop for var in formals
+;; 		       collect (C-var (pvs2C-type (type var))
+;; 				      (cdr (assoc var id-map)))))
+;; 	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
+;; 			     C-args))
+;; 	 (hash-entry (gethash op-decl *C-nondestructive-hash*))
+;; 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
+;;              ;; If we don't return void, we need to malloc the result
+;;     (debug (format nil "Defining (nondestructively) ~a with type~%   ~a -> ~a"
+;; 		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
+;;     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
+;;     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
+;; 	  (C-info-type-arg hash-entry) C-type-arg
+;; 	  (C-info-C-code   hash-entry) C-body
+;; 	  (C-info-definition hash-entry)
+;; 	  (Cfun-decl (append (instr C-body)
+;; 			     (if return-void (destr C-body) (list (Creturn result-var))))
+;; 		     C-args nil))))
+
+;; (defun pvs2C-resolution-destructive (op-decl formals body range-type)
+;;   (let* ((*destructive?* t)
+;; 	 (bind-ids (pvs2cl-make-bindings formals nil))
+;; 	 (id-map (pairlis formals bind-ids))
+;; 	 (C-type-out (pvs2C-type range-type))
+;; 	 (return-void (C-gmp? C-type-out))
+;; 	 (result-var (C-var C-type-out "result"))
+;; 	 (C-args (loop for var in formals
+;; 		       collect (C-var (pvs2C-type (type var))
+;; 				      (cdr (assoc var id-map)))))
+;; 	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
+;; 			     C-args))
+;; 	 (hash-entry (gethash op-decl *C-destructive-hash*))
+;; 	 (old-output-vars (C-info-analysis hash-entry))
+;; 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
+;;              ;; If we don't return void, we need to malloc the result
+;;     (debug (format nil "Defining (destructively) ~a with type~%   ~a -> ~a"
+;; 		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
+;;     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
+;;     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
+;; 	  (C-info-type-arg hash-entry) C-type-arg
+;; 	  (C-info-C-code   hash-entry) C-body
+;; 	  (C-info-definition hash-entry)
+;; 	  (Cfun-decl (append (instr C-body)
+;; 			     (if return-void (destr C-body) (list (Creturn result-var))))
+;; 		     C-args t))))
+
+
+
+
 
 

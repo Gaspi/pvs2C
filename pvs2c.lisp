@@ -3,42 +3,25 @@
 ;;
 ;;     Author: Gaspard ferey
 ;;
+;;  -> https://github.com/Gaspi/pvs2c.git
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; This requires "Cutiles", "Cprimop.lisp" and "Ctypes.lisp" files all available at
-;;               https://github.com/Gaspi/pvs2c.git
-;;
-;; To use:
-;;  - Copy this file, Cprimop.lisp and Ctypes.lisp (3 files) in the folder containing
-;;    the .pvs file (e.g. "foo.pvs") you're interested in translating to C.
-;;  - Start PVS, open this .pvs file and typecheck it.
-;;  - In the *pvs* buffer:
-;;      (load "pvs2c")
-;;      (generate-C-for-pvs-file "foo")
-;;  - "foo.c" and "foo.h" were created.
-;;
 ;;
 ;;  Main functions :
 ;;
 ;;    pvs2C expr bindings livevars type
-;;      -> string representing a C-variable or expression of the
-;;         given type and with the translation of expr as a value.
+;;      -> Cexpr representing a C-var with the given type
+;;         and with the translation of expr as a value.
 ;;
 ;;    pvs2C* expr bindings livevars
-;;      -> cons of a type amd a string representing a C-variable
-;;         or expression of the given type and with the translation
-;;         of expr as a value.
+;;      -> As below but might have a "hole" (unnamed variable) for the result
 ;;
 ;;    pvs2C2 expr bindings livevars variable [need-malloc]
-;;      -> a list of instructions setting the C variable to the value of expr.
+;;      -> Cexpr with the necessary instructions to let the variable be set
+;;         to a C expression representing expr.
 ;;         If need-malloc flag is t, also initializes the variable.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-
-;; Every Function has the resposnability to free it's array arguments !!!
-
 
 ;; TODO flattennning free variables
 ;; f(a , a(0), a )
@@ -47,8 +30,7 @@
 ;; -> z = y(0)
 ;; -> free(y)     ;; to last line <=> apply(y, 0)   (so y is freed)
 ;; -> f(a, x ,z)    ;; and everything is freed
-;; 
-;; 
+;;
 ;; Bump up the reference count by one so that no argument used as a mutable variable
 ;; Move the free to just after the last occurence of the variable
 ;;
@@ -60,29 +42,14 @@
 ;; -> y = a with [0=0]    ;; done non destructively
 ;; -> 
 ;;
-;;
 ;;Page 5 Guarded Optim
 ;; frec doesn't terminate
 ;; and the C update deosn't seems to be done destructively
 
-
-
 (in-package :pvs)
-
-;; ------------------- Loading the other files ---------------------
-;; (pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
-;; (lf "Cutils.lisp")  
-;; (lf "Ctypes.lisp")
-;; (lf "C-expr.lisp")    
-;; (lf "Cprimop.lisp")
-(load "Cutils")
-(load "Ctypes")
-(load "Cexpr")
-(load "Cprimop")
 
 (defvar *C-livevars-table* nil)
 (defvar *C-record-defns* nil)
-
 
 (defvar *C-definitions* nil)
 (defun reset-definitions () (C-reset *C-definitions*))
@@ -123,11 +90,6 @@
   (when (name-expr? expr)
     (let ((e (assoc (declaration expr) bindings :key #'declaration)))
       (when e (mk-C-expr (pvs2C-type (type (car e))) (format nil "~a" (cdr e)))))))
-
-
-
-
-; --- set and conversion functions need to be implemented correctly here ---
 
 
 ;; Returns a C-expr
@@ -457,35 +419,18 @@
 					def-body range-type)
 	  (C-analysis op-decl))))))
 
-(defun pvs2C-resolution-nondestructive (op-decl formals body range-type)
-  (let* ((*destructive?* nil)
-	 (bind-ids (pvs2cl-make-bindings formals nil))
-	 (id-map (pairlis formals bind-ids))
-	 (C-type-out (pvs2C-type range-type))
-	 (return-void (C-gmp? C-type-out))
-	 (result-var (C-var C-type-out "result"))
-	 (C-args (loop for var in formals
-		       collect (C-var (pvs2C-type (type var))
-				      (cdr (assoc var id-map)))))
-	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
-			     C-args))
-	 (hash-entry (gethash op-decl *C-nondestructive-hash*))
-	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
-             ;; If we don't return void, we need to malloc the result
-    (debug (format nil "Defining (nondestructively) ~a with type~%   ~a -> ~a"
-		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
-    (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
-    (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
-	  (C-info-type-arg hash-entry) C-type-arg
-	  (C-info-C-code   hash-entry) C-body
-	  (C-info-definition hash-entry)
-	  (Cfun-decl (append (instr C-body)
-			     (if return-void (destr C-body) (list (Creturn result-var))))
-		     C-args))))
-
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
-  (let* ((*destructive?* t)
-	 (bind-ids (pvs2cl-make-bindings formals nil))
+  (let ((*destructive?* t))
+    (pvs2C-resolution* op-decl formals body range-type)))
+	 
+
+(defun pvs2C-resolution-nondestructive (op-decl formals body range-type)
+  (let ((*destructive?* nil))
+    (pvs2C-resolution* op-decl formals body range-type)))
+
+
+(defun pvs2C-resolution* (op-decl formals body range-type)
+  (let* ((bind-ids (pvs2cl-make-bindings formals nil))
 	 (id-map (pairlis formals bind-ids))
 	 (C-type-out (pvs2C-type range-type))
 	 (return-void (C-gmp? C-type-out))
@@ -495,18 +440,19 @@
 				      (cdr (assoc var id-map)))))
 	 (C-type-arg (append (when return-void (list (C-var C-type-out "result")))
 			     C-args))
-	 (hash-entry (gethash op-decl *C-destructive-hash*))
-	 (old-output-vars (C-info-analysis hash-entry))
+	 (hash-entry (gethash op-decl (C-hashtable)))
 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
              ;; If we don't return void, we need to malloc the result
-    (debug (format nil "Defining (destructively) ~a with type~%   ~a -> ~a"
+    (debug (format nil "Defining ~a with type:  ~a -> ~a"
 		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
 	  (C-info-type-arg hash-entry) C-type-arg
 	  (C-info-C-code   hash-entry) C-body
 	  (C-info-definition hash-entry)
-	  (Cfun-decl (append (instr C-body)
+	  (Cfun-decl (C-info-id hash-entry)
+		     (C-info-type-out hash-entry)
+	             (append (instr C-body)
 			     (if return-void (destr C-body) (list (Creturn result-var))))
 		     C-args))))
 
@@ -957,31 +903,36 @@
 	  (let ((ndes-info (gethash decl *C-nondestructive-hash*))
 		(des-info (gethash decl *C-destructive-hash*)))
 	    (when ndes-info
-	      (let ((id (C-info-id ndes-info)))
+	      (let ((def (C-info-definition ndes-info)))
 		;; First the signature
-		(format outputH "~2%~a ~a(~{~a~^, ~});"
-			(C-info-type-out ndes-info)
-			id
-			(mapcar #'sign-var (C-info-type-arg ndes-info)))
+		(print-signature def outputH)
+		;; (format outputH "~2%~a ~a(~{~a~^, ~});"
+		;; 	(C-info-type-out ndes-info)
+		;; 	id
+		;; 	(mapcar #'sign-var (C-info-type-arg ndes-info)))
 		;; Then the defn
-		(format output  "~2%~a ~a(~{~a~^, ~}) ~a"
-			(C-info-type-out ndes-info)
-			id
-			(mapcar #'sign-var (C-info-type-arg ndes-info))
-			(C-info-definition des-info))))
+		(print-definition def output)))
+		;; (format output  "~2%~a ~a(~{~a~^, ~}) ~a"
+		;; 	(C-info-type-out ndes-info)
+		;; 	id
+		;; 	(mapcar #'sign-var (C-info-type-arg ndes-info))
+		;; 	(C-info-definition ndes-info))))
 	    (when des-info
-	      (let ((id (C-info-id des-info)))
+	      (let ((def (C-info-definition des-info)))
 		;; First the signature
-		(format outputH "~2%~a ~a(~{~a~^, ~});"
-			(C-info-type-out des-info)
-			id
-			(mapcar #'sign-var (C-info-type-arg ndes-info)))
+		(print-signature def outputH)
+		;; (format outputH "~2%~a ~a(~{~a~^, ~});"
+		;; 	(C-info-type-out des-info)
+		;; 	id
+		;; 	(mapcar #'sign-var (C-info-type-arg des-info)))
 		;; Then the defn
-		(format output  "~2%~a ~a(~{~a~^, ~}) ~a"
-			(C-info-type-out des-info)
-			id
-			(mapcar #'sign-var (C-info-type-arg ndes-info))
-			(C-info-definition des-info)))))))))))
+		(print-definition def output)))
+		;; (format output  "~2%~a ~a(~{~a~^, ~}) ~a"
+		;; 	(C-info-type-out des-info)
+		;; 	id
+		;; 	(mapcar #'sign-var (C-info-type-arg des-info))
+		;; 	(C-info-definition des-info))
+		)))))))
 
 
 

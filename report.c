@@ -20,166 +20,128 @@ int main(void) {
 }
 
 
-int* pvs_f1650(int* A) {
+int* pvs_f1919(int* A) {
+  return *A*;
+}
+
+int* pvs_f1_d920(int* A) {
+  return *A*;
+}
+
+int* pvs_f2921(int* A) {
   int* result;
   result = (int*) GC( A );
-  return result;
+  GC_free(*A*);
+  return *result*;
 }
 
-int* pvs_d_f1651(int* A) {
+int* pvs_f2_d922(int* A) {
   int* result;
   result = (int*) GC( A );
-  return result;
+  GC_free(*A*);
+  return *result*;
 }
 
-int* pvs_f2652(int* A) {
-  int* B;
-  B = (int*) GC( A );
-  int* result;
-  result = (int*) GC( B );
-  GC_free(B)
-  return result;
-}
-
-int* pvs_d_f2653(int* A) {
-  int* B;
-  B = (int*) GC( A );
-  int* result;
-  result = (int*) GC( B );
-  GC_free(B)
-  return result;
-}
-
-int pvs_f3656(int* A) {
-  int* B;
-  B = (int*) GC( A );
+int pvs_f3923(int* A) {
   int result;
   result = (A[0] + B[0]);
-  GC_free(B)
+  GC_free(*A*);
   return result;
 }
 
-int pvs_d_f3657(int* A) {
-  int* B;
-  B = (int*) GC( A );
+int pvs_f3_d924(int* A) {
   int result;
   result = (A[0] + B[0]);
-  GC_free(B)
+  GC_free(*A*);
   return result;
 }
 
-int* pvs_f4660(int* A) {
+int* pvs_f4925(int* A) {
   int* result;
   int* B;
   B = (int*) GC( A );
-  int L665;
-  L665 = 0;
-  int res666;
-  res666 = B[0];
+  int L927;
+  L927 = 0;
   result = GC_malloc(10, sizeof(int) );
-  int i667;
-  for(i667 = 0; i667 < 10; i667++) {
-    result[i667] = A[i667];
+  int i951;
+  for(i951 = 0; i951 < 10; i951++) {
+    result[i951] = *A*[i951];
   }
-  result[L665] = res666;
-  return result;
+  result[L927] = *B*[0];
+  return *result*;
 }
 
-int* pvs_d_f4661(int* A) {
-  int* result;
+int* pvs_f4_d926(int* A) {
   int* B;
   B = (int*) GC( A );
-  int L665;
-  L665 = 0;
-  int res666;
-  res666 = B[0];
-  result = GC_malloc(10, sizeof(int) );
-  int i667;
-  for(i667 = 0; i667 < 10; i667++) {
-    result[i667] = A[i667];
-  }
-  result[L665] = res666;
-  return result;
+  int L929;
+  L929 = 0;
+  A[L929] = *B*[0];
+  return *A*;
 }
 
-int* pvs_g1668(int* A) {
+int* pvs_g1931(int* A) {
   int* result;
-  int L673;
-  L673 = 0;
-  int res674;
-  res674 = 0;
+  int L933;
+  L933 = 0;
+  int res934;
+  res934 = 0;
   result = GC_malloc(10, sizeof(int) );
-  int i675;
-  for(i675 = 0; i675 < 10; i675++) {
-    result[i675] = A[i675];
+  int i952;
+  for(i952 = 0; i952 < 10; i952++) {
+    result[i952] = *A*[i952];
   }
-  result[L673] = res674;
-  return result;
+  result[L933] = res934;
+  return *result*;
 }
 
-int* pvs_d_g1669(int* A) {
-  int* result;
-  int L673;
-  L673 = 0;
-  int res674;
-  res674 = 0;
-  result = GC_malloc(10, sizeof(int) );
-  int i675;
-  for(i675 = 0; i675 < 10; i675++) {
-    result[i675] = A[i675];
-  }
-  result[L673] = res674;
-  return result;
+int* pvs_g1_d932(int* A) {
+  int L935;
+  L935 = 0;
+  int res936;
+  res936 = 0;
+  A[L935] = res936;
+  return *A*;
 }
 
-int* pvs_g2676(int* A) {
+int* pvs_g2937(int* A) {
   int* result;
   int* B;
-  int L684;
-  L684 = 0;
-  int res685;
-  res685 = 0;
+  int L939;
+  L939 = 0;
+  int res940;
+  res940 = 0;
   B = GC_malloc(10, sizeof(int) );
-  int i688;
-  for(i688 = 0; i688 < 10; i688++) {
-    B[i688] = A[i688];
+  int i953;
+  for(i953 = 0; i953 < 10; i953++) {
+    B[i953] = A[i953];
   }
-  B[L684] = res685;
-  int L686;
-  L686 = 0;
-  int res687;
-  res687 = B[0];
+  B[L939] = res940;
+  int L941;
+  L941 = 0;
   result = GC_malloc(10, sizeof(int) );
-  int i689;
-  for(i689 = 0; i689 < 10; i689++) {
-    result[i689] = A[i689];
+  int i954;
+  for(i954 = 0; i954 < 10; i954++) {
+    result[i954] = *A*[i954];
   }
-  result[L686] = res687;
-  return result;
+  result[L941] = *B*[0];
+  return *result*;
 }
 
-int* pvs_d_g2677(int* A) {
-  int* result;
+int* pvs_g2_d938(int* A) {
   int* B;
-  int L684;
-  L684 = 0;
-  int res685;
-  res685 = 0;
+  int L943;
+  L943 = 0;
+  int res944;
+  res944 = 0;
   B = GC_malloc(10, sizeof(int) );
-  int i688;
-  for(i688 = 0; i688 < 10; i688++) {
-    B[i688] = A[i688];
+  int i955;
+  for(i955 = 0; i955 < 10; i955++) {
+    B[i955] = A[i955];
   }
-  B[L684] = res685;
-  int L686;
-  L686 = 0;
-  int res687;
-  res687 = B[0];
-  result = GC_malloc(10, sizeof(int) );
-  int i689;
-  for(i689 = 0; i689 < 10; i689++) {
-    result[i689] = A[i689];
-  }
-  result[L686] = res687;
-  return result;
+  B[L943] = res944;
+  int L945;
+  L945 = 0;
+  A[L945] = *B*[0];
+  return *A*;
 }
