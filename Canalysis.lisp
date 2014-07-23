@@ -26,8 +26,8 @@
 (defmethod map-Cexpr ((e Carray-get)  f) (append (funcall f e) (map-Cexpr (list (var e) (arg e)) f)))
 (defmethod map-Cexpr ((e Cfuncall)    f) (append (funcall f e) (map-Cexpr (args e) f)))
 (defmethod map-Cexpr ((i Cfuncall-mp) f) (append (funcall f i) (map-Cexpr (Cfunc i) f)))
-;; (defmethod map-Cexpr ((i Cdecl) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-;; (defmethod map-Cexpr ((i Cinit) f)       (append (funcall f i) (map-Cexpr (var i) f)))
+(defmethod map-Cexpr ((i Cdecl) f)       (append (funcall f i) (map-Cexpr (var i) f)))
+(defmethod map-Cexpr ((i Cinit) f)       (append (funcall f i) (map-Cexpr (var i) f)))
 ;; (defmethod map-Cexpr ((i Cfree) f)       (append (funcall f i) (map-Cexpr (var i) f)))
 (defmethod map-Cexpr ((i Cset) f)     (append (funcall f i) (map-Cexpr (list (var i)  (expr i)) f)))
 (defmethod map-Cexpr ((i Ccopy) f)       (append (funcall f i) (map-Cexpr (list (varA i) (varB i)) f)))
@@ -99,6 +99,16 @@
 		 :all-vars (get-set (get-all-vars (list args body)))
 		 :body body))
 
+;; ----- Return all pointer arguments in f -----------
+(defmethod pointer-args ((f Cfun-decl))
+  (pointer-args (args f)))
+(defmethod pointer-args ((l list))
+  (when (consp l)
+    (let ((hd (car l))
+	  (tl (pointer-args (cdr l))))
+      (if (pointer? hd)
+	  (cons hd tl) tl))))
+
 ;; -------- Printing a function declaration -------------
 (defun print-signature (f out)
   (assert (Cfun-decl? f))
@@ -107,14 +117,47 @@
 (defun print-definition (f out)
   (assert (Cfun-decl? f))
   (let ((*Ccurr-f* f))
-    (format out  "~2%~:[~;!~]~a ~a(~a) ~a"
-	    (and *Cshow-bang* (bang-return? f)) (type-out f) (id f) (sign-var (args f)) f)))
+    (format out  "~2%~:[~;!~]~a ~a(~a) {~%~{~a~%~}}"
+	    (and *Cshow-bang* (bang-return? f))
+	    (type-out f)
+	    (id f)
+	    (sign-var (args f))
+	    (get-C-instructions f))))
 (defmethod print-object ((obj Cfun-decl) out)
-  (format out "{~%~{~a~%~}}" (get-C-instructions obj)))
+  (print-definition obj out))
 (defmethod get-C-instructions ((f Cfun-decl))
-  (let ((*Ccurr-f* f))
-    (indent (get-C-instructions (body f)))))
+  (indent (get-C-instructions (body f))))
 
+
+
+
+;; We try to change a funcall non-destr (default) into a funcall destr
+;; Conditions :
+;;  - Arguments bang are variables safe and bang
+;;  - Arguments dupl are variables safe or not bang
+;; Consequences:
+;;  -> flag destr in funcall set to t
+;;  -> if result is dupl, all variables passed as dupl arguments are flagged dupl
+
+;; ---- Gets all arguments expressions corresponding to arguments flagged bang -----
+(defun get-bang-args (fc)
+  (assert (Cfuncall? fc))
+  (let ((def (get-definition fc)))
+    (when def (get-bang-args* (args fc) (args def) def))))
+(defun get-bang-args* (l names def)
+  (when (consp l)
+    (let ((tl (get-bang-args* (cdr l) (cdr names) def)))
+      (if (bang (car names) def) (cons (car l) tl) tl))))
+
+;; ---- Gets all arguments expressions corresponding to arguments flagged dupl -----
+(defun get-dupl-args (fc)
+  (assert (Cfuncall? fc))
+  (let ((def (get-definition fc)))
+    (when def (get-dupl-args* (args fc) (args def) def))))
+(defun get-dupl-args* (l names def)
+  (when (consp l)
+    (let ((tl (get-dupl-args* (cdr l) (cdr names) def)))
+      (if (dupl? (car names) def) (cons (car l) tl) tl))))
 
 
 ;; --------------------------------------------------------------------
@@ -134,13 +177,18 @@
 (defun get-return-var (f)
   (let ((ret (car (last (body f)))))
     (when (Creturn? ret) (var ret)))) ;; The last instruction should be Creturn
-(defun bang-return? (f) (bang (get-return-var f)))
+(defmethod bang-return? ((f Cfun-decl)) (bang (get-return-var f)))
+(defmethod bang-return? ((f const-decl))
+  (bang-return? (C-info-definition (gethash f (C-hashtable)))))
 
 
 ;; ------------ Class to represent the flags state of a variable ----------
 (defcl Cflags () (bang) (dupl) (arg) (treated))
 (defun Cflags (&optional bang arg)
   (make-instance 'Cflags :bang bang :dupl nil :arg arg :treated arg))
+(defmethod bang    (Cvar) nil)
+(defmethod dupl    (Cvar) nil)
+(defmethod treated (Cvar) nil)
 
 ;; --- Initializes the flags assoc list with the arguments of a function --
 (defun init-flags (args)
@@ -160,8 +208,9 @@
 	  (setf (flags f) (acons (name Cvar) new-e (flags f)))
 	  new-e)))))
 
+
 ;; ------- Return nil if the variable is currently considered not bang ---
-(defmethod bang (Cvar) (when Cvar (bang (get-flags Cvar))))
+(defmethod bang? (Cvar &optional (f *Ccurr-f*)) (bang (get-flags Cvar f)))
 
 ;; --------- Is it legal to flag this var ? (local & not treated yet) ---------
 (defmethod add-bang? ((e Cflags)) (not (or (arg e) (treated e))))
@@ -175,12 +224,35 @@
 ;; --------- Is it legal to unflag this var ? ---------
 (defmethod rem-bang? ((e Cflags)) (bang e))
 (defmethod rem-bang? (Cvar)       (when Cvar (rem-bang? (get-flags Cvar))))
-(defmethod rem-bang ((e Cflags))  (when (rem-bang? e) (setf (bang e) nil)))
-(defmethod rem-bang (Cvar)        (when Cvar (rem-bang (get-flags Cvar))))
+;; ------ Unflags the var(s). Return nil if no removal was legal ----------
+(defmethod rem-bang ((e Cflags))  (when (rem-bang? e) (setf (bang e) nil) t))
+(defmethod rem-bang ((l list))
+  (when (consp l)
+    (let ((hd (rem-bang (car l)))
+	  (tl (rem-bang (cdr l))))
+      (or hd tl))))
+(defmethod rem-bang (Cvar) (rem-bang (get-flags Cvar)))
 
-;; --------- The dupl flag can't be removed ----------------------
-(defmethod set-dupl ((e Cflags)) (setf (dupl e) t))
+
+;; -------- Is a variable or a simple expresion dupl ? ------------
+(defmethod dupl? ((e Crecord-get) &optional (f *Ccurr-f*)) (dupl? (var e) f))
+(defmethod dupl? ((e Carray-get)  &optional (f *Ccurr-f*)) (dupl? (var e) f))
+(defmethod dupl? (Cvar            &optional (f *Ccurr-f*))
+  (when Cvar (dupl (get-flags Cvar f))))
+
+;; ----------- The dupl flag can't be removed ----------------------
+(defmethod set-dupl ((e Cflags))
+  (when (not (dupl e)) (setf (dupl e) t)))
+(defmethod set-dupl ((e Carray-get))  (set-dupl (var e)))
+(defmethod set-dupl ((e Crecord-get)) (set-dupl (var e)))
+(defmethod set-dupl ((e Cfuncall))    (set-dupl (get-dupl-args e)))
+(defmethod set-dupl ((l list))
+  (when (consp l)
+    (let ((hd (set-dupl (car l)))
+	  (tl (set-dupl (cdr l))))
+      (or hd tl))))
 (defmethod set-dupl (Cvar) (set-dupl (get-flags Cvar)))
+
 
 
 
@@ -200,32 +272,13 @@
 (defun get-all-vars (body)
   (map-Cexpr body #'(lambda (x) (when (pointer? x) (list x)))))
 
-;; --------- This function flags "safe" all last occurence of a variable -----------
-(defun safety-analysis (l)
-  (when (consp l)
-    (let* ((safe (safety-analysis (cdr l)))
-	   (vars (get-all-vars (car l)))
-	   (candidates (set-difference vars safe :test #'eq-C-var))
-	   (set-cand (get-set candidates)))
-      (loop for e in set-cand
-	    do (let ((c (count e candidates :test #'eq-C-var)))
-		 (if (= c 1) (replace-vars (car l) (name e) (safe-var e))
-		   (if (= c 0) (break)))))
-      (unionvar set-cand safe))))
 
-;; --------- This function unflags "safe" in all variables -----------
-(defun unsafe-all (l)
-  (upd-Cexpr l #'(lambda (x) (if (and (C-var? x) (safe x))
-				 (C-var (type x) (name x) nil) x))))
 
-;; ---------- Replace all pointer-type variables with given name by new-var----------
-(defun replace-vars (body name new-var)
-  (upd-Cexpr body #'(lambda (x) (if (eq-C-var x name) new-var x))))
 
-;; ---------- Replace all pointer-type variables with given name by new-var----------
-;; (defun delete-instrs (body testf)
-;;   (upd-Cexpr body #'(lambda (x) (unless (and (Cinstr? x) (testf x)) x))))
-
+;; ---------- Replace all pointer-type variables according to assoc list ----------
+(defun replace-variables (body alist)
+  (upd-Cexpr body
+	     #'(lambda (x) (or (cdr (assoc x alist :test #'eq-C-var)) x))))
 
 ;; ----- The main analysis loop. The recursive call should terminate... ------------
 (defun C-analysis (op-decl)
@@ -241,21 +294,50 @@
   (with-slots (body) f
   (let ((*Ccurr-f* f))
     (unsafe-all body)
-    (safety-analysis body)
+    (init-analysis f)
     (when *C-replace-analysis*
-      (C-analysis-set-to-copy body)
       (or (C-analysis-replace-rule f body)
 	  (C-analysis-new-notbang body)
-	  (C-analysis-new-bang    body))))))
+	  (C-analysis-new-bang    body)
+	  (C-analysis-function-choice)
+	  (C-analysis-dupl body)
+	  (C-analysis-set-to-copy body))))))
 
-;; ------ Quick analysis to replace bang-unsafe Cset to Ccopy ---------------
-(defun C-analysis-set-to-copy (body)
-  (upd-Cinstr body #'(lambda (x)
-		       (if (and (Cset? x)
-				(bang (expr x))   ;; This means (expr x) is a C-var
-				(not (safe (expr x))))
-			   (Ccopy (var x) (expr x))
-			 x))))
+
+
+;; ------ This function unflags "safe" in all occurence of variables -----
+(defun unsafe-all (l)
+  (upd-Cexpr l #'(lambda (x) (if (and (C-var? x) (safe x))
+				 (C-var (type x) (name x) nil) x))))
+
+;; --------- This function flags "safe" all last occurence of a variable -----------
+(defun safety-analysis (l)
+  (when (consp l)
+    (let* ((safe (safety-analysis (cdr l)))
+	   (vars (get-all-vars (car l)))
+	   (candidates (set-difference vars safe :test #'eq-C-var))
+	   (set-cand (get-set candidates))
+	   (repl (pairlis set-cand
+			  (mapcar #'(lambda (x)
+				      (if (= (count x candidates :test #'eq-C-var) 1)
+					  (safe-var x) x))
+				  set-cand))))
+      (replace-variables (car l) repl)
+      (unionvar set-cand safe))))
+
+;; --------- This function put all safe flags, unbang safe (unused) arguments,
+;; --------- and flag the return variable as dupl
+(defun init-analysis (f)
+  (assert (Cfun-decl? f))
+  (let* ((used   (safety-analysis (body f)))
+	 (unused (set-difference (pointer-args f) used :test #'eq-C-var)))
+    (rem-bang unused)
+    (setf (args f)
+	  (mapcar #'(lambda (x) (if (member x unused :test #'eq-C-var) (safe-var x) x))
+		  (args f)))
+    (set-dupl (get-return-var f))))
+
+
 
 ;; ------ Analysis to find variables that can be replaced by an other -----------
 (defun C-analysis-replace-rule (f body)
@@ -270,7 +352,7 @@
 					(and (Cfree? x)
 					     (eq-C-var (var x) (cddr rr))))
 			      x))))
-      (replace-vars body (cadr rr) (cddr rr))
+      (replace-variables body (list (cdr rr)))
       t))) ;; We return t to restart the analysis loop
 
 ;; This is treated by:
@@ -293,7 +375,7 @@
 	((and (Ccopy? i)
 	      (C-var? (varA i))
 	      (C-var? (varB i))
-	      (bang   (varB i))
+	      (bang?  (varB i))
 	      (safe   (varB i)))
 	 (cons i (cons (name (varA i)) (varB i))))
 	(t nil)))
@@ -301,15 +383,13 @@
 
 ;; --------- Analysis to remove bang flags ---------------
 (defun C-analysis-new-notbang (body)
-  (let ((new-nb (get-new-bang-unflag body)))
-    (when (rem-bang? new-nb) (rem-bang new-nb) t)))
-(defmethod get-new-bang-unflag ((i list))
-  (when (consp i) (or (get-new-bang-unflag (car i))
-		      (get-new-bang-unflag (cdr i)))))
-(defmethod get-new-bang-unflag ((i Ccopy))
-  nil)
-(defmethod get-new-bang-unflag ((i Cinstr))
-  nil)
+  (let ((new-nb (map-Cexpr body #'get-new-bang-unflag)))
+    (rem-bang new-nb)))
+(defmethod get-new-bang-unflag ((e Carray-get))
+  (when (and (bang? (var e)) (safe (var e))) (list (var e))))
+(defmethod get-new-bang-unflag ((e Crecord-get))
+  (when (and (bang? (var e)) (safe (var e))) (list (var e))))
+(defmethod get-new-bang-unflag (other) nil)
 
 
 
@@ -322,14 +402,39 @@
   (when (consp i) (or (get-new-bang-flag (car i))
 		      (get-new-bang-flag (cdr i)))))
 (defmethod get-new-bang-flag ((i Ccopy))
-  (let ((var (varA i)))
-    (when (add-bang? var) var)))
+  (let ((var (varA i))) (when (add-bang? var) var)))
 (defmethod get-new-bang-flag ((i Carray-init))
-  (let ((var (var i)))
-    (when (add-bang? var) var)))
+  (let ((var (var i)))  (when (add-bang? var) var)))
 (defmethod get-new-bang-flag ((i Crecord-init))
-  (let ((var (var i)))
-    (when (add-bang? var) var)))
-(defmethod get-new-bang-flag ((i Cinstr))
-  nil)
+  (let ((var (var i)))  (when (add-bang? var) var)))
+(defmethod get-new-bang-flag ((i Cinstr)) nil)
+
+
+
+;; ------ Quick analysis to replace bang-unsafe Cset to Ccopy ---------------
+;; ----- To be done at the very end for the least number of new copies ------
+(defun C-analysis-set-to-copy (body)
+  (null ;; This analysis doesn't require a restart of all analysis
+   (upd-Cinstr body #'(lambda (x)
+		       (if (and (Cset? x)
+				(bang? (expr x))   ;; This means (expr x) is a C-var
+				(not (safe (expr x))))
+			   (Ccopy (var x) (expr x))
+			 x)))))
+
+
+;; ------ Analysis to decide whether to call a destructive function -------
+(defun C-analysis-function-choice () nil)
+
+
+;; ------ Analysis to propagate dupl flags -------
+(defun C-analysis-dupl (body)
+  (map-Cinstr (reverse body) #'C-analysis-dupl*))
+
+(defmethod C-analysis-dupl* ((i Cset))
+  (when (dupl? (var i))
+    (and (set-dupl (expr i)) (list t))))
+(defmethod C-analysis-dupl* ((i Cinstr)) nil)
+
+
 

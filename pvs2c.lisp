@@ -64,11 +64,12 @@
 (defvar *C-nondestructive-hash* (make-hash-table :test #'eq))
 (defvar *C-destructive-hash* (make-hash-table :test #'eq))
 
+;; TODO stop using this structure. Rely only on the definition class
 (defstruct C-info
   id type-out type-arg C-code definition analysis)
 
-(defmacro C-hashtable ()
-  `(if *destructive?* *C-destructive-hash* *C-nondestructive-hash*))
+(defun C-hashtable (&optional (destr *destructive?*))
+  (if destr *C-destructive-hash* *C-nondestructive-hash*))
 
 (defun C_id (op)
   (let ((hashentry (gethash (declaration op) (C-hashtable))))
@@ -457,7 +458,7 @@
 		     (C-info-type-out hash-entry)
 	             (append (instr C-body)
 			     (if return-void (destr C-body) (list (Creturn result-var))))
-		     C-args))))
+		     C-type-arg))))
 
 (defmethod pvs2C* ((expr name-expr) bindings livevars)
   (let* ((type-e (pvs2C-type expr))

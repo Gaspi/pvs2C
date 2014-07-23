@@ -101,9 +101,9 @@
 (defmethod sign-var ((l list))
   (format nil "~{~a~^, ~}" (mapcar #'sign-var l)))
 (defmethod sign-var (C-var)
-  (format nil "~:[~;!~]~a ~a" (and *Cshow-bang* (bang C-var)) (type C-var) (name C-var)))
+  (format nil "~:[~;!~]~a ~a" (and *Cshow-bang* (bang? C-var)) (type C-var) C-var))
 
-(defun safe-var (v) (C-var (type v) (name v) t))
+(defun safe-var (v &optional (safe t)) (C-var (type v) (name v) safe))
 
 ;; ------- Accessor to a record type var :  var.e ------
 (defcl Crecord-get (Cexpr) (var) (arg) (type))
@@ -117,7 +117,6 @@
 (defun Carray-get (var arg)
   (make-instance 'Carray-get :var var :arg arg
 		 :type (target (type var))))
-
 
 (defmethod safe ((e Crecord-get)) (safe (var e)))
 (defmethod safe ((e Carray-get )) (safe (var e)))
@@ -143,10 +142,6 @@
   (let ((args (if (listp argts) argts (list argts))))
     (setf (args Cfuncall) args)
     Cfuncall))
-
-
-
-
 
 
 ;; --------------------------------------------------------------------
@@ -193,11 +188,12 @@
 		      :then-part then-part
 		      :else-part else-part))
 
-
+;; -------- Array initialisation with lambda expr ----------
 (defcl Carray-init (Cinstr) (var) (body) (i))
 (defun Carray-init (var body i)
   (make-instance 'Carray-init :var var :body body :i i))
 
+;; -------- Record initialisation with field spec ----------
 (defcl Crecord-init (Cinstr) (var))
 (defun Crecord-init (var)
   (make-instance 'Crecord-init :var var))
@@ -249,6 +245,12 @@
 					  (if (destr obj)
 					      *C-destructive-hash* *C-nondestructive-hash*))))
 	name))))
+
+(defmethod get-definition ((f Cfun))
+  (when (const-decl? (name f))
+    (C-info-definition (gethash (name f) (C-hashtable (destr f))))))
+(defmethod get-definition ((fc Cfuncall))
+  (get-definition (fun fc)))
 
 ;; --------- Generating functions ----------------
 (defun mp-cmp (zq op)
@@ -337,9 +339,12 @@
 ;; --------------------------------------------------------------------
 
 (defmethod print-object ((obj C-var) out)
-  (format out
-	  (if (and *Cshow-safe* (safe obj)) "*~a*" "~a")
-	  (if (name obj) (name obj) "~a")))
+  (let ((format1 (if (and *Cshow-safe* (safe  obj)) "*~a*" "~a"))
+	(format2 (if (and *Cshow-dupl* (dupl? obj)) "#~a#" "~a")))
+  (format out "~a"
+  (format nil format1
+  (format nil format2
+	  (if (name obj) (name obj) "~a"))))))
 
 (defmethod print-object ((obj Carray-get) out)
   (format out "~a[~a]" (var obj) (arg obj)))
@@ -365,7 +370,7 @@
 ;; ------------ C lines of code are generated here ----------
 (defmethod get-C-instructions ((instr Cdecl))
   (let ((var (var instr)))
-    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang var)) (type var) var))))
+    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang? var)) (type var) var))))
 
 (defmethod get-C-instructions ((instr Cinit))
   (let* ((var (var instr))
@@ -472,7 +477,7 @@
 		 (create-loop (Ccopy (Carray-get varA (C-var *C-int*))
 				     (Carray-get varB (C-var *C-int*)))
 			      (size typeB))))
-	;; ((bang varB) ;; If B never appears later and is of type bang
+	;; ((bang? varB) ;; If B never appears later and is of type bang
 	;;  (list (format nil "~a = GC( ~a );" varA varB)))  ;; Should not happend...
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append

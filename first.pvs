@@ -7,4 +7,11 @@ BEGIN
   
   f(A:Arr) : Arr = let B = A in B with [(0) := 0]
   
+  
+  g(A:Arr, B:Arr):Cint = A(0)
+  
+  h(a:Cint):Arr = lambda(x:Cint): a
+  
+  x:int = g( h(0), h(1) )
+  
 END first

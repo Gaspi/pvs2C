@@ -48,14 +48,18 @@
 ;; Default values
 (defvar *Cshow-safe* nil)
 (defvar *Cshow-bang* nil)
+(defvar *Cshow-dupl* nil)
+
 (defvar *Cdebug* nil)
 (defvar *Csimple-names* nil)
 (defvar *C-analysis* t)
 (defvar *C-replace-analysis* t)
 
+
 ;; Change only for debugging...
 (setq *Cshow-safe* t)
 (setq *Cshow-bang* t)
+(setq *Cshow-dupl* t)
 (setq *Cdebug* t)
 (setq *Csimple-names* nil)
 (setq *C-analysis* t)
@@ -64,7 +68,7 @@
 
 
 ;; ------------------------ Loading the files ---------------------
-;; (pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
+;; (pushnew "/amd/pfs/export/u2/homes/ferey/Documents/pvs2c" *pvs-directories* :test #'string=)
 ;; (lf "Cutils.lisp")
 ;; (lf "Ctypes.lisp")
 ;; (lf "Cexpr.lisp")
