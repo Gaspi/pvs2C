@@ -36,8 +36,10 @@
 
 
 ;; Calling a mpz function (first argument is result)
-(defun set-C-pointer (function args)
-  (Cfuncall-mp function (cons "~a" (if (listp args) args (list args)))))
+(defun set-C-pointer (function args type)
+  (list (Cfuncall-mp function
+		     (cons (C-var type) (if (listp args) args (list args)))
+		     type)))
 
 
 
@@ -82,13 +84,14 @@
 
 
 (defun Cprocess (info args bindings livevars)
-  (let* ((C-args (pvs2C args bindings livevars (cadr info)))
-	 (func (caddr info))  ;; This should be an instance of Cfuncall(-mpz)
+  (let* ((func (cdr info))  ;; This should be an instance of Cfuncall(-mpz) with a type
+	 (type (type func))
+	 (C-args (pvs2C args bindings livevars (car info)))
 	 (res (set-arguments func
-			     (append (when (Cfuncall-mp? func) (list (C-var (car info))))
+			     (append (when (Cfuncall-mp? func) (list (C-var type)))
 				     (var C-args)))))
-    (set-var   C-args (C-var (car info) (unless (Cinstr? res) res)))
-    (app-instr C-args (when (Cinstr? res) res))
+    (set-var   C-args (if (Cinstr? res) (C-var type) res))
+    (when (Cinstr? res) (app-instr C-args res))
     C-args))
 
 
@@ -104,7 +107,7 @@
 	((comparison-function? op)
 	 (pvs2C*-comparison op type-args args bindings livevars))
 	(t
-	 (Cprocess (list *C-int* type-args (Cfuncall op))
+	 (Cprocess (cons type-args (Cfuncall op nil *C-int*))
 		   args bindings livevars))))
 
 
@@ -112,41 +115,41 @@
 (defun infix-primitive? (name)
   (member name '(== && ||)))
 (defun pvs2C*-infix-primitive (op args bindings livevars)
-  (Cprocess (list *C-int* (list *C-int* *C-int*)
-		  (Cfuncall (binop op)))
+  (Cprocess (cons (list *C-int* *C-int*)
+		  (Cfuncall (binop op) nil *C-int*))
 	    args bindings livevars))
 
 ;; -------- Equality (2 arguments - could be anything / result int) --------
 (defun equality-function? (name args)
   (and (eq name 'Eq) (= (length args) 2)))
 (defun pvs2C*-equality (type-args args bindings livevars)
-  (Cprocess (cons *C-int* (pvs2C-eq (car type-args) (cadr type-args)))
-	   args bindings livevars))
+  (Cprocess (pvs2C-eq (car type-args) (cadr type-args))
+	    args bindings livevars))
 (defun pvs2C-eq (typeA typeB)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (list (list *C-mpq* *C-mpq*) (Cfuncall-mp (mp-cmp "mpq" '==))))
+	 (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp (mp-cmp "mpq" '==) nil *C-int*)))
 	((or (C-mpz? typeA) (C-mpz? typeB))
-	 (list (list *C-mpz* *C-mpz*) (Cfuncall-mp (mp-cmp "mpz" '==))))
+	 (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp (mp-cmp "mpz" '==) nil *C-int*)))
 	((and (C-base? typeA) (C-base? typeB))
-	 (list (list typeA typeB) (Cfuncall (binop '==))))
+	 (cons (list typeA typeB) (Cfuncall (binop '==) nil *C-int*)))
 	(t
-	 (list (list typeA typeB) (Cfuncall "pvsCmp")))))
+	 (cons (list typeA typeB) (Cfuncall "pvsCmp" nil *C-int*)))))
 
 ;; -------- Comparison (2 arguments - numbers / result int) ---------------
 (defun comparison-function? (name)
   (member name '(< <= > >=)))
 (defun pvs2C*-comparison (op type-args args bindings livevars)
-  (Cprocess (cons *C-int* (pvs2C-comp (car type-args) (cadr type-args) op))
-	   args bindings livevars))
+  (Cprocess (pvs2C-comp (car type-args) (cadr type-args) op)
+	    args bindings livevars))
 (defun pvs2C-comp (typeA typeB op)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (list (list *C-mpq* *C-mpq*) (Cfuncall (mp-cmp "mpq" op))))
+	 (cons (list *C-mpq* *C-mpq*) (Cfuncall (mp-cmp "mpq" op) nil *C-int*)))
 	((or (C-mpz? typeA) (C-mpz? typeB))
-	 (list (list *C-mpz* *C-mpz*) (Cfuncall (mp-cmp "mpz" op))))
+	 (cons (list *C-mpz* *C-mpz*) (Cfuncall (mp-cmp "mpz" op) nil *C-int*)))
 	((and (C-base? typeA) (C-base? typeB))
-	 (list (list typeA typeB) (Cfuncall (binop op))))
+	 (cons (list typeA typeB) (Cfuncall (binop op) nil *C-int*)))
 	(t
-	 (list (list typeA typeB) (Cfuncall (mp-cmp "pvs" op))))))
+	 (cons (list typeA typeB) (Cfuncall (mp-cmp "pvs" op) nil *C-int*)))))
 
 
 ;; ------------- Negation (1 argument - number / result number) ----------
@@ -154,16 +157,16 @@
   (and (eq name 'pvsSub) (= (length args) 1)))
 (defun pvs2C*-negation (type arg bindings livevars)
   (Cprocess (pvs2C-neg (car type))
-	   arg bindings livevars))
+	    arg bindings livevars))
 (defun pvs2C-neg (type)
   (cond ((C-int? type)
-	 (list *C-int* (list *C-int*) (Cfuncall *pvs-neg*)))
+	 (cons (list *C-int*) (Cfuncall *pvs-neg* nil *C-int*)))
 	((or (C-uli? type) (C-mpz? type))
-	 (list *C-mpz* (list *C-mpz*) (Cfuncall-mp "mpz_neg")))
+	 (cons (list *C-mpz*) (Cfuncall-mp "mpz_neg" nil *C-mpz*)))
 	((C-mpq?)
-	 (list *C-mpq* (list *C-mpq*) (Cfuncall-mp "mpq_neg")))
+	 (cons (list *C-mpq*) (Cfuncall-mp "mpq_neg" nil *C-mpq*)))
 	(t
-	 (list type (list type) (Cfuncall "pvsNeg")))))
+	 (cons (list type) (Cfuncall "pvsNeg" nil type)))))
 
 
 
@@ -177,23 +180,23 @@
     (Cprocess (cdr info) (car info) bindings livevars)))
 (defun pvs2C-add (typeR typeA typeB args)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (list args *C-mpq*
-	       (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_add")))
+	 (cons args (cons
+	       (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_add" nil *C-mpq*))))
 	((or (C-mpz? typeA) (C-mpz? typeA) (C-mpz? typeR))
 	 (cond ((C-unsignedlong-type? (cadr args))
-		(list args *C-mpz*
-		      (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_add_ui")))
+		(cons args (cons
+		      (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_add_ui" nil *C-mpz*))))
 	       ((C-unsignedlong-type? (car args))
-		(list (reverse args) *C-mpz*
-		      (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_add_ui")))
+		(cons (reverse args) (cons
+		      (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_add_ui" nil *C-mpz*))))
 	       (t
-		(list args *C-mpz*
-		      (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_add")))))
+		(cons args (cons
+		      (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_add" nil *C-mpz*))))))
 	((or (C-int? typeR) (C-uli? typeR))
-	 (list args typeR
-	       (list typeA typeB) (Cfuncall (binop '+))))
+	 (cons args (cons
+	       (list typeA typeB) (Cfuncall (binop '+) nil typeR))))
 	(t
-	 (list args *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_add")))))
+	 (cons args (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_add" nil *C-mpq*))))))
 
 
 ;; ---------- Substraction ------------
@@ -201,18 +204,18 @@
   (and (eq op 'pvsSub) (eq (length args) 2)))
 (defun pvs2C*-sub (typeA typeB typeR args bindings livevars)
   (Cprocess (pvs2C-sub typeR typeA typeB args)
-	   args bindings livevars))
+	    args bindings livevars))
 (defun pvs2C-sub (typeR typeA typeB args)
   (cond ((every #'C-base? (list typeA typeB typeR))
-	 (list typeR (list typeA typeB) (Cfuncall (binop '-))))
+	 (cons (list typeA typeB) (Cfuncall (binop '-) nil typeR)))
 	((and (C-integer? typeB) (C-unsignedlong-type? (car args)))
-	 (list *C-mpz* (list *C-uli* *C-mpz*) (Cfuncall-mp "mpz_ui_sub")))
+	 (cons (list *C-uli* *C-mpz*) (Cfuncall-mp "mpz_ui_sub" nil *C-mpz*)))
 	((and (C-integer? typeA) (C-unsignedlong-type? (cadr args)))
-	 (list *C-mpz* (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_sub_ui")))
+	 (cons (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_sub_ui" nil *C-mpz*)))
 	((and (C-integer? typeA) (C-integer? typeB))
-	 (list *C-mpz* (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_sub")))
+	 (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_sub" nil *C-mpz*)))
 	(t
-	 (list *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_sub")))))
+	 (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_sub" nil *C-mpq*)))))
 
 
 ;; ---------- Multiplication ------------
@@ -223,22 +226,22 @@
     (Cprocess (cdr info) (car info) bindings livevars)))
 (defun pvs2C-times (typeR typeA typeB args)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (list args *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_mul")))
+	 (cons args (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_mul" nil *C-mpq*))))
 	((or (C-mpz? typeA) (C-mpz? typeB) (C-mpz? typeR))
 	 (cond ((C-unsignedlong-type? (cadr args))
-		(list args *C-mpz* (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_mul_ui")))
+		(cons args (cons (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_mul_ui" nil *C-mpz*))))
 	       ((C-unsignedlong-type? (car args))
-		(list (reverse args) *C-mpz* (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_mul_ui")))
+		(cons (reverse args) (cons (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_mul_ui" nil *C-mpz*))))
 	       ((C-int-type? (cadr args))
-		(list args *C-mpz* (list *C-mpz* *C-int*) (Cfuncall-mp "mpz_mul_si")))
+		(cons args (cons (list *C-mpz* *C-int*) (Cfuncall-mp "mpz_mul_si" nil *C-mpz*))))
 	       ((C-int-type? (car args))
-		(list (reverse args) *C-mpz* (list *C-mpz* *C-int*) (Cfuncall-mp "mpz_mul_ui")))
+		(cons (reverse args) (cons (list *C-mpz* *C-int*) (Cfuncall-mp "mpz_mul_ui" nil *C-mpz*))))
 	       (t
-		(list args *C-mpz* (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_mul")))))
+		(cons args (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_mul" nil *C-mpz*))))))
 	((C-base? typeR)
-	 (list args typeR (list typeA typeB) (Cfuncall (binop '*))))
+	 (cons args (cons (list typeA typeB) (Cfuncall (binop '*) nil typeR))))
 	(t
-	 (list args *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_mul")))))
+	 (cons args (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_mul" nil *C-mpq*))))))
 
 
 ;; ---------- Division ------------
@@ -246,13 +249,13 @@
   (and (eq op 'pvsDiv) (eq (length args) 2)))
 (defun pvs2C*-div (typeA typeB typeR args bindings livevars)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (Cprocess (list *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div"))))
+	 (Cprocess (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div" nil *C-mpq*))))
 	((every #'C-base? (list typeA typeB typeR))
-	 (Cprocess (list typeR (list typeA typeB) (Cfuncall (binop '/)))))
+	 (Cprocess (cons (list typeA typeB) (Cfuncall (binop '/) nil typeR))))
 	((and (C-integer? typeA) (C-integer? typeR) (C-unsignedlong-type? (cadr args)))
-	 (Cprocess (list *C-mpz* (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_divexact_ui"))))
+	 (Cprocess (cons (list *C-mpz* *C-uli*) (Cfuncall-mp "mpz_divexact_ui" nil *C-mpz*))))
 	((every #'C-integer? (list typeA typeB typeR))
-	 (Cprocess (list *C-mpz* (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_divexact"))))
+	 (Cprocess (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_divexact" nil *C-mpz*))))
 	((and (C-integer? typeA) (C-integer? typeB))
 	 (let ((arg1 (pvs2C2 (car args)  bindings livevars
 			     (Cfuncall "mpq_numref" (C-var *C-mpq*) *C-mpz*) nil))
@@ -262,5 +265,5 @@
 		   (append (instr arg1) (instr arg2)
 			   (list (Cfuncall-mp "mpq_canonicalize" (list (C-var *C-mpq*)))))
 		   (append (destr arg1) (destr arg2)))))
-	(t (Cprocess (list *C-mpq* (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div"))))))
+	(t (Cprocess (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div" nil *C-mpq*))))))
 

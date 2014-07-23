@@ -93,14 +93,15 @@
       (and (stringp (name C-var))
 	   (string= (name C-var) "~a"))))
 ;; Here are type functions that can be also applied to variables
-(defmethod pointer? ((obj C-var)) (C-pointer? (type obj)))
+(defmethod pointer? ((var C-var)) (C-pointer? (type var)))
+(defmethod pointer? (obj) nil)
 (defmethod bang-type ((variable C-var))
   (C-var (bang-type (type variable)) (name variable)))
 
 (defmethod sign-var ((l list))
   (format nil "~{~a~^, ~}" (mapcar #'sign-var l)))
 (defmethod sign-var (C-var)
-  (format nil "~:[~;!~]~a ~a" (and *Cshow-bang* (bang? C-var)) (type C-var) (name C-var)))
+  (format nil "~:[~;!~]~a ~a" (and *Cshow-bang* (bang C-var)) (type C-var) (name C-var)))
 
 (defun safe-var (v) (C-var (type v) (name v) t))
 
@@ -179,12 +180,11 @@
 
 ;; ------- MPZ function call (instruction) : mpz_?(res, ...);  --------
 (defcl Cfuncall-mp (Cinstr) (Cfunc))
-(defun Cfuncall-mp (fun &optional args)
-  (let ((fc (Cfuncall fun args)))
-    (make-instance 'Cfuncall-mp :Cfunc fc)))
+(defun Cfuncall-mp (fun &optional args type)
+  (make-instance 'Cfuncall-mp :Cfunc (Cfuncall fun args type)))
 (defmethod set-arguments ((Cfuncall Cfuncall-mp) argts)
   (set-arguments (Cfunc Cfuncall) argts))
-
+(defmethod type ((fc Cfuncall-mp)) (type (Cfunc fc)))
 
 ;; -------- If instructions ------------------------------------------
 (defcl Cif (Cinstr) (var) (cond-part) (then-part) (else-part))
@@ -245,8 +245,9 @@
   (with-slots (name destr) obj
    (format out "~a"
       (if (const-decl? name)
-	  (C-info-id (gethash name
-	      (if destr *C-destructive-hash* *C-nondestructive-hash*)))
+	  (id (C-info-definition (gethash name
+					  (if (destr obj)
+					      *C-destructive-hash* *C-nondestructive-hash*))))
 	name))))
 
 ;; --------- Generating functions ----------------
@@ -294,7 +295,7 @@
   (rec-dn e args) e)
 
 (defmethod define-name ((i Cfuncall-mp) name)
-  (rec-dn i func) i)
+  (rec-dn i Cfunc) i)
 
 (defmethod define-name ((i Cdecl) name)
   (rec-dn i var) i)
@@ -364,7 +365,7 @@
 ;; ------------ C lines of code are generated here ----------
 (defmethod get-C-instructions ((instr Cdecl))
   (let ((var (var instr)))
-    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang? var)) (type var) var))))
+    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang var)) (type var) var))))
 
 (defmethod get-C-instructions ((instr Cinit))
   (let* ((var (var instr))
@@ -399,7 +400,7 @@
 	  (t nil))))
 
 (defmethod get-C-instructions ((instr Cfuncall-mp))
-  (list (format out "~a;" (Cfunc instr))))
+  (list (format nil "~a;" (Cfunc instr))))
 
 (defmethod get-C-instructions ((instr Creturn))
   (list (format nil "return ~a;" (var instr))))
@@ -465,14 +466,14 @@
 			   (format nil (convertor typeA typeB) varB)))))))
 
 (defmethod get-bang-copy ((typeA C-array) varA typeB varB instr)
-  (cond ((not (safe instr))    ;; If we can't reuse B because it appears later in the code
+  (cond ((not (safe varB))    ;; If we can't reuse B because it appears later in the code
 	 (append (list (format nil "~a = GC_malloc(~a, sizeof(~a) );"
 			       varA (size typeA) (target typeA)))
-		 (create-loop (Ccopy (Carray-get (varA instr) (C-var *C-int*))
-				     (Carray-get (varB instr) (C-var *C-int*)))
+		 (create-loop (Ccopy (Carray-get varA (C-var *C-int*))
+				     (Carray-get varB (C-var *C-int*)))
 			      (size typeB))))
-	((bang? instr) ;; If B never appears later and is of type bang
-	 (list (format nil "~a = GC( ~a );" varA varB)))  ;; Should not happend...
+	;; ((bang varB) ;; If B never appears later and is of type bang
+	;;  (list (format nil "~a = GC( ~a );" varA varB)))  ;; Should not happend...
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
 	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
@@ -480,29 +481,29 @@
 		(format nil "else {")
 		(format nil "  ~a = GC_malloc(~a, sizeof(~a) );"
 			varA (size typeA) (target typeA)))
-	  (indent (create-loop (Ccopy (Carray-get (varA instr) (C-var *C-int*))
-				      (Carray-get (varB instr) (C-var *C-int*)))
+	  (indent (create-loop (Ccopy (Carray-get varA (C-var *C-int*))
+				      (Carray-get varB (C-var *C-int*)))
 			       (size typeB)))
 	  (list "}")))))
 
 (defmethod get-bang-copy ((typeA C-struct) varA typeB varB instr)
-  (cond ((not (safe instr))    ;; If we can't reuse B because it appears later in the code
+  (cond ((not (safe varB))    ;; If we can't reuse B because it appears later in the code
 	 (get-C-instructions
 	  (cons (Crecord-init varA)
 		(loop for a in (args typeA) collect
-		      (Ccopy (Crecord-get (varA instr) (car a))
-			     (Crecord-get (varB instr) (car a)))))))
-	((bang? instr) ;; If B never appears later and is of type bang
-	 (list (format nil "~a = GC( ~a );" varA varB)))
+		      (Ccopy (Crecord-get varA (car a))
+			     (Crecord-get varB (car a)))))))
+	;; ((bang varB) ;; If B never appears later and is of type bang
+	;;  (list (format nil "~a = GC( ~a );" varA varB)))
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
 	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
 		(format nil "  ~a = GC( ~a );" varA varB)
 		(format nil "else {")
-		(format nil "~a = GC_malloc(1, sizeof(~a));" varA typeA))
+		(format nil "  ~a = GC_malloc(1, sizeof(~a));" varA typeA))
 	  (indent (get-C-instructions
 		   (loop for a in (args typeA)
-			 collect (Ccopy (Crecord-get (varA instr) (car a))
-					(Crecord-get (varB instr) (car a))))))
+			 collect (Ccopy (Crecord-get varA (car a))
+					(Crecord-get varB (car a))))))
 	  (list "}")))))
 

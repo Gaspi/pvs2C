@@ -129,7 +129,7 @@
     (C-expr (C-var exp-type)
 	    (append
 	     (instr C-cond-part)
-	     (list (Cif (C-var *C-int* (name C-cond-part))
+	     (list (Cif (var C-cond-part)
 			(append (instr C-then-part)
 				(destr C-then-part))
 			(append (instr C-else-part)
@@ -252,7 +252,10 @@
   (let ((type (pvs2C-type expr)))
     (if (C-gmp? type)
 	(C-expr (C-var type)
-		(list (Cfuncall "mpz_set_str" (list "~a" (number expr)))))
+		(list (Cfuncall-mp "mpz_set_str"
+				   (list (C-var type)
+					 (C-var nil (format "\"~a\"" (number expr))))
+				   type)))
       (C-expr (C-var type (number expr))))))
 
 
@@ -264,7 +267,7 @@
 	 (args (pvs2C elts bindings livevars
 		      (mapcar #'pvs2C-type elts))))
     (set-name args
-	      (Cfuncall "createTuple" (cons "~a" (name args))))
+	      (Cfuncall "createTuple" (cons "~a" args)))
     args))
 
 (defmacro pvs2C_tuple (args)
@@ -308,7 +311,7 @@
 (defun mk-C-expr-funcall (type op args)
   (if (C-gmp? type)
       (progn   ;; Rq this should only be called with named arguments
-	(app-instr args (set-C-pointer op (var args)))
+	(app-instr args (set-C-pointer op (var args) type))
 	(set-var args (C-var type)))
     (set-var args (Cfuncall op (var args) type)))
   args)
@@ -355,7 +358,7 @@
 	    (if (C-gmp? type)
 		(C-expr (C-var type)
 			(append (instr C-op) (instr C-arg)
-				(set-C-pointer C-op C-arg))
+				(set-C-pointer C-op C-arg type))
 			(append (destr C-op) (destr C-arg)))
 	      (C-expr (Cfuncall C-op C-arg type)
 		      (append (instr C-op) (instr C-arg))
@@ -417,7 +420,7 @@
 					   def-body range-type)
 	  (pvs2C-resolution-destructive op-decl (append module-formals def-formals)
 					def-body range-type)
-	  (C-analysis op-decl))))))
+	  (when *C-analysis* (C-analysis op-decl)))))))
 
 (defun pvs2C-resolution-destructive (op-decl formals body range-type)
   (let ((*destructive?* t))
@@ -555,10 +558,6 @@
 				   assign))
 		    (list (format nil "makeClosure(~~a, ~a, ~a);" name env-name)))
 	    nil)))
-
-
-
-
 
 
 
@@ -895,7 +894,6 @@
 	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)
-
       (dolist (rec-def *C-record-defns*)
 	(format output "~a~%" (caddr rec-def)))
       (dolist (theory theories)
@@ -906,33 +904,14 @@
 	      (let ((def (C-info-definition ndes-info)))
 		;; First the signature
 		(print-signature def outputH)
-		;; (format outputH "~2%~a ~a(~{~a~^, ~});"
-		;; 	(C-info-type-out ndes-info)
-		;; 	id
-		;; 	(mapcar #'sign-var (C-info-type-arg ndes-info)))
 		;; Then the defn
 		(print-definition def output)))
-		;; (format output  "~2%~a ~a(~{~a~^, ~}) ~a"
-		;; 	(C-info-type-out ndes-info)
-		;; 	id
-		;; 	(mapcar #'sign-var (C-info-type-arg ndes-info))
-		;; 	(C-info-definition ndes-info))))
 	    (when des-info
 	      (let ((def (C-info-definition des-info)))
 		;; First the signature
 		(print-signature def outputH)
-		;; (format outputH "~2%~a ~a(~{~a~^, ~});"
-		;; 	(C-info-type-out des-info)
-		;; 	id
-		;; 	(mapcar #'sign-var (C-info-type-arg des-info)))
 		;; Then the defn
-		(print-definition def output)))
-		;; (format output  "~2%~a ~a(~{~a~^, ~}) ~a"
-		;; 	(C-info-type-out des-info)
-		;; 	id
-		;; 	(mapcar #'sign-var (C-info-type-arg des-info))
-		;; 	(C-info-definition des-info))
-		)))))))
+		(print-definition def output))))))))))
 
 
 
@@ -958,7 +937,6 @@
 	    (pvs2C-assign-rhs (cdr assignments) bindings
 			      (append (updateable-free-formal-vars e)
 				      livevars))))))
-
 
 
 

@@ -43,7 +43,27 @@
 
 (in-package :pvs)
 
-;; ------------------- Loading the other files ---------------------
+
+;; ------------------Debugging functions and variables ---------------
+;; Default values
+(defvar *Cshow-safe* nil)
+(defvar *Cshow-bang* nil)
+(defvar *Cdebug* nil)
+(defvar *Csimple-names* nil)
+(defvar *C-analysis* t)
+(defvar *C-replace-analysis* t)
+
+;; Change only for debugging...
+(setq *Cshow-safe* t)
+(setq *Cshow-bang* t)
+(setq *Cdebug* t)
+(setq *Csimple-names* nil)
+(setq *C-analysis* t)
+(setq *C-replace-analysis* t)
+
+
+
+;; ------------------------ Loading the files ---------------------
 ;; (pushnew "/amd/pfs/export/u2/homes/ferey/Docuemts/pvs2c" *pvs-directories* :test #'string=)
 ;; (lf "Cutils.lisp")
 ;; (lf "Ctypes.lisp")

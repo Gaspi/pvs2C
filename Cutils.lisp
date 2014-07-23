@@ -193,16 +193,11 @@
 
 
 ;; -------------Debugging functions and variables ---------------
-(defvar *Cshow-safe* t)
-(defvar *Cshow-bang* t)
-
 ;; Not working well
-(defvar *Csimple-names* nil)
 (defun gen-name (id destr)
   (if *Csimple-names* (format nil "~a~:[~;_d~]" id destr)
     (gentemp (format nil "pvs_~a~:[~;_d~]" id destr))))
 
-(defvar *Cdebug* t)
 (defun debug (str) (when *Cdebug*) (format t "~%Debug: ~a" str))
 
 

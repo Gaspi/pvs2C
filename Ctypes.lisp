@@ -213,19 +213,19 @@
 
 ;; Convert a (not unnamed) C-expr to an other with different type
 (defun convert (type e)
-  (cond ((type= type (type e)) e)
-	((C-base? type)
-	 (set-name e (format nil (convertor type (type e)) (name e)))
-	 (set-type e type)
-	 e)
-	(t
-	 (let ((n (gen-C-var type "conv")))
-	   (mk-C-expr type n
+  (let ((typeE (type e)))
+    (cond ((type= type typeE) e)
+	  ((and (C-int? type) (C-uli? typeE))
+	   (set-var e (Cfuncall (Cfun "uli-to-int"           "(int) ~{~a~}") (var e) type)) e)
+	  ((and (C-uli? type) (C-int? typeE))
+	   (set-var e (Cfuncall (Cfun "int-to-uli" "(unsigned long) ~{~a~}") (var e) type)) e)
+	  (t
+	   (let ((n (gen-C-var type "conv")))
+	     (C-expr n
 		     (append (instr e)
-			     (list (Cdecl n))
-			     (list (Ccopy n (C-var (type e) (name e))))
+			     (list (Cdecl n) (Ccopy n (var e)))
 			     (destr e))
-		     (list (Cfree n)))))))
+		     (list (Cfree n))))))))
 
 
 (defgeneric convertor (typeA typeB))
