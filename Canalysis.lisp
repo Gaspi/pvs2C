@@ -2,8 +2,10 @@
 ;;                PVS to C translator
 ;;
 ;;     Author: Gaspard ferey
+;;     Date:
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
+;;  Please read main.lisp
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -15,75 +17,75 @@
 (in-package :pvs)
 
 ;; --------------------------------------------------------------------
-;;             Useful function mapping on Cinstr and Cexpr
+;;             Useful function mapping on C code
 ;; --------------------------------------------------------------------
 
 ;; ------- Maps f to all expressions and returns the concatenation of all results --------
-(defmethod map-Cexpr ((l list) f)
-  (when (consp l) (append (map-Cexpr (car l) f) (map-Cexpr (cdr l) f))))
-(defmethod map-Cexpr ((v C-var)       f) (funcall f v))
-(defmethod map-Cexpr ((e Crecord-get) f) (append (funcall f e) (map-Cexpr (var e) f)))
-(defmethod map-Cexpr ((e Carray-get)  f) (append (funcall f e) (map-Cexpr (list (var e) (arg e)) f)))
-(defmethod map-Cexpr ((e Cfuncall)    f) (append (funcall f e) (map-Cexpr (args e) f)))
-(defmethod map-Cexpr ((i Cfuncall-mp) f) (append (funcall f i) (map-Cexpr (Cfunc i) f)))
-(defmethod map-Cexpr ((i Cdecl) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cinit) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-;; (defmethod map-Cexpr ((i Cfree) f)       (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cset) f)     (append (funcall f i) (map-Cexpr (list (var i)  (expr i)) f)))
-(defmethod map-Cexpr ((i Ccopy) f)       (append (funcall f i) (map-Cexpr (list (varA i) (varB i)) f)))
-(defmethod map-Cexpr ((i Carray-init) f) (append (funcall f i) (map-Cexpr (list (var i)  (body i)) f)))
-(defmethod map-Cexpr ((i Crecord-init) f)(append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Creturn) f)     (append (funcall f i) (map-Cexpr (var i) f)))
-(defmethod map-Cexpr ((i Cif) f)
-  (append (funcall f i)  (map-Cexpr (list (cond-part i) (then-part i) (else-part i)) f)))
-(defmethod map-Cexpr ((e Cexpr) f) nil)
-(defmethod map-Cexpr (e f) (break "Mapvars encountered unknown C expression..."))
+(defmethod map-Ccode ((l list) f)
+  (when (consp l) (append (map-Ccode (car l) f) (map-Ccode (cdr l) f))))
+(defmethod map-Ccode ((v C-var)       f) (funcall f v))
+(defmethod map-Ccode ((e Crecord-get) f) (append (funcall f e) (map-Ccode (var e) f)))
+(defmethod map-Ccode ((e Carray-get)  f) (append (funcall f e) (map-Ccode (list (var e) (arg e)) f)))
+(defmethod map-Ccode ((e Cfuncall)    f) (append (funcall f e) (map-Ccode (args e) f)))
+(defmethod map-Ccode ((i Cfuncall-mp) f) (append (funcall f i) (map-Ccode (Cfunc i) f)))
+(defmethod map-Ccode ((i Cdecl) f)       (append (funcall f i) (map-Ccode (var i) f)))
+(defmethod map-Ccode ((i Cinit) f)       (append (funcall f i) (map-Ccode (var i) f)))
+;; (defmethod map-Ccode ((i Cfree) f)       (append (funcall f i) (map-Ccode (var i) f)))
+(defmethod map-Ccode ((i Cset) f)     (append (funcall f i) (map-Ccode (list (var i)  (expr i)) f)))
+(defmethod map-Ccode ((i Ccopy) f)       (append (funcall f i) (map-Ccode (list (varA i) (varB i)) f)))
+(defmethod map-Ccode ((i Carray-init) f) (append (funcall f i) (map-Ccode (list (var i)  (body i)) f)))
+(defmethod map-Ccode ((i Crecord-init) f)(append (funcall f i) (map-Ccode (var i) f)))
+(defmethod map-Ccode ((i Creturn) f)     (append (funcall f i) (map-Ccode (var i) f)))
+(defmethod map-Ccode ((i Cif) f)
+  (append (funcall f i)  (map-Ccode (list (cond-part i) (then-part i) (else-part i)) f)))
+(defmethod map-Ccode ((e Ccode) f) nil)
+(defmethod map-Ccode (e f) (break "Mapvars encountered unknown C expression..."))
 
 ;; ------------------- Maps f only to instructions ----------------------
 (defun map-Cinstr (body f)
-  (map-Cexpr body #'(lambda (x) (when (Cinstr? x) (funcall f x)))))
+  (map-Ccode body #'(lambda (x) (when (Cinstr? x) (funcall f x)))))
 
 ;; --------------- Maps update function f to all C expressions ----------------
-(defmethod upd-Cexpr ((v C-var) f) (funcall f v))
-(defmethod upd-Cexpr ((l list) f)
+(defmethod upd-Ccode ((v C-var) f) (funcall f v))
+(defmethod upd-Ccode ((l list) f)
   (when (consp l)
-    (let ((hd (upd-Cexpr (car l) f))
-	  (tl (upd-Cexpr (cdr l) f)))
+    (let ((hd (upd-Ccode (car l) f))
+	  (tl (upd-Ccode (cdr l) f)))
       (if hd (cons hd tl) tl))))
-(defmethod upd-Cexpr ((e Carray-get) f)
-  (setf (var  e) (upd-Cexpr (var  e) f))
-  (setf (arg  e) (upd-Cexpr (arg  e) f))
+(defmethod upd-Ccode ((e Carray-get) f)
+  (setf (var  e) (upd-Ccode (var  e) f))
+  (setf (arg  e) (upd-Ccode (arg  e) f))
   (funcall f e))
-(defmethod upd-Cexpr ((e Crecord-get) f) (setf (var  e) (upd-Cexpr (var  e) f)) (funcall f e))
-(defmethod upd-Cexpr ((e Cfuncall) f)    (setf (args e) (upd-Cexpr (args e) f)) (funcall f e))
-(defmethod upd-Cexpr ((i Cfuncall-mp) f) (setf (Cfunc i)(upd-Cexpr (Cfunc i)f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cdecl) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cinit) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cfree) f)       (setf (var  i) (upd-Cexpr (var  i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cset) f)
-  (setf (var  i) (upd-Cexpr (var  i) f))
-  (setf (expr i) (upd-Cexpr (expr i) f))
+(defmethod upd-Ccode ((e Crecord-get) f) (setf (var  e) (upd-Ccode (var  e) f)) (funcall f e))
+(defmethod upd-Ccode ((e Cfuncall) f)    (setf (args e) (upd-Ccode (args e) f)) (funcall f e))
+(defmethod upd-Ccode ((i Cfuncall-mp) f) (setf (Cfunc i)(upd-Ccode (Cfunc i)f)) (funcall f i))
+(defmethod upd-Ccode ((i Cdecl) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
+(defmethod upd-Ccode ((i Cinit) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
+(defmethod upd-Ccode ((i Cfree) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
+(defmethod upd-Ccode ((i Cset) f)
+  (setf (var  i) (upd-Ccode (var  i) f))
+  (setf (expr i) (upd-Ccode (expr i) f))
   (funcall f i))
-(defmethod upd-Cexpr ((i Ccopy) f)
-  (setf (varA i) (upd-Cexpr (varA i) f))
-  (setf (varB i) (upd-Cexpr (varB i) f))
+(defmethod upd-Ccode ((i Ccopy) f)
+  (setf (varA i) (upd-Ccode (varA i) f))
+  (setf (varB i) (upd-Ccode (varB i) f))
   (funcall f i))
-(defmethod upd-Cexpr ((i Carray-init) f)
-  (setf (var  i) (upd-Cexpr (var  i) f))
-  (setf (body i) (upd-Cexpr (body i) f))
+(defmethod upd-Ccode ((i Carray-init) f)
+  (setf (var  i) (upd-Ccode (var  i) f))
+  (setf (body i) (upd-Ccode (body i) f))
   (funcall f i))
-(defmethod upd-Cexpr ((i Crecord-init) f) (setf (var i) (upd-Cexpr (var i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Creturn) f)      (setf (var i) (upd-Cexpr (var i) f)) (funcall f i))
-(defmethod upd-Cexpr ((i Cif) f)
-  (setf (cond-part i) (upd-Cexpr (cond-part i) f))
-  (setf (then-part i) (upd-Cexpr (then-part i) f))
-  (setf (else-part i) (upd-Cexpr (else-part i) f))
+(defmethod upd-Ccode ((i Crecord-init) f) (setf (var i) (upd-Ccode (var i) f)) (funcall f i))
+(defmethod upd-Ccode ((i Creturn) f)      (setf (var i) (upd-Ccode (var i) f)) (funcall f i))
+(defmethod upd-Ccode ((i Cif) f)
+  (setf (cond-part i) (upd-Ccode (cond-part i) f))
+  (setf (then-part i) (upd-Ccode (then-part i) f))
+  (setf (else-part i) (upd-Ccode (else-part i) f))
   (funcall f i))
-(defmethod upd-Cexpr (e f) (break "Mapvars encountered unknown C expression..."))
+(defmethod upd-Ccode (e f) (break "Mapvars encountered unknown C expression..."))
 
 ;;  ------------------ Maps f only to instructions ----------------------
 (defun upd-Cinstr (body f)
-  (upd-Cexpr body #'(lambda (x) (if (Cinstr? x) (funcall f x) x))))
+  (upd-Ccode body #'(lambda (x) (if (Cinstr? x) (funcall f x) x))))
 
 
 
@@ -150,7 +152,7 @@
 (defun get-return-var (f)
   (let ((ret (car (last (body f)))))
     (when (Creturn? ret) (var ret)))) ;; The last instruction should be Creturn
-(defmethod bang-return? ((f Cfun-decl)) (bang? (get-return-var f)))
+(defmethod bang-return? ((f Cfun-decl)) (bang? (get-return-var f) f))
 (defmethod bang-return? ((f const-decl))
   (bang-return? (C-info-definition (gethash f (C-hashtable)))))
 (defmethod bang-return? ((f null)) nil)  ;; allows to call (bang-return? nil)
@@ -248,14 +250,14 @@
 
 ;; --------------- Gets all pointer-type variables -----------------
 (defun get-all-vars (body)
-  (map-Cexpr body #'(lambda (x) (when (pointer? x) (list x)))))
+  (map-Ccode body #'(lambda (x) (when (pointer? x) (list x)))))
 
 
 
 
 ;; ---------- Replace all pointer-type variables according to assoc list ----------
 (defun replace-variables (body alist)
-  (upd-Cexpr body
+  (upd-Ccode body
 	     #'(lambda (x) (or (cdr (assoc x alist :test #'eq-C-var)) x))))
 
 ;; ----- The main analysis loop. The recursive call should terminate... ------------
@@ -289,7 +291,7 @@
 
 ;; ------ This function unflags "safe" in all occurence of variables -----
 (defun unsafe-all-pointers (l)
-  (upd-Cexpr l #'(lambda (x) (if (and (pointer? x) (safe x))
+  (upd-Ccode l #'(lambda (x) (if (and (pointer? x) (safe x))
 				 (C-var (type x) (name x) nil) x))))
 
 ;; --------- This function flags "safe" all last occurence of a variable -----------
@@ -366,7 +368,7 @@
 
 ;; --------- Analysis to remove bang flags ---------------
 (defun C-analysis-new-notbang (body)
-  (let ((new-nb (map-Cexpr body #'get-new-bang-unflag)))
+  (let ((new-nb (map-Ccode body #'get-new-bang-unflag)))
     (rem-bang new-nb)))
 (defmethod get-new-bang-unflag ((e Carray-get))
   (when (and (bang? (var e)) (safe (var e))) (list (var e))))
@@ -454,7 +456,7 @@
 
 
 (defun C-analysis-destr-funcall (body)
-  (map-Cexpr body #'destr-funcall))
+  (map-Ccode body #'destr-funcall))
 (defun destr-funcall (fc)
   (when (and (Cfuncall? fc)               ;; fc is a call...
 	     (const-decl? (name (fun fc)));; ... to a PVS function ...
@@ -473,7 +475,7 @@
 
 (defun C-analysis-dupl-funcall (body)
 ;;  (break "po")
-  (map-Cexpr body #'dupl-funcall))
+  (map-Ccode body #'dupl-funcall))
 (defun dupl-funcall (fc)
   (when (and (Cfuncall? fc)
 	     (get-definition fc))    ;; useless ?

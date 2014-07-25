@@ -12,15 +12,16 @@
 ;;
 ;; To make this work, you need:
 ;;   - The following files:
-;;       Cmain.lisp (this file)
+;;       main.lisp (this file)
 ;;       Cutils.lisp
 ;;       Ctypes.lisp
-;;       Cexpr.lisp
+;;       Ccode.lisp
 ;;       Canalysis.lisp
 ;;       Cprimop.lisp
 ;;       pvs2c.lisp
 ;;       GC.c
 ;;   - The GNU GMP library installed
+;;      -> https://gmplib.org/
 ;;
 ;;
 ;; To use:
@@ -71,13 +72,13 @@
 ;; (pushnew "/amd/pfs/export/u2/homes/ferey/Documents/pvs2c" *pvs-directories* :test #'string=)
 ;; (lf "Cutils.lisp")
 ;; (lf "Ctypes.lisp")
-;; (lf "Cexpr.lisp")
+;; (lf "Ccode.lisp")
 ;; (lf "Canalysis.lisp")
 ;; (lf "Cprimop.lisp")
 ;; (lf "pvs2c.lisp")
 (load "Cutils")
 (load "Ctypes")
-(load "Cexpr")
+(load "Ccode")
 (load "Canalysis")
 (load "Cprimop")
 (load "pvs2c")

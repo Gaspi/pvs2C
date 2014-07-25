@@ -102,9 +102,26 @@
        (pvs2C-error "~%Record type ~a must be declared." type))))
 
 (defmethod pvs2C-type ((type tupletype) &optional tbindings)
-  (make-instance 'C-named-type
-		 :name (format nil "~{!~a~^_~}" (loop for elemtype in (types type)
-				   collect (pvs2C-type elemtype)))))
+  (with-slots (print-type) type
+     (if (type-name? print-type)
+	(let ((entry (assoc (declaration print-type) *C-record-defns*)))
+	  (if entry (make-instance 'C-struct :name (cadr entry) :args (cadddr entry))
+	    (let* ((flds  (types type))
+		   (ids   (loop for n from 1 below (+ 1 (length flds))
+				collect (format nil "f~a" n)))
+		   (types (pvs2C-type flds))
+		   (args (pairlis ids types))
+		   (formatted-fields (loop for arg in args
+					   collect (format nil "~a ~a;" (cdr arg) (car arg))))
+		   (C-rectype-name (gentemp (format nil "~a" (id print-type))))
+		   (C-rectype (format nil "~%struct struct_~a {~%~{  ~a~%~}};~%typedef struct struct_~a* ~a;"
+				      C-rectype-name formatted-fields C-rectype-name C-rectype-name)))
+	      (push (list (declaration print-type) C-rectype-name C-rectype args)
+		    *C-record-defns*)
+	      (make-instance 'C-struct
+			     :name C-rectype-name
+			     :args args ))))
+       (pvs2C-error "~%Tuple type ~a must be declared." type))))
 
 (defmethod pvs2C-type ((type funtype) &optional tbindings)
   (if (C-updateable? type)
@@ -242,6 +259,10 @@
 							 "mpq_canonicalize(~a);"))
 (defmethod convertor ((typeA C-mpq) (typeB C-int)) (list "mpq_set_d(~a, (double) ~a );"
 							 "mpq_canonicalize(~a);"))
+(defmethod convertor ((typeA C-mpz) typeB)
+  (list (format nil "mpz_from_~a( ~~a, ~~a );" typeB)))
+(defmethod convertor ((typeA C-mpq) typeB)
+  (list (format nil "mpq_from_~a( ~~a, ~~a );" typeB)))
 (defmethod convertor ((typeA C-uli) (typeB C-mpz)) "mpz_get_ui(~a)")
 (defmethod convertor ((typeA C-int) (typeB C-mpz)) "( (int) mpz_get_si(~a) )")
 (defmethod convertor ((typeA C-uli) (typeB C-mpq)) "( (unsigned long) mpq_get_d(~a) )")

@@ -10,14 +10,14 @@
 ;;  Main functions :
 ;;
 ;;    pvs2C expr bindings livevars type
-;;      -> Cexpr representing a C-var with the given type
+;;      -> C expression (Ccode) representing a C-var with the given type
 ;;         and with the translation of expr as a value.
 ;;
 ;;    pvs2C* expr bindings livevars
 ;;      -> As below but might have a "hole" (unnamed variable) for the result
 ;;
 ;;    pvs2C2 expr bindings livevars variable [need-malloc]
-;;      -> Cexpr with the necessary instructions to let the variable be set
+;;      -> Ccode with the necessary instructions to let the variable be set
 ;;         to a C expression representing expr.
 ;;         If need-malloc flag is t, also initializes the variable.
 ;;
@@ -195,7 +195,7 @@
 		 (set-destr e (list (Cfree n)))))
 	     (set-var-to-C-expr var e need-malloc)))))
 
-(defmethod set-var-to-C-expr ((var Cexpr) (e C-expr) &optional need-malloc)
+(defmethod set-var-to-C-expr ((var Ccode) (e C-expr) &optional need-malloc)
   (C-expr var
 	  (append (instr e)
 		  (when need-malloc (Calloc var))
@@ -271,15 +271,11 @@
 	      (Cfuncall "createTuple" (cons "~a" args)))
     args))
 
-(defmacro pvs2C_tuple (args)
-  `(format nil "(~{~a~^, ~})" ,args))
 
 (defmethod pvs2C* ((expr projection-application) bindings livevars)
-  (let* ((ll (length (exprs expr)))
-	 (dummy (gentemp "DDD"))
-	 (match-list (pvs2C_tuple (matchlist (index expr) ll dummy)))
-	 (expr-list (pvs2C expr bindings livevars)))
-    `(let ,match-list = ,expr-list in ,dummy)))
+  (let* ((e  (pvs2C (argument expr) bindings livevars)))
+    (set-var e (Crecord-get (var e) (format nil "f~a" (index expr))))
+    e))
 
 
 ;; When is this function called ??  (not working)

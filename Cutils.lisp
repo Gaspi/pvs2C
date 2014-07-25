@@ -14,6 +14,9 @@
 
 (in-package :pvs)
 
+;; --------------------------------------------------------------------
+;;                 Ranges manipulations
+;; --------------------------------------------------------------------
 
 ;; ------- Simple arithmetic on Z bar : { -, numbers, + } ---------
 (defun <=zb (a b)
@@ -53,11 +56,35 @@
 				(cdr l) '+)))
     (make-instance 'C-range :inf '- :sup '+)))
 
+;; Useful for debugging
+(defmethod print-object ((obj C-range) out)
+  (format out "[~a ; ~a]" (inf obj) (sup obj)))
+
+;; ------------------- Basic manipulations ---------------------
 (defun inter-range (ranges)
   (C-range (when (consp ranges)
 	     (let ((tl (inter-range (cdr ranges))))
 	       (cons (max-zb (inf (car ranges)) (inf tl))
 		     (min-zb (sup (car ranges)) (sup tl)))))))
+
+;; Returns a range containing the union of the given ranges
+(defun union-range (ranges)
+  (C-range (when (consp ranges)
+	     (let ((tl (union-range (cdr ranges))))
+	       (cons (min-zb (inf (car ranges)) (inf tl))
+		     (max-zb (sup (car ranges)) (sup tl)))))))
+
+;; Return a range containing the complementary of the given range
+(defun compl-range (range)
+  (with-slots (inf sup) range
+  (C-range
+   (cond ((and (eq inf '-) (eq sup '+))   ;; if range is all
+	  (list 0 0))   ;; Singleton 0
+	 ((eq inf '-)
+	  (list (1+ sup)  '+))
+	 ((eq sup '+)
+	  (list '- (1- inf)))
+	 (t nil)))))
 
 (defun range-included (rangeA rangeB)
   (and (<=zb (inf rangeB) (inf rangeA))
@@ -65,11 +92,105 @@
 
 
 
+;; --------------------------------------------------------------------
+;;                 PVS ranges of types and expressions
+;; --------------------------------------------------------------------
+
+;; ---------- Is the given type the PVS integer type ? ----------
+(defmethod PVS-int? ((type type-name))
+  (PVS-int? (type (car (resolutions type)))))
+(defmethod PVS-int? ((type subtype))
+  (and (predicate type)
+       (name-expr? (predicate type))
+       (eq 'integer_pred (id (predicate type)))))
+(defmethod PVS-int? (type) nil)
+
+;; ----------------- Is it a subtype of it ? ---------------------
+(defmethod subtype-PVS-int? ((type type-name))
+  (subtype-PVS-int? (type (car (resolutions type)))))
+(defmethod subtype-PVS-int? (type)
+  (or (PVS-int? type) (subtype-of? type *integer*)))
+
 ;; ------- C range computations ------------------
+(defmethod C-range ((type type-name))
+  (C-range (type (car (resolutions type)))))
+(defmethod C-range ((type subtype))
+  (if (or (not (subtype-PVS-int? type)) (PVS-int? type))
+      (C-range nil)  ;; if this is bigger than an int (or not an int at all)
+    (let* ((pred (predicate type))
+	   (bind (car (bindings pred))) ;;bindings is a singleton
+	   (decl-type (declared-type bind))
+	   (id (id bind)))
+      (when (not (subtype-PVS-int? decl-type)) (break))
+      (inter-range
+       (list (C-range (supertype type))
+	     (C-range decl-type)
+	     (get-C-range (expression pred) id))))))
+
+
+(defmethod get-C-range ((expr conjunction) id)
+  (let ((args (arguments expr)))
+    (inter-range (list (get-C-range (car args) id)
+		       (get-C-range (cadr args) id)))))
+(defmethod get-C-range ((expr disjunction) id)
+  (let ((args (arguments expr)))
+    (union-range (list (get-C-range (car args) id)
+		       (get-C-range (cadr args) id)))))
+;; This could actually give wrong results...
+;; (defmethod get-C-range ((expr negation) id)
+;;   (let ((args (arguments expr)))
+;;     (compl-range (get-C-range (car args) id))))
+
+(defmethod get-C-range ((expr infix-application) id)
+  (let ((args (arguments expr))
+	(oper (operator  expr)))
+    (C-range
+     (when (and (eql (length args) 2)
+		(name-expr? oper))
+       (let ((a1 (get-value (car  args)))
+	     (a2 (get-value (cadr args)))
+	     (op (id oper)))
+	 (when (and (or (numberp a1) (numberp a2))   ;; one is a number
+		    (or (eq id   a1) (eq id   a2)))  ;; and one is the id
+	   (cond ((and (numberp a1) (eq op '<=))
+		  (list a1 '+))
+		 ((and (numberp a1) (eq op '<))
+		  (list (1+ a1) '+))
+		 ((and (numberp a1) (eq op '>=))
+		  (list '- a1))
+		 ((and (numberp a1) (eq op '>))
+		  (list '- (1- a1)))
+		 ((and (numberp a1) (eq op '=))
+		  (list a1 a1))
+		 ((and (numberp a2) (eq op '<=))
+		  (list '- a2))
+		 ((and (numberp a2) (eq op '<))
+		  (list '- (1- a2)))
+		 ((and (numberp a2) (eq op '>=))
+		  (list a2 '+))
+		 ((and (numberp a2) (eq op '>))
+		  (list (1+ a2) '+))
+		 ((and (numberp a2) (eq op '=))
+		  (list a2 a2))
+		 (t C-range nil))))))))
+
+;; ------------- Get the value of an expression -------------	  
+(defmethod get-value ((e name-expr))   (id e))
+(defmethod get-value ((e number-expr)) (number e))
+(defmethod get-value ((e unary-application))
+  (when (eq (id (operator e)) '-)
+    (let ((aux (get-value (argument e))))
+      (when (numberp aux) (- aux)))))
+(defmethod get-value (e) nil)
+
+(defmethod get-C-range (expr id)
+  (C-range nil))
+
+
+
 (defmethod C-range ((type type-expr))
-  (C-range (when (subtype-of? type *integer*)
+  (C-range (when (subtype-PVS-int? type)
 	     (subrange-index type))))
-;; TODO add new C-range function for subrange (cf mail Sam) ...
 
 (defmethod C-range ((expr number-expr))
   (C-range (cons (number expr) (number expr))))
@@ -115,7 +236,6 @@
     (format nil "  ~a" bloc)))
 
 
-
 ;; There is probably a Common Lisp function to do that...
 (defun append-lists (l)
   (when (consp l) (append (car l) (append-lists (cdr l)))))
@@ -130,11 +250,9 @@
 
 
 
-
-
-
-;; ---------- Draft / old functions ---------------------
-
+;; --------------------------------------------------------------------
+;;                 Draft / old functions
+;; --------------------------------------------------------------------
 
 (defun C_type (op)
   (let ((hashentry (gethash (declaration op) (C-hashtable))))

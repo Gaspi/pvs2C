@@ -4,7 +4,7 @@
 ;;     Author: Gaspard ferey
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
-;;
+;;  -> Please read 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This requires "pvs2c.lisp", "Cutils.lisp" and "Cprimop.lisp" files both available at
@@ -27,10 +27,6 @@
 
 (defmethod type ((e C-expr)) (type (var e)))
 (defmethod name ((e C-expr)) (name (var e)))
-;; (defmethod type ((e list))
-;;   (when (consp e) (cons (type (car e)) (type (cdr e)))))
-;; (defmethod name ((e list))
-;;   (when (consp e) (cons (name (car e)) (name (cdr e)))))
 (defmethod var ((e list))
   (when (consp e) (cons (var (car e)) (var (cdr e)))))
 
@@ -66,18 +62,15 @@
 ;;           CLOS supertypes representation for fragments of C code
 ;; --------------------------------------------------------------------
 
-;; ------- Supertype : list of expressions in that expression --------
-(defcl Cexpr ())
-(defun Cexpr () (make-instance 'Cexpr))
-
-
+;; ------- Abstract supertype for C expressions --------
+(defcl Ccode ())
 
 ;; --------------------------------------------------------------------
 ;;               CLOS representation of C expressions      
 ;; --------------------------------------------------------------------
 
 ;; -------- A C variable : is a C type and a name (string or hole) ----
-(defcl C-var (Cexpr) (type) (name) (safe))
+(defcl C-var (Ccode) (type) (name) (safe))
 (defun C-var (type &optional name safe)
   (make-instance 'C-var :type type
 		 :name (if (listp name) name
@@ -106,14 +99,14 @@
 (defun safe-var (v &optional (safe t)) (C-var (type v) (name v) safe))
 
 ;; ------- Accessor to a record type var :  var.e ------
-(defcl Crecord-get (Cexpr) (var) (arg) (type))
+(defcl Crecord-get (Ccode) (var) (arg) (type))
 (defun Crecord-get (var arg)
   (make-instance 'Crecord-get :var var :arg arg
 		 :type (cdr (assoc arg (args (type var))))))
 
 
 ;; ------- Accessor to an array type var :  var[e] ------
-(defcl Carray-get (Cexpr) (var) (arg) (type))
+(defcl Carray-get (Ccode) (var) (arg) (type))
 (defun Carray-get (var arg)
   (make-instance 'Carray-get :var var :arg arg
 		 :type (target (type var))))
@@ -121,7 +114,7 @@
 
 ;; -------- Function call : f(e1, ... , e2) ---------
 ;; May or may not have a valid type
-(defcl Cfuncall (Cexpr) (fun) (args) (type))
+(defcl Cfuncall (Ccode) (fun) (args) (type))
 (defun Cfuncall (fun &optional args type)
   (set-arguments
    (make-instance 'Cfuncall :fun (Cfun fun) :args nil :type type)
@@ -151,7 +144,7 @@
 ;; --------------------------------------------------------------------
 
 ;; --------------------- Supertype for instructions -------------------
-(defcl Cinstr (Cexpr))
+(defcl Cinstr (Ccode))
 
 ;; --------- Declaration of a variable : int* T; ----------------------
 (defcl Cdecl (Cinstr) (var))
@@ -284,7 +277,7 @@
 
 (defmethod define-name ((v C-var) name)
   (if (unnamed? v)
-      (if (Cexpr? name) name
+      (if (Ccode? name) name
 	(progn (setf (name v) (format nil "~a" name)) v))
     (progn (rec-dn v name) v)))
 

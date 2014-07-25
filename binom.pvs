@@ -1,0 +1,54 @@
+binom : THEORY
+ %BINOMIAL COEFFICIENT
+  BEGIN
+
+   n,k,K: VAR nat
+   
+   Cint: TYPE = subrange(-1000, 1000)
+
+   f(a:Cint):int = 2 * a
+   
+   Pair : TYPE = [nat,nat]
+   Ind  : TYPE = below(1000)
+   Arr  : TYPE = [Ind -> [Ind -> nat]]
+   
+   factorial(n): RECURSIVE nat =
+    IF n = 0 THEN 1 ELSE n * factorial(n-1) ENDIF
+    MEASURE (LAMBDA n: n)
+
+   binom(k: nat , n: nat): RECURSIVE nat =
+    IF k = 0 THEN 1 ELSE
+       IF n = 0 THEN 0 ELSE
+       	   binom(k-1, n-1) + binom(k, n-1)
+       ENDIF
+    ENDIF
+    MEASURE(LAMBDA k, n: n)
+
+
+   f:Arr = lambda(k:Ind)(n:Ind): if k = 0 then 1 else 0 endif
+
+   % Dynamic version 
+   lex_order(a:Pair, b:Pair) : bool =
+       a`1 < b`1 OR
+       (a`1 = b`1 AND a`2 < b`2)
+
+   fill_line(K, k, n): RECURSIVE Arr =
+    % returns a function with the values for binom(x,y) for each
+    % (x <= K, y < n) and (x <= k, y = n) (assuming k <= K)
+    IF n = 0 THEN f
+    ELSE
+       IF k = 0 THEN %previous line
+          fill_line(K,K,n-1)
+       ELSE
+          LET F:Arr = fill_line(K,k-1, n) IN            % get values up to (k-1,n)
+             F WITH [ (k)(n) := F(k-1)(n-1) + F(k)(n-1) ] % add (k,n) value
+       ENDIF
+    ENDIF
+    MEASURE(LAMBDA (K, k, n): (n,k)) BY lex_order
+
+   binom_D(x:nat, y:nat): nat = fill_line(x,x,y)(x)(y)
+
+
+END binom
+
+

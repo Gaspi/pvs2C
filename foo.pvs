@@ -1,27 +1,28 @@
 foo : THEORY
 BEGIN
 
-  Cint : TYPE = below(1000)
-  Arr : TYPE = [ Cint -> Cint ]
+  Cint : TYPE = subrange(-1000, 3000)
+  Ind  : TYPE = below(1000)
+  Arr  : TYPE = [ Ind -> Cint ]
 
   id(A:Arr) : Arr = A
-
   zero(A:Arr) : Arr = A with [(0) := 0]
   
   f(A:Arr) : Arr =
     let B = id(A) in
-      A with [(0) := B(0)]
+      B with [(0) := B(0)]
 
   g(A:Arr) : Arr =
     let B = zero(A) in
-      A with [(0) := B(0)]
+      B with [(0) := B(0)]
 
   h(A:Arr) : Arr =
-    let B = id(A) in
-      B with [(0) := B(0)]
-
-  i(A:Arr) : Arr =
     let B = zero(A) in
-      B with [(0) := B(0)]
+      A with [(0) := B(0)]
+  
+  i(A:Arr) : Arr =
+    let B = id(A) in
+      A with [(0) := B(0)]
+
 
 END foo
