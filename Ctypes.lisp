@@ -92,7 +92,7 @@
 		   (formatted-fields (loop for arg in args
 					   collect (format nil "~a ~a;" (cdr arg) (car arg))))
 		   (C-rectype-name (gentemp (format nil "~a" (id print-type))))
-		   (C-rectype (format nil "~%struct struct_~a {~%~{  ~a~%~}};~%typedef (struct struct_~a)* ~a;"
+		   (C-rectype (format nil "~%struct struct_~a {~%~{  ~a~%~}};~%typedef struct struct_~a* ~a;"
 				      C-rectype-name formatted-fields C-rectype-name C-rectype-name)))
 	      (push (list (declaration print-type) C-rectype-name C-rectype args)
 		    *C-record-defns*)

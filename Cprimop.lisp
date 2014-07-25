@@ -54,7 +54,7 @@
 (defun boolean-primitive? (name)
   (member name '(1 0)))
 (defun pvs2C*-boolean-primitive (op)
-  (C-expr (C-var *C-int* (format nil "~a" op))))
+  (C-expr (C-var *C-int* op t)))
 
 
 ;; --------- Primitive function call ----------------
@@ -86,12 +86,13 @@
 (defun Cprocess (info args bindings livevars)
   (let* ((func (cdr info))  ;; This should be an instance of Cfuncall(-mpz) with a type
 	 (type (type func))
+	 (gmp? (Cfuncall-mp? func))
 	 (C-args (pvs2C args bindings livevars (car info)))
 	 (res (set-arguments func
-			     (append (when (Cfuncall-mp? func) (list (C-var type)))
+			     (append (when gmp? (list (C-var type)))
 				     (var C-args)))))
-    (set-var   C-args (if (Cinstr? res) (C-var type) res))
-    (when (Cinstr? res) (app-instr C-args res))
+    (set-var   C-args (if gmp? (C-var type) res))
+    (when gmp? (app-instr C-args res))
     C-args))
 
 
@@ -127,9 +128,9 @@
 	    args bindings livevars))
 (defun pvs2C-eq (typeA typeB)
   (cond ((or (C-mpq? typeA) (C-mpq? typeB))
-	 (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp (mp-cmp "mpq" '==) nil *C-int*)))
+	 (cons (list *C-mpq* *C-mpq*) (Cfuncall (mp-cmp "mpq" '==) nil *C-int*)))
 	((or (C-mpz? typeA) (C-mpz? typeB))
-	 (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp (mp-cmp "mpz" '==) nil *C-int*)))
+	 (cons (list *C-mpz* *C-mpz*) (Cfuncall (mp-cmp "mpz" '==) nil *C-int*)))
 	((and (C-base? typeA) (C-base? typeB))
 	 (cons (list typeA typeB) (Cfuncall (binop '==) nil *C-int*)))
 	(t

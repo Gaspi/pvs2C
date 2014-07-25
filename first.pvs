@@ -1,12 +1,13 @@
 first : THEORY
 BEGIN
   
-  Cint : TYPE = below(1000)
-
-  Arr: TYPE = [Cint -> Cint]
+  Cint  : TYPE = below(1000)
+  Coord : TYPE = [below(2) -> Cint]
   
-  f(A:Arr) : Arr = let B = A in B with [(0) := 0]
-  
+  f(A:Coord) : Coord =
+    let B = A in
+      if B(0) = 0 then B with [(0) := 0]
+      else B with  
   
   g(A:Arr, B:Arr):Cint = A(0)
   

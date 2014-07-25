@@ -1,73 +1,79 @@
 // C file generated from draft.pvs
+struct struct_pair1736 {
+  mpz_t y;
+  int x;
+};
+typedef struct struct_pair1736* pair1736;
 
-pair413 pvs_a411();
 
-pair413 pvs_a_d412();
+pair1736 pvs_a1734();
 
-int pvs_first414(pair413 a);
+pair1736 pvs_a_d1735();
 
-int pvs_first_d415(pair413 a);
+int pvs_first1737(pair1736 a);
 
-pair413 pvs_zero416(pair413 a);
+int pvs_first_d1738(pair1736 a);
 
-pair413 pvs_zero_d417(!pair413 #a#);
+pair1736 pvs_zero1739(pair1736 a);
 
-unsigned long int pvs_a420();
+pair1736 pvs_zero_d1740(!pair1736 #a#);
 
-unsigned long int pvs_a_d421();
+unsigned long int pvs_a1743();
 
-int pvs_b422();
+unsigned long int pvs_a_d1744();
 
-int pvs_b_d423();
+int pvs_b1745();
 
-void pvs_c424(mpz_t result);
+int pvs_b_d1746();
 
-void pvs_c_d425(mpz_t result);
+void pvs_c1747(mpz_t result);
 
-int pvs_incr426(int x);
+void pvs_c_d1748(mpz_t result);
 
-int pvs_incr_d427(int x);
+int pvs_incr1749(int x);
 
-int pvs_zero428(mpz_t x);
+int pvs_incr_d1750(int x);
 
-int pvs_zero_d429(mpz_t x);
+int pvs_zero1751(mpz_t x);
 
-int pvs_f430(int a, int b);
+int pvs_zero_d1752(mpz_t x);
 
-int pvs_f_d431(int a, int b);
+int pvs_f1753(int a, int b);
 
-int pvs_f434(int x);
+int pvs_f_d1754(int a, int b);
 
-int pvs_f_d435(int x);
+int pvs_f1757(int x);
 
-int pvs_t442(int x);
+int pvs_f_d1758(int x);
 
-int pvs_t_d443(int x);
+int pvs_t1765(int x);
 
-int* pvs_id2444(int* #t59703#);
+int pvs_t_d1766(int x);
 
-int* pvs_id2_d445(!int* #t59703#);
+int* pvs_id21767(int* #t56897#);
 
-int* pvs_f446(int x);
+int* pvs_id2_d1768(!int* #t56897#);
 
-int* pvs_f_d447(int x);
+int* pvs_f1769(int x);
 
-int* pvs_update450(int* x);
+int* pvs_f_d1770(int x);
 
-int* pvs_update_d451(!int* #x#);
+int* pvs_update1773(int* x);
 
-int* pvs_t2456(int x);
+int* pvs_update_d1774(!int* #x#);
 
-int* pvs_t2_d457(int x);
+int* pvs_t21779(int x);
 
-int* pvs_id462(int** #t59703#);
+int* pvs_t2_d1780(int x);
 
-int* pvs_id_d463(int** #t59703#);
+int* pvs_id1785(int** #t56897#);
 
-int* pvs_te464();
+int* pvs_id_d1786(int** #t56897#);
 
-int* pvs_te_d465();
+int* pvs_te1787();
 
-int** pvs_update470(int** x);
+int* pvs_te_d1788();
 
-int** pvs_update_d471(!int** #x#);
+int** pvs_update1793(int** x);
+
+int** pvs_update_d1794(!int** #x#);

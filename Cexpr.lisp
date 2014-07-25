@@ -14,7 +14,6 @@
 ;;
 ;; Defining here a intermediate language between C and PVS
 ;;
-;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
@@ -47,10 +46,10 @@
   (setf (destr C-expr) destr))
 
 (defmethod app-instr ((C-expr C-expr) instr &optional first)
-  (set-instr C-expr
-	     (if first
-		 (append instr (instr C-expr))
-	       (append (instr C-expr) instr))))
+  (let ((i (if (listp instr) instr (list instr))))
+    (set-instr C-expr
+	       (if first (append i (instr C-expr))
+		         (append (instr C-expr) i)))))
 (defmethod app-destr ((C-expr C-expr) destr &optional first)
   (set-destr C-expr
 	     (if first
@@ -84,6 +83,7 @@
 		 :name (if (listp name) name
 			 (format nil "~a" name)) ;; names must be strings
 		 :safe safe))
+(defun C-var-copy (v) (C-var (type v) (name v) (safe v)))
 (defun C-var-list (types names)
   (when (consp types) (cons (C-var (car types) (car names))
 			    (C-var-list (cdr types) (cdr names)))))
@@ -118,8 +118,22 @@
   (make-instance 'Carray-get :var var :arg arg
 		 :type (target (type var))))
 
+
+;; -------- Function call : f(e1, ... , e2) ---------
+;; May or may not have a valid type
+(defcl Cfuncall (Cexpr) (fun) (args) (type))
+(defun Cfuncall (fun &optional args type)
+  (set-arguments
+   (make-instance 'Cfuncall :fun (Cfun fun) :args nil :type type)
+   args))
+(defmethod set-arguments ((fc Cfuncall) argts)
+  (let ((args (if (listp argts) argts (list argts))))
+    (setf (args fc) args) fc))
+
+
 (defmethod safe ((e Crecord-get)) (safe (var e)))
 (defmethod safe ((e Carray-get )) (safe (var e)))
+(defmethod safe ((e Cfuncall)) t)
 (defmethod safe (e) nil)
 
 (defmethod eq-C-var ((x string) (y string)) (string= x y))
@@ -130,18 +144,6 @@
 (defmethod eq-C-var (x y) nil)
 
 
-
-;; -------- Function call : f(e1, ... , e2) ---------
-;; May or may not have a valid type
-(defcl Cfuncall (Cexpr) (fun) (args) (type))
-(defun Cfuncall (fun &optional args type)
-  (set-arguments
-   (make-instance 'Cfuncall :fun (Cfun fun) :args nil :type type)
-   args))
-(defmethod set-arguments ((Cfuncall Cfuncall) argts)
-  (let ((args (if (listp argts) argts (list argts))))
-    (setf (args Cfuncall) args)
-    Cfuncall))
 
 
 ;; --------------------------------------------------------------------
@@ -177,8 +179,9 @@
 (defcl Cfuncall-mp (Cinstr) (Cfunc))
 (defun Cfuncall-mp (fun &optional args type)
   (make-instance 'Cfuncall-mp :Cfunc (Cfuncall fun args type)))
-(defmethod set-arguments ((Cfuncall Cfuncall-mp) argts)
-  (set-arguments (Cfunc Cfuncall) argts))
+(defmethod set-arguments ((fc Cfuncall-mp) argts)
+  (set-arguments (Cfunc fc) argts)
+  fc)
 (defmethod type ((fc Cfuncall-mp)) (type (Cfunc fc)))
 
 ;; -------- If instructions ------------------------------------------
@@ -246,11 +249,11 @@
 					      *C-destructive-hash* *C-nondestructive-hash*))))
 	name))))
 
-(defmethod get-definition ((f Cfun))
+(defmethod get-definition ((f Cfun) &optional (destr (destr f)))
   (when (const-decl? (name f))
-    (C-info-definition (gethash (name f) (C-hashtable (destr f))))))
-(defmethod get-definition ((fc Cfuncall))
-  (get-definition (fun fc)))
+    (C-info-definition (gethash (name f) (C-hashtable destr)))))
+(defmethod get-definition ((fc Cfuncall) &optional (destr (destr (fun fc))))
+  (get-definition (fun fc) destr))
 
 ;; --------- Generating functions ----------------
 (defun mp-cmp (zq op)
@@ -431,7 +434,7 @@
 (defmethod get-C-instructions ((instr Crecord-init))
   (let* ((var    (var instr))
 	 (type   (type var)))
-    (cons (format nil "~a = GC_malloc(1, sizeof( struct_~a ) );" var type)
+    (cons (format nil "~a = GC_malloc(1, sizeof( struct struct_~a ) );" var type)
 	  (get-C-instructions (mapcar
 			       #'(lambda (x) (Cinit (Crecord-get var (car x))))
 			       (args type))))))
@@ -505,7 +508,7 @@
 	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
 		(format nil "  ~a = GC( ~a );" varA varB)
 		(format nil "else {")
-		(format nil "  ~a = GC_malloc(1, sizeof(~a));" varA typeA))
+		(format nil "  ~a = GC_malloc(1, sizeof( struct struct_~a ));" varA typeA))
 	  (indent (get-C-instructions
 		   (loop for a in (args typeA)
 			 collect (Ccopy (Crecord-get varA (car a))

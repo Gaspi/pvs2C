@@ -131,33 +131,6 @@
 
 
 
-;; We try to change a funcall non-destr (default) into a funcall destr
-;; Conditions :
-;;  - Arguments bang are variables safe and bang
-;;  - Arguments dupl are variables safe or not bang
-;; Consequences:
-;;  -> flag destr in funcall set to t
-;;  -> if result is dupl, all variables passed as dupl arguments are flagged dupl
-
-;; ---- Gets all arguments expressions corresponding to arguments flagged bang -----
-(defun get-bang-args (fc)
-  (assert (Cfuncall? fc))
-  (let ((def (get-definition fc)))
-    (when def (get-bang-args* (args fc) (args def) def))))
-(defun get-bang-args* (l names def)
-  (when (consp l)
-    (let ((tl (get-bang-args* (cdr l) (cdr names) def)))
-      (if (bang (car names) def) (cons (car l) tl) tl))))
-
-;; ---- Gets all arguments expressions corresponding to arguments flagged dupl -----
-(defun get-dupl-args (fc)
-  (assert (Cfuncall? fc))
-  (let ((def (get-definition fc)))
-    (when def (get-dupl-args* (args fc) (args def) def))))
-(defun get-dupl-args* (l names def)
-  (when (consp l)
-    (let ((tl (get-dupl-args* (cdr l) (cdr names) def)))
-      (if (dupl? (car names) def) (cons (car l) tl) tl))))
 
 
 ;; --------------------------------------------------------------------
@@ -177,9 +150,10 @@
 (defun get-return-var (f)
   (let ((ret (car (last (body f)))))
     (when (Creturn? ret) (var ret)))) ;; The last instruction should be Creturn
-(defmethod bang-return? ((f Cfun-decl)) (bang (get-return-var f)))
+(defmethod bang-return? ((f Cfun-decl)) (bang? (get-return-var f)))
 (defmethod bang-return? ((f const-decl))
   (bang-return? (C-info-definition (gethash f (C-hashtable)))))
+(defmethod bang-return? ((f null)) nil)  ;; allows to call (bang-return? nil)
 
 
 ;; ------------ Class to represent the flags state of a variable ----------
@@ -210,7 +184,11 @@
 
 
 ;; ------- Return nil if the variable is currently considered not bang ---
+(defmethod bang? ((fc Cfuncall) &optional (f *Ccurr-f*))
+  (bang-return? (get-definition fc)))
 (defmethod bang? (Cvar &optional (f *Ccurr-f*)) (bang (get-flags Cvar f)))
+
+
 
 ;; --------- Is it legal to flag this var ? (local & not treated yet) ---------
 (defmethod add-bang? ((e Cflags)) (not (or (arg e) (treated e))))
@@ -285,7 +263,8 @@
   (let ((f  (C-info-definition (gethash op-decl *C-nondestructive-hash*)))
 	(fd (C-info-definition (gethash op-decl *C-destructive-hash*))))
     (and (or (C-analysis* f)
-    	     (C-analysis* fd))  ;; if both return nil  (no change)  then return nil
+    	     (C-analysis* fd)         ;; if both return nil  (no change)
+	     (C-last-analysis f)) ;; then perform a last analysis and return nil
     	 (C-analysis op-decl)))) ;; else try again
 
 
@@ -293,21 +272,24 @@
 (defun C-analysis* (f)
   (with-slots (body) f
   (let ((*Ccurr-f* f))
-    (unsafe-all body)
+    (unsafe-all-pointers body)
     (init-analysis f)
+    ;; (break)
     (when *C-replace-analysis*
-      (or (C-analysis-replace-rule f body)
+      (or (C-analysis-destr-funcall body)
+	  (C-analysis-dupl-funcall body)
+	  (C-analysis-replace-rule f body)
 	  (C-analysis-new-notbang body)
 	  (C-analysis-new-bang    body)
-	  (C-analysis-function-choice)
 	  (C-analysis-dupl body)
-	  (C-analysis-set-to-copy body))))))
+	  (C-analysis-set-to-copy body)
+	  )))))
 
 
 
 ;; ------ This function unflags "safe" in all occurence of variables -----
-(defun unsafe-all (l)
-  (upd-Cexpr l #'(lambda (x) (if (and (C-var? x) (safe x))
+(defun unsafe-all-pointers (l)
+  (upd-Cexpr l #'(lambda (x) (if (and (pointer? x) (safe x))
 				 (C-var (type x) (name x) nil) x))))
 
 ;; --------- This function flags "safe" all last occurence of a variable -----------
@@ -370,14 +352,15 @@
   (cond ((and (Cset? i)
 	      (C-var? (var i))
 	      (C-var? (expr i))
+	      (type= (type (var i)) (type (expr i)))
 	      (safe (expr i)))
-	 (cons i (cons (name (var i)) (expr i))))
+	 (cons i (cons (name (var i)) (safe-var (expr i) nil))))
 	((and (Ccopy? i)
 	      (C-var? (varA i))
 	      (C-var? (varB i))
 	      (bang?  (varB i))
 	      (safe   (varB i)))
-	 (cons i (cons (name (varA i)) (varB i))))
+	 (cons i (cons (name (varA i)) (safe-var (varB i) nil))))
 	(t nil)))
 
 
@@ -407,6 +390,9 @@
   (let ((var (var i)))  (when (add-bang? var) var)))
 (defmethod get-new-bang-flag ((i Crecord-init))
   (let ((var (var i)))  (when (add-bang? var) var)))
+(defmethod get-new-bang-flag ((i Cset))
+  (let ((e (expr i)))
+    (when (and (safe e) (bang? e) (add-bang? (var i))) (var i))))
 (defmethod get-new-bang-flag ((i Cinstr)) nil)
 
 
@@ -422,11 +408,6 @@
 			   (Ccopy (var x) (expr x))
 			 x)))))
 
-
-;; ------ Analysis to decide whether to call a destructive function -------
-(defun C-analysis-function-choice () nil)
-
-
 ;; ------ Analysis to propagate dupl flags -------
 (defun C-analysis-dupl (body)
   (map-Cinstr (reverse body) #'C-analysis-dupl*))
@@ -438,3 +419,71 @@
 
 
 
+
+
+;; We try to change a funcall non-destr (default) into a funcall destr
+;; Conditions :
+;;  - Arguments bang are variables safe and bang
+;;  - Arguments dupl are variables safe or not bang
+;; Consequences:
+;;  -> flag destr in funcall set to t
+;;  -> if result is dupl, all variables passed as dupl arguments are flagged dupl
+
+;; ---- Gets all arguments expressions corresponding to arguments flagged bang -----
+(defun get-bang-args (fc &optional destr)
+  (assert (Cfuncall? fc))
+  (let ((def (if destr (get-definition fc t)
+	               (get-definition fc))))
+    (when def (get-bang-args* (args fc) (args def) def))))
+(defun get-bang-args* (l names def)
+  (when (consp l)
+    (let ((tl (get-bang-args* (cdr l) (cdr names) def)))
+      (if (bang? (car names) def)
+	  (cons (car l) tl)
+	tl))))
+
+;; ---- Gets all arguments expressions corresponding to arguments flagged dupl -----
+(defun get-dupl-args (fc)
+  (assert (Cfuncall? fc))
+  (let ((def (get-definition fc)))
+    (when def (get-dupl-args* (args fc) (args def) def))))
+(defun get-dupl-args* (l names def)
+  (when (consp l)
+    (let ((tl (get-dupl-args* (cdr l) (cdr names) def)))
+      (if (dupl? (car names) def) (cons (car l) tl) tl))))
+
+
+(defun C-analysis-destr-funcall (body)
+  (map-Cexpr body #'destr-funcall))
+(defun destr-funcall (fc)
+  (when (and (Cfuncall? fc)               ;; fc is a call...
+	     (const-decl? (name (fun fc)));; ... to a PVS function ...
+	     (not (destr (fun fc)))      ;; ... non destructive version
+	     (all-safe-and-bang (get-bang-args fc t)))
+;;    (break)
+    (setf (destr (fun fc)) t)
+    (list t)))
+
+(defun all-safe-and-bang (l)
+  (or (null l)
+      (and (safe  (car l))
+	   (bang? (car l))
+	   (all-safe-and-bang (cdr l)))))
+
+
+(defun C-analysis-dupl-funcall (body)
+;;  (break "po")
+  (map-Cexpr body #'dupl-funcall))
+(defun dupl-funcall (fc)
+  (when (and (Cfuncall? fc)
+	     (get-definition fc))    ;; useless ?
+    (let ((rb
+	   (loop for e in (get-dupl-args fc)
+		 when (and (bang? e) (not (safe e)) (C-var? e))
+		 collect e)))
+;;      (break)
+      (when (rem-bang rb)
+	(list t)))))
+
+
+(defun C-last-analysis (f) )

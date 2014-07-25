@@ -2,10 +2,15 @@ test : THEORY
 BEGIN
   
   % Basic testing
+
+  adda(i:int):int = let c = 3 in c
   
   f(a:below(10), b:below(20)):int = a + b
   
+  incr(x:int):int = let a = x in a + 1
   
+  norm(x:int, y:int):int = x*x + y*y
+
   g(a:below(10)):int = f(a,a)
   
   b: boolean = true
@@ -14,8 +19,6 @@ BEGIN
     if n+3 > 6 and n < 12
     then n = 6
     else n < 5 endif
-
-  adda(i:int):int = let c = 3 in c
   
   foo(x:int):int =
     1 + if x = 0 then 1 else 3 + x endif

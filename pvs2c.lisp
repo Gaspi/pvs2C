@@ -257,7 +257,7 @@
 				   (list (C-var type)
 					 (C-var nil (format "\"~a\"" (number expr))))
 				   type)))
-      (C-expr (C-var type (number expr))))))
+      (C-expr (C-var type (number expr) t)))))
 
 
 ;; -------------------------- Unsafe code down ----------------------------
@@ -896,7 +896,7 @@
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)
       (dolist (rec-def *C-record-defns*)
-	(format output "~a~%" (caddr rec-def)))
+	(format outputH "~a~%" (caddr rec-def)))
       (dolist (theory theories)
 	(dolist (decl (theory theory))
 	  (let ((ndes-info (gethash decl *C-nondestructive-hash*))
