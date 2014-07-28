@@ -887,7 +887,10 @@
 	    "~%#define TRUE 1"
 	    "#define FALSE 0"
 	    "~%int main(void) {"
+	    "  GC.start();"
 	    "  printf(\"Executing ~a ...\\n\");"
+	    "  // Insert code here"
+	    "  GC.quit();"
 	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)

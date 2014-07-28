@@ -15,47 +15,50 @@
 #define FALSE 0
 
 int main(void) {
+  GC.start();
   printf("Executing draft ...\n");
+  // Insert code here
+  GC.quit();
   return 0;
 }
 
 
-!pair854 pvs_a852() {
-  !pair854 #result#;
-  #result# = GC_malloc(1, sizeof( struct struct_pair854 ) );
+!pair535 pvs_a533() {
+  !pair535 #result#;
+  #result# = GC_malloc(1, sizeof( struct struct_pair535 ) );
   mpz_init(#result#->y);
   #result#->x = *2*;
   mpz_set_si(#result#->y, (long) *12*);
   return *#result#*;
 }
 
-!pair854 pvs_a_d853() {
-  !pair854 #result#;
-  #result# = GC_malloc(1, sizeof( struct struct_pair854 ) );
+!pair535 pvs_a_d534() {
+  !pair535 #result#;
+  #result# = GC_malloc(1, sizeof( struct struct_pair535 ) );
   mpz_init(#result#->y);
   #result#->x = *2*;
   mpz_set_si(#result#->y, (long) *12*);
   return *#result#*;
 }
 
-int pvs_first855(pair854 a) {
+int pvs_first536(pair535 a) {
   int result;
   result = *a*->x;
   return result;
 }
 
-int pvs_first_d856(pair854 a) {
+int pvs_first_d537(pair535 a) {
   int result;
   result = *a*->x;
   return result;
 }
 
-!pair854 pvs_zero857(pair854 a) {
-  !pair854 #result#;
+!pair535 pvs_zero538(pair535 a) {
+  !pair535 #result#;
   if ( GC_count( *a* ) == 1 )
     #result# = GC( *a* );
   else {
-    #result# = GC_malloc(1, sizeof( struct struct_pair854 ));
+    #result# = GC_malloc(1, sizeof( struct struct_pair535 ));
     mpz_set(#result#->y, *a*->y);
     #result#->x = *a*->x;
   }
@@ -63,337 +66,337 @@ int pvs_first_d856(pair854 a) {
   return *#result#*;
 }
 
-!pair854 pvs_zero_d858(!pair854 #a#) {
+!pair535 pvs_zero_d539(!pair535 #a#) {
   #a#->x = 0;
   return *#a#*;
 }
 
-unsigned long int pvs_a861() {
+unsigned long int pvs_a542() {
   unsigned long int result;
   result = (unsigned long) *2*;
   return result;
 }
 
-unsigned long int pvs_a_d862() {
+unsigned long int pvs_a_d543() {
   unsigned long int result;
   result = (unsigned long) *2*;
   return result;
 }
 
-int pvs_b863() {
+int pvs_b544() {
   int result;
   result = (*3* + *1*);
   return result;
 }
 
-int pvs_b_d864() {
+int pvs_b_d545() {
   int result;
   result = (*3* + *1*);
   return result;
 }
 
-void pvs_c865(mpz_t result) {
+void pvs_c546(mpz_t result) {
   mpz_set_si(result, (long) (*3* * (*1* + *2*)));
 }
 
-void pvs_c_d866(mpz_t result) {
+void pvs_c_d547(mpz_t result) {
   mpz_set_si(result, (long) (*3* * (*1* + *2*)));
 }
 
-int pvs_incr867(int x) {
+int pvs_incr548(int x) {
   int result;
   result = (x + *1*);
   return result;
 }
 
-int pvs_incr_d868(int x) {
+int pvs_incr_d549(int x) {
   int result;
   result = (x + *1*);
   return result;
 }
 
-int pvs_zero869(mpz_t x) {
+int pvs_zero550(mpz_t x) {
   return 0;
 }
 
-int pvs_zero_d870(mpz_t x) {
+int pvs_zero_d551(mpz_t x) {
   return 0;
 }
 
-int pvs_f871(int a, int b) {
-  mpz_t conv873;
-  mpz_set_si(conv873, (long) b);
+int pvs_f552(int a, int b) {
+  mpz_t conv554;
+  mpz_set_si(conv554, (long) b);
   int result;
-  result = (int) (pvs_zero_d870(conv873) * pvs_incr_d868(a));
-  mpz_clear(conv873);
+  result = (int) (pvs_zero_d551(conv554) * pvs_incr_d549(a));
+  mpz_clear(conv554);
   return result;
 }
 
-int pvs_f_d872(int a, int b) {
-  mpz_t conv874;
-  mpz_set_si(conv874, (long) b);
+int pvs_f_d553(int a, int b) {
+  mpz_t conv555;
+  mpz_set_si(conv555, (long) b);
   int result;
-  result = (int) (pvs_zero_d870(conv874) * pvs_incr_d868(a));
-  mpz_clear(conv874);
+  result = (int) (pvs_zero_d551(conv555) * pvs_incr_d549(a));
+  mpz_clear(conv555);
   return result;
 }
 
-int pvs_f875(int x) {
-  int if879;
+int pvs_f556(int x) {
+  int if560;
   if (((x <= *1*) && *1*)) {
-    int if877;
+    int if558;
     if (((x == *0*) || (x < *0*))) {
-      if877 = *0*;
+      if558 = *0*;
     } else {
-      if877 = x;
+      if558 = x;
     }
-    if879 = if877;
+    if560 = if558;
   } else {
-    int if878;
+    int if559;
     if ((x > *10*)) {
-      if878 = *10*;
+      if559 = *10*;
     } else {
-      if878 = (x - *5*);
+      if559 = (x - *5*);
     }
-    if879 = if878;
+    if560 = if559;
   }
   int result;
-  result = if879;
+  result = if560;
   return result;
 }
 
-int pvs_f_d876(int x) {
-  int if882;
+int pvs_f_d557(int x) {
+  int if563;
   if (((x <= *1*) && *1*)) {
-    int if880;
+    int if561;
     if (((x == *0*) || (x < *0*))) {
-      if880 = *0*;
+      if561 = *0*;
     } else {
-      if880 = x;
+      if561 = x;
     }
-    if882 = if880;
+    if563 = if561;
   } else {
-    int if881;
+    int if562;
     if ((x > *10*)) {
-      if881 = *10*;
+      if562 = *10*;
     } else {
-      if881 = (x - *5*);
+      if562 = (x - *5*);
     }
-    if882 = if881;
+    if563 = if562;
   }
   int result;
-  result = if882;
+  result = if563;
   return result;
 }
 
-int pvs_t883(int x) {
+int pvs_t564(int x) {
   int result;
   result = x;
   return result;
 }
 
-int pvs_t_d884(int x) {
+int pvs_t_d565(int x) {
   int result;
   result = x;
   return result;
 }
 
-int* pvs_id2885(int* #t57024#) {
-  return *#t57024#*;
+int* pvs_id2566(int* #t57045#) {
+  return *#t57045#*;
 }
 
-!int* pvs_id2_d886(!int* #t57024#) {
-  return *#t57024#*;
+!int* pvs_id2_d567(!int* #t57045#) {
+  return *#t57045#*;
 }
 
-!int* pvs_f887(int x) {
+!int* pvs_f568(int x) {
   !int* #result#;
   #result# = GC_malloc(1000, sizeof(int) );
-  int i889;
-  for(i889 = 0; i889 < 1000; i889++) {
-    #result#[i889] = pvs_t_d884(i889);
+  int i570;
+  for(i570 = 0; i570 < 1000; i570++) {
+    #result#[i570] = pvs_t_d565(i570);
   }
   return *#result#*;
 }
 
-!int* pvs_f_d888(int x) {
+!int* pvs_f_d569(int x) {
   !int* #result#;
   #result# = GC_malloc(1000, sizeof(int) );
-  int i890;
-  for(i890 = 0; i890 < 1000; i890++) {
-    #result#[i890] = pvs_t_d884(i890);
+  int i571;
+  for(i571 = 0; i571 < 1000; i571++) {
+    #result#[i571] = pvs_t_d565(i571);
   }
   return *#result#*;
 }
 
-!int* pvs_update891(int* x) {
+!int* pvs_update572(int* x) {
   !int* #result#;
   if ( GC_count( *x* ) == 1 )
     #result# = GC( *x* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i927;
-    for(i927 = 0; i927 < 1000; i927++) {
-      #result#[i927] = *x*[i927];
+    int i608;
+    for(i608 = 0; i608 < 1000; i608++) {
+      #result#[i608] = *x*[i608];
     }
   }
   #result#[0] = 0;
   return *#result#*;
 }
 
-!int* pvs_update_d892(!int* #x#) {
+!int* pvs_update_d573(!int* #x#) {
   #x#[0] = 0;
   return *#x#*;
 }
 
-!int* pvs_t2897(int x) {
-  !mpq_t* #set900#;
-  #set900# = GC_malloc(1000, sizeof(mpq_t) );
-  int i899;
-  for(i899 = 0; i899 < 1000; i899++) {
-    mpq_init(#set900#[i899]);
-    mpq_set_d(#set900#[i899], (double) (x + i899) );
-    mpq_canonicalize(#set900#[i899]);
+!int* pvs_t2578(int x) {
+  !mpq_t* #set581#;
+  #set581# = GC_malloc(1000, sizeof(mpq_t) );
+  int i580;
+  for(i580 = 0; i580 < 1000; i580++) {
+    mpq_init(#set581#[i580]);
+    mpq_set_d(#set581#[i580], (double) (x + i580) );
+    mpq_canonicalize(#set581#[i580]);
   }
   !int* #result#;
-  #result# = (int*) GC( *#set900#* );
-  if( GC_count( #set900# ) == 1 ) {
-    int i928;
-    for(i928 = 0; i928 < 1000; i928++) {
-      mpq_clear(#set900#[i928]);
+  #result# = (int*) GC( *#set581#* );
+  if( GC_count( #set581# ) == 1 ) {
+    int i609;
+    for(i609 = 0; i609 < 1000; i609++) {
+      mpq_clear(#set581#[i609]);
     }
   }
-  GC_free(#set900#);
+  GC_free(#set581#);
   return *#result#*;
 }
 
-!int* pvs_t2_d898(int x) {
-  !mpq_t* #set902#;
-  #set902# = GC_malloc(1000, sizeof(mpq_t) );
-  int i901;
-  for(i901 = 0; i901 < 1000; i901++) {
-    mpq_init(#set902#[i901]);
-    mpq_set_d(#set902#[i901], (double) (x + i901) );
-    mpq_canonicalize(#set902#[i901]);
+!int* pvs_t2_d579(int x) {
+  !mpq_t* #set583#;
+  #set583# = GC_malloc(1000, sizeof(mpq_t) );
+  int i582;
+  for(i582 = 0; i582 < 1000; i582++) {
+    mpq_init(#set583#[i582]);
+    mpq_set_d(#set583#[i582], (double) (x + i582) );
+    mpq_canonicalize(#set583#[i582]);
   }
   !int* #result#;
-  #result# = (int*) GC( *#set902#* );
-  if( GC_count( #set902# ) == 1 ) {
-    int i929;
-    for(i929 = 0; i929 < 1000; i929++) {
-      mpq_clear(#set902#[i929]);
+  #result# = (int*) GC( *#set583#* );
+  if( GC_count( #set583# ) == 1 ) {
+    int i610;
+    for(i610 = 0; i610 < 1000; i610++) {
+      mpq_clear(#set583#[i610]);
     }
   }
-  GC_free(#set902#);
+  GC_free(#set583#);
   return *#result#*;
 }
 
-int* pvs_id903(int** #t57024#) {
+int* pvs_id584(int** #t57045#) {
   int* #result#;
-  #result# = (int*) GC( *#t57024#*[*0*] );
-  if( GC_count( #t57024# ) == 1 ) {
-    int i930;
-    for(i930 = 0; i930 < 1000; i930++) {
-      GC_free(#t57024#[i930]);
+  #result# = (int*) GC( *#t57045#*[*0*] );
+  if( GC_count( #t57045# ) == 1 ) {
+    int i611;
+    for(i611 = 0; i611 < 1000; i611++) {
+      GC_free(#t57045#[i611]);
     }
   }
-  GC_free(#t57024#);
+  GC_free(#t57045#);
   return *#result#*;
 }
 
-int* pvs_id_d904(int** #t57024#) {
+int* pvs_id_d585(int** #t57045#) {
   int* #result#;
-  #result# = (int*) GC( *#t57024#*[*0*] );
-  if( GC_count( #t57024# ) == 1 ) {
-    int i932;
-    for(i932 = 0; i932 < 1000; i932++) {
-      GC_free(#t57024#[i932]);
+  #result# = (int*) GC( *#t57045#*[*0*] );
+  if( GC_count( #t57045# ) == 1 ) {
+    int i613;
+    for(i613 = 0; i613 < 1000; i613++) {
+      GC_free(#t57045#[i613]);
     }
   }
-  GC_free(#t57024#);
+  GC_free(#t57045#);
   return *#result#*;
 }
 
-!int* pvs_te905() {
-  !int* #aux908#;
-  #aux908# = GC_malloc(1000, sizeof(int) );
-  int i907;
-  for(i907 = 0; i907 < 1000; i907++) {
-    #aux908#[i907] = pvs_t_d884(i907);
+!int* pvs_te586() {
+  !int* #aux589#;
+  #aux589# = GC_malloc(1000, sizeof(int) );
+  int i588;
+  for(i588 = 0; i588 < 1000; i588++) {
+    #aux589#[i588] = pvs_t_d565(i588);
   }
   !int* #result#;
-  #result# = (int*) GC( pvs_update_d892(pvs_update_d892(*#aux908#*)) );
-  GC_free(#aux908#);
+  #result# = (int*) GC( pvs_update_d573(pvs_update_d573(*#aux589#*)) );
+  GC_free(#aux589#);
   return *#result#*;
 }
 
-!int* pvs_te_d906() {
-  !int* #aux910#;
-  #aux910# = GC_malloc(1000, sizeof(int) );
-  int i909;
-  for(i909 = 0; i909 < 1000; i909++) {
-    #aux910#[i909] = pvs_t_d884(i909);
+!int* pvs_te_d587() {
+  !int* #aux591#;
+  #aux591# = GC_malloc(1000, sizeof(int) );
+  int i590;
+  for(i590 = 0; i590 < 1000; i590++) {
+    #aux591#[i590] = pvs_t_d565(i590);
   }
   !int* #result#;
-  #result# = (int*) GC( pvs_update_d892(pvs_update_d892(*#aux910#*)) );
-  GC_free(#aux910#);
+  #result# = (int*) GC( pvs_update_d573(pvs_update_d573(*#aux591#*)) );
+  GC_free(#aux591#);
   return *#result#*;
 }
 
-!int** pvs_update911(int** x) {
+!int** pvs_update592(int** x) {
   !int** #result#;
-  !int* #res918#;
-  #res918# = GC_malloc(1000, sizeof(int) );
-  int i919;
-  for(i919 = 0; i919 < 1000; i919++) {
-    #res918#[i919] = i919;
+  !int* #res599#;
+  #res599# = GC_malloc(1000, sizeof(int) );
+  int i600;
+  for(i600 = 0; i600 < 1000; i600++) {
+    #res599#[i600] = i600;
   }
   if ( GC_count( *x* ) == 1 )
     #result# = GC( *x* );
   else {
     #result# = GC_malloc(1000, sizeof(int*) );
-    int i936;
-    for(i936 = 0; i936 < 1000; i936++) {
-      if ( GC_count( *x*[i936] ) == 1 )
-        #result#[i936] = GC( *x*[i936] );
+    int i617;
+    for(i617 = 0; i617 < 1000; i617++) {
+      if ( GC_count( *x*[i617] ) == 1 )
+        #result#[i617] = GC( *x*[i617] );
       else {
-        #result#[i936] = GC_malloc(1000, sizeof(int) );
-        int i937;
-        for(i937 = 0; i937 < 1000; i937++) {
-          #result#[i936][i937] = *x*[i936][i937];
+        #result#[i617] = GC_malloc(1000, sizeof(int) );
+        int i618;
+        for(i618 = 0; i618 < 1000; i618++) {
+          #result#[i617][i618] = *x*[i617][i618];
         }
       }
     }
   }
-  !int* #E914#;
-  #E914# = GC_malloc(1000, sizeof(int) );
-  int i938;
-  for(i938 = 0; i938 < 1000; i938++) {
-    #E914#[i938] = #result#[0][i938];
+  !int* #E595#;
+  #E595# = GC_malloc(1000, sizeof(int) );
+  int i619;
+  for(i619 = 0; i619 < 1000; i619++) {
+    #E595#[i619] = #result#[0][i619];
   }
-  #E914#[1] = 0;
-  #result#[0] = (int*) GC( *#E914#* );
-  #result#[1] = (int*) GC( *#res918#* );
-  GC_free(#res918#);
+  #E595#[1] = 0;
+  #result#[0] = (int*) GC( *#E595#* );
+  #result#[1] = (int*) GC( *#res599#* );
+  GC_free(#res599#);
   return *#result#*;
 }
 
-!int** pvs_update_d912(!int** #x#) {
-  !int* #res925#;
-  #res925# = GC_malloc(1000, sizeof(int) );
-  int i926;
-  for(i926 = 0; i926 < 1000; i926++) {
-    #res925#[i926] = i926;
+!int** pvs_update_d593(!int** #x#) {
+  !int* #res606#;
+  #res606# = GC_malloc(1000, sizeof(int) );
+  int i607;
+  for(i607 = 0; i607 < 1000; i607++) {
+    #res606#[i607] = i607;
   }
-  !int* #E921#;
-  #E921# = GC_malloc(1000, sizeof(int) );
-  int i940;
-  for(i940 = 0; i940 < 1000; i940++) {
-    #E921#[i940] = #x#[0][i940];
+  !int* #E602#;
+  #E602# = GC_malloc(1000, sizeof(int) );
+  int i621;
+  for(i621 = 0; i621 < 1000; i621++) {
+    #E602#[i621] = #x#[0][i621];
   }
-  #E921#[1] = 0;
-  #x#[0] = (int*) GC( *#E921#* );
-  #x#[1] = (int*) GC( *#res925#* );
-  GC_free(#res925#);
+  #E602#[1] = 0;
+  #x#[0] = (int*) GC( *#E602#* );
+  #x#[1] = (int*) GC( *#res606#* );
+  GC_free(#res606#);
   return *#x#*;
 }
