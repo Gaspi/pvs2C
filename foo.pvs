@@ -4,7 +4,9 @@ BEGIN
   Cint : TYPE = subrange(-1000, 3000)
   Ind  : TYPE = below(1000)
   Arr  : TYPE = [ Ind -> Cint ]
-
+  
+  fu(x:int) : int = let x:int = 2 in x
+  
   id(A:Arr) : Arr = A
   zero(A:Arr) : Arr = A with [(0) := 0]
   

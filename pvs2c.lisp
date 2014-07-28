@@ -4,6 +4,7 @@
 ;;     Author: Gaspard ferey
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
+;;  -> Please read  "main.lisp"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -44,7 +45,10 @@
 ;;
 ;;Page 5 Guarded Optim
 ;; frec doesn't terminate
-;; and the C update deosn't seems to be done destructively
+;; and the C update doesn't seems to be done destructively
+;;
+
+
 
 (in-package :pvs)
 
@@ -93,6 +97,19 @@
       (when e (mk-C-expr (pvs2C-type (type (car e))) (format nil "~a" (cdr e)))))))
 
 
+;; Get the name of a variable according to the bindings
+(defmethod getBindName ((l list) bindings)
+  (when (consp l) (cons (getBindName (car l) bindings)
+			(getBindName (cdr l) bindings))))
+(defmethod getBindName ((bd bind-decl) bindings)
+  (let ((e (assoc bd bindings :key #'declaration)))
+    (getBindName (if e (cdr e) (id bd)) bindings)))
+(defmethod getBindName ((n name-expr) bindings)
+  (getBindName (declaration n) bindings))
+(defmethod getBindName (e bindings) (format nil "~a" e))
+
+
+  
 ;; Returns a C-expr
 ;; type is the list of the types
 ;; name is the list of the names
@@ -333,10 +350,10 @@
 		 (C-arg (pvs2C2 (if (tuple-expr? argument)
 				    (exprs argument)
 				  (list argument))
-				bindings
+				newbind   ;; or bindings... ??
 				(append (updateable-free-formal-vars operator) livevars)
-				(C-var-list type-args
-					    (mapcar #'id (bindings operator))) t))
+				(C-var-list type-args (getBindName bind-decls newbind)) t))
+;;		 (deb (break))
 		 (C-expr (pvs2C* (expression operator) newbind nil)))
 	    (app-instr C-expr (instr C-arg) t)
 	    (app-destr C-expr (destr C-arg))

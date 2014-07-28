@@ -2,10 +2,9 @@
 ;;                PVS to C translator
 ;;
 ;;     Author: Gaspard ferey
-;;     Date:
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
-;;  Please read main.lisp
+;;  -> Please read  "main.lisp"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

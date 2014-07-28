@@ -15,147 +15,166 @@
 #define FALSE 0
 
 int main(void) {
+  GC.start();
   printf("Executing foo ...\n");
+  // Insert code here
+  GC.quit();
   return 0;
 }
 
 
-int* pvs_id981(int* #A#) {
+void pvs_fu240(mpz_t result, mpz_t x) {
+  mpz_t x#0;
+  mpz_init(x#0);
+  mpz_set_si(x#0, (long) *2*);
+  mpz_set(result, x#0);
+  mpz_clear(x#0);
+}
+
+void pvs_fu_d241(mpz_t result, mpz_t x) {
+  mpz_t x#0;
+  mpz_init(x#0);
+  mpz_set_si(x#0, (long) *2*);
+  mpz_set(result, x#0);
+  mpz_clear(x#0);
+}
+
+int* pvs_id242(int* #A#) {
   return *#A#*;
 }
 
-!int* pvs_id_d982(!int* #A#) {
+!int* pvs_id_d243(!int* #A#) {
   return *#A#*;
 }
 
-!int* pvs_zero983(int* A) {
+!int* pvs_zero244(int* A) {
   !int* #result#;
   if ( GC_count( *A* ) == 1 )
     #result# = GC( *A* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i1013;
-    for(i1013 = 0; i1013 < 1000; i1013++) {
-      #result#[i1013] = *A*[i1013];
+    int i274;
+    for(i274 = 0; i274 < 1000; i274++) {
+      #result#[i274] = *A*[i274];
     }
   }
   #result#[0] = 0;
   return *#result#*;
 }
 
-!int* pvs_zero_d984(!int* #A#) {
+!int* pvs_zero_d245(!int* #A#) {
   #A#[0] = 0;
   return *#A#*;
 }
 
-!int* pvs_f989(int* A) {
+!int* pvs_f250(int* A) {
   !int* #result#;
   int* B;
-  B = (int*) GC( pvs_id981(*A*) );
-  int res992;
-  res992 = B[*0*];
+  B = (int*) GC( pvs_id242(*A*) );
+  int res253;
+  res253 = B[*0*];
   if ( GC_count( *B* ) == 1 )
     #result# = GC( *B* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i1014;
-    for(i1014 = 0; i1014 < 1000; i1014++) {
-      #result#[i1014] = *B*[i1014];
+    int i275;
+    for(i275 = 0; i275 < 1000; i275++) {
+      #result#[i275] = *B*[i275];
     }
   }
-  #result#[0] = res992;
+  #result#[0] = res253;
   return *#result#*;
 }
 
-!int* pvs_f_d990(!int* #A#) {
+!int* pvs_f_d251(!int* #A#) {
   !int* #B#;
-  #B# = (int*) GC( pvs_id_d982(*#A#*) );
-  int res994;
-  res994 = #B#[*0*];
-  #B#[0] = res994;
+  #B# = (int*) GC( pvs_id_d243(*#A#*) );
+  int res255;
+  res255 = #B#[*0*];
+  #B#[0] = res255;
   return *#B#*;
 }
 
-!int* pvs_g995(int* A) {
+!int* pvs_g256(int* A) {
   !int* #B#;
-  #B# = (int*) GC( pvs_zero983(*A*) );
-  int res998;
-  res998 = #B#[*0*];
-  #B#[0] = res998;
+  #B# = (int*) GC( pvs_zero244(*A*) );
+  int res259;
+  res259 = #B#[*0*];
+  #B#[0] = res259;
   return *#B#*;
 }
 
-!int* pvs_g_d996(!int* #A#) {
+!int* pvs_g_d257(!int* #A#) {
   !int* #B#;
-  #B# = (int*) GC( pvs_zero_d984(*#A#*) );
-  int res1000;
-  res1000 = #B#[*0*];
-  #B#[0] = res1000;
+  #B# = (int*) GC( pvs_zero_d245(*#A#*) );
+  int res261;
+  res261 = #B#[*0*];
+  #B#[0] = res261;
   return *#B#*;
 }
 
-!int* pvs_h1001(int* A) {
+!int* pvs_h262(int* A) {
   !int* #result#;
   int* B;
-  B = (int*) GC( pvs_zero983(A) );
-  int res1004;
-  res1004 = *B*[*0*];
+  B = (int*) GC( pvs_zero244(A) );
+  int res265;
+  res265 = *B*[*0*];
   if ( GC_count( *A* ) == 1 )
     #result# = GC( *A* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i1015;
-    for(i1015 = 0; i1015 < 1000; i1015++) {
-      #result#[i1015] = *A*[i1015];
+    int i276;
+    for(i276 = 0; i276 < 1000; i276++) {
+      #result#[i276] = *A*[i276];
     }
   }
-  #result#[0] = res1004;
+  #result#[0] = res265;
   return *#result#*;
 }
 
-!int* pvs_h_d1002(!int* #A#) {
+!int* pvs_h_d263(!int* #A#) {
   int* B;
-  B = (int*) GC( pvs_zero983(#A#) );
-  int res1006;
-  res1006 = *B*[*0*];
-  #A#[0] = res1006;
+  B = (int*) GC( pvs_zero244(#A#) );
+  int res267;
+  res267 = *B*[*0*];
+  #A#[0] = res267;
   return *#A#*;
 }
 
-!int* pvs_i1007(int* A) {
+!int* pvs_i268(int* A) {
   !int* #result#;
   int* B;
-  B = (int*) GC( pvs_id981(A) );
-  int res1010;
-  res1010 = *B*[*0*];
+  B = (int*) GC( pvs_id242(A) );
+  int res271;
+  res271 = *B*[*0*];
   if ( GC_count( *A* ) == 1 )
     #result# = GC( *A* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i1016;
-    for(i1016 = 0; i1016 < 1000; i1016++) {
-      #result#[i1016] = *A*[i1016];
+    int i277;
+    for(i277 = 0; i277 < 1000; i277++) {
+      #result#[i277] = *A*[i277];
     }
   }
-  #result#[0] = res1010;
+  #result#[0] = res271;
   return *#result#*;
 }
 
-!int* pvs_i_d1008(int* A) {
+!int* pvs_i_d269(int* A) {
   !int* #result#;
   int* B;
-  B = (int*) GC( pvs_id981(A) );
-  int res1012;
-  res1012 = *B*[*0*];
+  B = (int*) GC( pvs_id242(A) );
+  int res273;
+  res273 = *B*[*0*];
   if ( GC_count( *A* ) == 1 )
     #result# = GC( *A* );
   else {
     #result# = GC_malloc(1000, sizeof(int) );
-    int i1017;
-    for(i1017 = 0; i1017 < 1000; i1017++) {
-      #result#[i1017] = *A*[i1017];
+    int i278;
+    for(i278 = 0; i278 < 1000; i278++) {
+      #result#[i278] = *A*[i278];
     }
   }
-  #result#[0] = res1012;
+  #result#[0] = res273;
   return *#result#*;
 }

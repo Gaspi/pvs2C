@@ -4,11 +4,11 @@
 ;;     Author: Gaspard ferey
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
+;;  -> Please read  "main.lisp"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This requires "pvs2c.lisp", "Cprimop.lisp" and "Ctypes.lisp" files all available at
-;;               https://github.com/Gaspi/pvs2c.git
+;;     Useful functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -40,10 +40,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-
 (in-package :pvs)
-
 
 ;; ------------------Debugging functions and variables ---------------
 ;; Default values
@@ -54,8 +51,6 @@
 (defvar *Csimple-names*      nil )
 (defvar *C-analysis*          t  )
 (defvar *C-replace-analysis*  t  )
-(defvar *tests-on-load*       nil )
-
 
 ;; Change only for debugging...
 (setq *Cshow-safe*            t  )
@@ -66,9 +61,10 @@
 (setq *C-analysis*            t  )
 (setq *C-replace-analysis*    t  )
 
-;; The tests to perform on load
-(unless *tests-on-load* (setq *tests-on-load* (list "test" "draft")))
 
+;; The tests to perform on load
+; (defvar *tests-on-load* nil)  ;; Default
+(defvar *tests-on-load* (list "test" "draft"))
 
 
 ;; ------------------------ Loading the files ---------------------
@@ -86,7 +82,9 @@
 (load "Cprimop")
 (load "pvs2c")
 
+
 ;; Perform tests
 (when *tests-on-load*
   (format t "All Lisp files loaded.~%")
-  (test-cases))
+  (test-cases)
+  (setq *tests-on-load* nil))

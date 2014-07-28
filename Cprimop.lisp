@@ -4,16 +4,12 @@
 ;;     Author: Gaspard ferey
 ;;
 ;;  -> https://github.com/Gaspi/pvs2c.git
+;;  -> Please read  "main.lisp"
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This requires "pvs2c.lisp", "Cutils.lisp" and "Ctypes.lisp" files both available at
-;;               https://github.com/Gaspi/pvs2c.git
+;;     Functions handling translation of primitive function calls
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; TODO:
-;;    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :pvs)
