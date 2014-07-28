@@ -246,8 +246,21 @@
 
 
 
+;; --------------------------------------------------------------------
+;;                 Testing functions
+;; --------------------------------------------------------------------
 
+(defun test-cases (&optional (tests *tests-on-load*))
+  (loop for tst in tests
+	do (progn (tc tst)
+		  (format t "~2%Translating ~a..." tst)
+		  (generate-C-for-pvs-file tst)
+		  (format t "~%~a translated.~2%" tst)))
+  (format t "All tests: done.~%"))
 
+(defun load-and-test (&rest tests)
+  (setq *tests-on-load* tests)
+  (load "main"))
 
 
 ;; --------------------------------------------------------------------
