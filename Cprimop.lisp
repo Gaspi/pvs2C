@@ -53,6 +53,15 @@
   (C-expr (C-var *C-int* op t)))
 
 
+(defun pvs2C-primitive-app? (operator)
+  (or (pvs2cl-primitive? operator)
+      (rem-application? operator)))
+
+(defun rem-application? (operator)
+  (and (application? operator)
+       (name-expr? (operator (operator expr)))
+       (eql 'rem (id (operator (operator expr))))))
+
 ;; --------- Primitive function call ----------------
 (defun pvs2C*-primitive-app (expr bindings livevars)
   (let* ((op (pvs2C-primitive-op (operator expr)))
@@ -73,6 +82,13 @@
 	     (pvs2C*-times (car type-args) (cadr type-args) type-res args bindings livevars))
 	  ((div-function? op args)
 	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
+	  ((rem-function? op)
+	   (pvs2C*-rem (car type-args) args bindings livevars))  ;; to finish
+	  ((rem-application? op)
+	   (pvs2C*-remappli (pvs2C-type (argument op))
+			    (car type-args)
+			    (list (argument op) (car args))
+			    bindings livevars))
 	  (t
 	   (break "Unknown primitive app")
 	   (cons (pvs2C-type expr) ;; This is not even implemented correctly
@@ -264,3 +280,18 @@
 		   (append (destr arg1) (destr arg2)))))
 	(t (Cprocess (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_div" nil *C-mpq*))))))
 
+
+;; ---------- Modulo ------------
+(defun rem-function? (op) (eq op 'rem))
+
+;; Modulo function as a closure...
+(defun pvs2C*-rem (typeM args bindings livevars)
+  (C-expr (C-var (make-instance 'C-closure))))
+
+(defun pvs2C*-remappli (typeM typeA args bindings livevars)
+  (C-expr (C-var *C-int*)) ;; TODO fill this
+  )
+
+
+;;	   (let ((modulo (pvs2C2 (argument expr) bindings livevars 
+;;	   (Cprocess (cons (list *C-int*) (Cfun "rem" (format nil "(~~a % ~a)

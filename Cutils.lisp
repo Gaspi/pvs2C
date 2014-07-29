@@ -108,6 +108,9 @@
 ;; ----------------- Is it a subtype of it ? ---------------------
 (defmethod subtype-PVS-int? ((type type-name))
   (subtype-PVS-int? (type (car (resolutions type)))))
+(defmethod subtype-PVS-int? ((type type-application))
+  (eql (id (type type)) 'mod))
+(defmethod subtype-PVS-int? ((type null)) nil)
 (defmethod subtype-PVS-int? (type)
   (or (PVS-int? type) (subtype-of? type *integer*)))
 
@@ -121,7 +124,8 @@
 	   (bind (car (bindings pred))) ;;bindings is a singleton
 	   (decl-type (declared-type bind))
 	   (id (id bind)))
-      (when (not (subtype-PVS-int? decl-type)) (break))
+      (when (and (not (null decl-type))
+		 (not (subtype-PVS-int? decl-type)) (break)))
       (inter-range
        (list (C-range (supertype type))
 	     (C-range decl-type)

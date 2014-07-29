@@ -40,7 +40,7 @@
 ;;
 ;;
 ;;  TODO : handle if branch correctly
-;;  TODO : sorting arrays
+;;  TODO : sorting arrays benchmark
 ;;  TODO : GC_free the arguments
 ;;  TODO : GC wrong in  id( GC( f( A ) ) )
 ;;      Only for variables passed as arguments

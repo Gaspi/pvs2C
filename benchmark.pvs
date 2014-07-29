@@ -1,0 +1,28 @@
+benchmark : THEORY
+BEGIN
+
+% We use the Lehmer random number generator
+% with the following parameters
+
+% n      = 59557   big prime number picked from
+%                  http://primes.utm.edu/lists/small/10000.txt
+% length = 1000
+% g      = 12345
+% X_0    = 9876
+
+  Val : TYPE = subrange(0, 59557)
+  Ind  : TYPE = below(1000)
+  Arr  : TYPE = [ Ind -> Val ]
+  
+  init(A:Arr, i:Ind, v:Val): RECURSIVE Arr =
+    let B = A with [(i) := v] in
+      if i >= 1000 then B	
+      else init(B, i+1, rem(59557)(12345 * v) ) endif
+  MEASURE 1000 - i
+  
+  T:Arr = init( lambda(x:Ind):0, 0, 9876 )
+
+  
+
+
+END benchmark

@@ -315,7 +315,7 @@
 (defmethod pvs2C* ((expr application) bindings livevars)
   (with-slots (operator argument) expr
     (if (constant? operator)
-      (if (pvs2cl-primitive? operator)
+      (if (pvs2C-primitive-app? operator)
 	    (pvs2C*-primitive-app expr bindings livevars)
 	  (if (datatype-constant? operator)
 	      (mk-C-expr-funcall (pvs2C-type (range (type operator)))
