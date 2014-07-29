@@ -38,6 +38,16 @@
 ;;  - (optionnal) Execute with:
 ;;        ./foo
 ;;
+;;
+;;  TODO : handle if branch correctly
+;;  TODO : sorting arrays
+;;  TODO : GC_free the arguments
+;;  TODO : GC wrong in  id( GC( f( A ) ) )
+;;      Only for variables passed as arguments
+;;  TODO: management of GC of variables
+;;  GC_free all variables at the end
+;;     f( GC(*A*) )   =>   f( A ) and remove GC_free(A)
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package :pvs)
@@ -49,17 +59,17 @@
 (defvar *Cshow-dupl*         nil )
 (defvar *Cdebug*             nil )
 (defvar *Csimple-names*      nil )
-(defvar *C-analysis*          t  )
-(defvar *C-replace-analysis*  t  )
+(defvar *C-analysis*         t   )
+(defvar *C-replace-analysis* t   )
 
 ;; Change only for debugging...
-(setq *Cshow-safe*            t  )
-(setq *Cshow-bang*            t  )
-(setq *Cshow-dupl*            t  )
-(setq *Cdebug*                t  )
+(setq *Cshow-safe*           t   )
+(setq *Cshow-bang*           t   )
+(setq *Cshow-dupl*           t   )
+(setq *Cdebug*               t   )
 (setq *Csimple-names*        nil )
-(setq *C-analysis*            t  )
-(setq *C-replace-analysis*    t  )
+(setq *C-analysis*           t   )
+(setq *C-replace-analysis*   t   )
 
 
 ;; The tests to perform on load

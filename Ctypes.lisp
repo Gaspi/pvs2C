@@ -274,10 +274,10 @@
 (defmethod convertor ((typeA C-int) (typeB C-int)) "~a")
 ;; ---------- arrays pointer copy -----------------
 (defmethod convertor ((typeA C-array) (typeB C-array))
-  (format nil "(~a) GC( ~~a )" typeA))
+  (format nil "(~a) ~~a" typeA))
 ;; ---------- struct pointer copy -----------------
 (defmethod convertor ((typeA C-struct) (typeB C-struct))
-  (format nil "(~a) GC( ~~a )" typeA))
+  (format nil "(~a) ~~a" typeA))
 
 ;; ---------- other cases (basically unimplemented) --------------
 (defmethod convertor (typeA typeB)

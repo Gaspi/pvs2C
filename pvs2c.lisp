@@ -251,18 +251,7 @@
 				   (destr e)))
 	      (set-destr e (list (Cfree n)))
 	      (convert exp-type e))
-;;	  (if (not (destr e))  ; If it was a very simple expression
 	  (convert exp-type e))))))
-	    ;; (let ((n (gen-C-var exp-type "aux")))
-	    ;;   (set-instr e (append (Calloc n) ; probably empty
-	    ;; 			   (list (format nil "~a = ~a;" n (cdr e)))
-	    ;; 			   (destr e)))
-	    ;;   (set-name e n)
-	    ;;   (set-destr e (C-free n))
-	    ;;   (convert exp-type e))))))))
-
-
-
 
 ;; number-expr is a non negative integer
 (defmethod pvs2C* ((expr number-expr) bindings livevars)
@@ -276,9 +265,7 @@
 				   type)))
       (C-expr (C-var type (number expr) t)))))
 
-
-;; -------------------------- Unsafe code down ----------------------------
-
+;; UNSAFE !!
 ;; Should be modified to create a different tuple according to the type of the args
 (defmethod pvs2C* ((expr tuple-expr) bindings livevars)
   (let* ((elts (exprs expr))
@@ -288,14 +275,13 @@
 	      (Cfuncall "createTuple" (cons "~a" args)))
     args))
 
-
+;; UNSAFE !!
 (defmethod pvs2C* ((expr projection-application) bindings livevars)
   (let* ((e  (pvs2C (argument expr) bindings livevars)))
     (set-var e (Crecord-get (var e) (format nil "f~a" (index expr))))
     e))
 
-
-;; When is this function called ??  (not working)
+;; UNSAFE !! When is this function called ??  (not working)
 (defmethod pvs2C* ((expr list) bindings livevars)
   (if (consp expr)
       (cons (pvs2C (car expr) bindings
@@ -304,10 +290,6 @@
 		   (append (updateable-vars (car expr)) ;;f(A, A WITH ..)
 			   livevars)))
     nil))
-
-;; -------------------------- Unsafe code up ----------------------------
-
-
 
 (defmethod pvs2C*  ((expr field-application) bindings livevars)
   (let* ((clarg (pvs2C (argument expr) bindings livevars))
@@ -460,8 +442,9 @@
 	 (hash-entry (gethash op-decl (C-hashtable)))
 	 (C-body (pvs2C2 body id-map nil result-var (not return-void))))
              ;; If we don't return void, we need to malloc the result
-    (debug (format nil "Defining ~a with type:  ~a -> ~a"
-		   (id op-decl) (mapcar #'type C-type-arg) C-type-out))
+    (when *destructive?*   ;; We only show one of the two defintions
+      (debug (format nil "Defining ~a with type:  ~a -> ~a"
+		     (id op-decl) (mapcar #'type C-type-arg) C-type-out)))
     (when *eval-verbose* (format t "~%as :~%~{~a~%~}" (instr C-body)))
     (setf (C-info-type-out hash-entry) (if return-void "void" C-type-out)
 	  (C-info-type-arg hash-entry) C-type-arg
@@ -470,7 +453,9 @@
 	  (Cfun-decl (C-info-id hash-entry)
 		     (C-info-type-out hash-entry)
 	             (append (instr C-body)
-			     (if return-void (destr C-body) (list (Creturn result-var))))
+			     (loop for a in C-args collect (Cfree a))
+			     (if return-void (destr C-body)
+			                     (list (Creturn result-var))))
 		     C-type-arg))))
 
 (defmethod pvs2C* ((expr name-expr) bindings livevars)
@@ -744,39 +729,8 @@
 			  assign-expr bindings livevars))
 
 
-;; Function to get and set arrays
-
-;; Dead code...
-(defun updateable-set (type array index value)
-  (break)
-  (if (and *destructive?* *C-livevars-table*) ;; Destructive update
-      (list (format nil "~a[~a] = ~a; +++" array index value))
-    (list (Cset (Carray-get (C-var type array) (C-var *C-int* index))
-		(C-var (target type) value)))))
-;;    (list (format nil "pvsNonDestructiveUpdate2(~a, ~a, ~a);" array index value))))
-;; Should depend on the type ...
-
-
-;; Get array[index] to modify it's fields later
-;; Dead code...
-(defmethod updateable-get ((type C-array) result array index)
-  (list (format nil "~a ~a;" (target type) result)
-	(format nil "if ( GC_count( ~a[~a] ) == 1 )" array index)
-	(format nil "  ~a = ~a[~a];" result array index)
-	
-	(format nil "~a ~a = ~a[~a];" (target type) result array index)))
-
-;;Dead code...
-(defmethod pvs2C*-updateable-get ((type C-array) array index)
-  (cons (target type)
-	(if (C-pointer? (target type))
-	    (list (format nil "~~a = ~a[~a];" array index))
-	  (format nil "~a[~a]" array index))))
-
-
 ;;C-updateable? is used to check if the type of an updated expression
 ;;is possibly destructively. 
-
 (defmethod C-updateable? ((texpr tupletype))
   (C-updateable? (types texpr)))
 
@@ -797,14 +751,6 @@
   (or (null texpr)
       (and (C-updateable? (car texpr))
 	   (C-updateable? (cdr texpr)))))
-
-;;This is subsumed by fall-through case.
-;(defmethod C-updateable? ((texpr type-name))
-;  (not (or (eq texpr *boolean*)
-;	   (eq texpr *number*))))
-
-;(defmethod C-updateable? ((texpr actual))
-;  (C-updateable? (type-value texpr)))
 
 (defmethod C-updateable? ((texpr t)) t)
 ;; It is okay to say  C-updateable? for uninterpreted
@@ -878,9 +824,8 @@
   (clrhash *C-nondestructive-hash*)
   (clrhash *C-destructive-hash*)
   (let ((theories (cdr (gethash filename *pvs-files*))))
-    ;; Sets the hash-tables
     (dolist (theory theories)
-      (pvs2C-theory theory))
+      (pvs2C-theory theory))  ;; Fill the hash-tables with definitions
     (with-open-file (outputH (format nil "~a.h" filename)
 			    :direction :output
 			    :if-exists :supersede
@@ -904,10 +849,10 @@
 	    "~%#define TRUE 1"
 	    "#define FALSE 0"
 	    "~%int main(void) {"
-	    "  GC.start();"
+	    "  GC_start();"
 	    "  printf(\"Executing ~a ...\\n\");"
 	    "  // Insert code here"
-	    "  GC.quit();"
+	    "  GC_quit();"
 	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)

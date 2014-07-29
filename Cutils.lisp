@@ -263,6 +263,18 @@
   (load "main"))
 
 
+
+;; Set flags so that runnable C is generated
+(defun set-runnable-C ()
+  (setq *Cshow-safe*           nil )
+  (setq *Cshow-bang*           nil )
+  (setq *Cshow-dupl*           nil )
+  (setq *Cdebug*               nil )
+  (setq *Csimple-names*        nil )
+  (setq *C-analysis*           t   )
+  (setq *C-replace-analysis*   t   ))
+
+
 ;; --------------------------------------------------------------------
 ;;                 Draft / old functions
 ;; --------------------------------------------------------------------

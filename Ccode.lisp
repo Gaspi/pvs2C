@@ -344,19 +344,20 @@
 (defmethod print-object ((obj Crecord-get) out)
   (format out "~a->~a" (var obj) (arg obj)))
 
-
-
 (defmethod print-object ((obj Cfuncall) out)
   (with-slots (fun args) obj
     (format out
 	    (if (spec-op fun) (spec-op fun)
-	      (format nil "~a(~~{~~a~~^, ~~})" fun))
-	    args)))
+	      (format nil "~a(~~{ ~~a ~~^,~~})" fun))
+	    (loop for a in args
+		  collect (if (and (C-pointer? (type a))
+				   (or (C-var? a) (Carray-get? a) (Crecord-get? a)))
+			      (format nil "GC(~a)" a)
+			    a)))))
 
 ;; ---- Default print function for Cinstr --------
 (defmethod print-object ((obj Cinstr) out)
   (format out "~{~a~^~%~}" (get-C-instructions obj)))
-
 
 
 ;; ------------ C lines of code are generated here ----------
@@ -448,7 +449,11 @@
     (if (C-gmp? typeA)
 	(mapcar #'(lambda (x) (format nil x varA varB)) (convertor typeA typeB))
       (list (format nil "~a = ~a;" varA
-		    (format nil (convertor typeA typeB) varB))))))
+		    (format nil (convertor typeA typeB)
+			    (if (or (not (C-pointer? typeB)) (Cfuncall? varB))
+				varB
+			      (format nil "GC( ~a )" varB)
+			      )))))))
 
 (defmethod get-C-instructions ((instr Ccopy))
   (let* ((varA (varA instr))
