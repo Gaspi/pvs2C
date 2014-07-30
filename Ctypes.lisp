@@ -70,7 +70,7 @@
 
 ;; Type printing in C syntax
 (defmethod print-object ((obj C-int) out) (format out "int"))
-(defmethod print-object ((obj C-uli) out) (format out "unsigned long int"))
+(defmethod print-object ((obj C-uli) out) (format out (uli)))
 (defmethod print-object ((obj C-mpz) out) (format out "mpz_t"))
 (defmethod print-object ((obj C-mpq) out) (format out "mpq_t"))
 (defmethod print-object ((obj C-array) out) (format out "~a*" (target obj)))
@@ -175,7 +175,7 @@
 
 (defmethod pvs2C-type ((e lambda-expr) &optional tbindings)
   (with-slots (type expression) e
-  (if (C-updateable? type)
+  (if (C-updateable? type)   ;; extend this function to work with more than below
       (let ((range (subrange-index (domain type))))
 	(make-instance 'C-array
 		       :target (pvs2C-type expression)
@@ -235,14 +235,13 @@
 	  ((and (C-int? type) (C-uli? typeE))
 	   (set-var e (Cfuncall (Cfun "uli-to-int"           "(int) ~{~a~}") (var e) type)) e)
 	  ((and (C-uli? type) (C-int? typeE))
-	   (set-var e (Cfuncall (Cfun "int-to-uli" "(unsigned long) ~{~a~}") (var e) type)) e)
-	  (t
-	   (let ((n (gen-C-var type "conv")))
-	     (C-expr n
-		     (append (instr e)
-			     (list (Cdecl n) (Ccopy n (var e)))
-			     (destr e))
-		     (list (Cfree n))))))))
+	   (set-var e (Cfuncall (Cfun "int-to-uli" (uli "(~a) ~~{~~a~~}")) (var e) type)) e)
+	  (t (let ((n (gen-C-var type "conv")))
+	       (C-expr n
+		       (append (instr e)
+			       (list (Cdecl n) (Ccopy n (var e)))
+			       (destr e))
+		       (list (Cfree n))))))))
 
 
 (defgeneric convertor (typeA typeB))
@@ -265,11 +264,11 @@
   (list (format nil "mpq_from_~a( ~~a, ~~a );" typeB)))
 (defmethod convertor ((typeA C-uli) (typeB C-mpz)) "mpz_get_ui(~a)")
 (defmethod convertor ((typeA C-int) (typeB C-mpz)) "( (int) mpz_get_si(~a) )")
-(defmethod convertor ((typeA C-uli) (typeB C-mpq)) "( (unsigned long) mpq_get_d(~a) )")
+(defmethod convertor ((typeA C-uli) (typeB C-mpq)) (uli "( (~a) mpq_get_d(~~a) )"))
 (defmethod convertor ((typeA C-int) (typeB C-mpq)) "( (int) mpq_get_d(~a) )")
 ;; ---------- base types ------------------------
 (defmethod convertor ((typeA C-int) (typeB C-uli)) "(int) ~a")
-(defmethod convertor ((typeA C-uli) (typeB C-int)) "(unsigned long) ~a")
+(defmethod convertor ((typeA C-uli) (typeB C-int)) (uli "(~a) ~~a"))
 (defmethod convertor ((typeA C-uli) (typeB C-uli)) "~a")
 (defmethod convertor ((typeA C-int) (typeB C-int)) "~a")
 ;; ---------- arrays pointer copy -----------------

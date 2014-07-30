@@ -248,13 +248,16 @@
    (loop for n from min below max by step
       collect n))
 
+(defun uli (&optional (str "~a"))
+  (format nil str (if *Crename-uli* "uli" "unsigned long int")))
 
 
 ;; --------------------------------------------------------------------
 ;;                 Testing functions
 ;; --------------------------------------------------------------------
 
-(defun test-cases (&optional (tests *tests-on-load*))
+(defun test-cases (&optional (tests *tests-on-load*) runnable)
+  (when runnable (set-runnable-C))
   (loop for tst in tests
 	do (progn (tc tst)
 		  (format t "~2%Translating ~a..." tst)

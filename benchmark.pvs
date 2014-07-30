@@ -14,15 +14,36 @@ BEGIN
   Ind  : TYPE = below(1000)
   Arr  : TYPE = [ Ind -> Val ]
   
-  init(A:Arr, i:Ind, v:Val): RECURSIVE Arr =
+  A : VAR Arr
+  i : VAR Ind
+  v : VAR Val
+  
+  init(A, i, v): RECURSIVE Arr =
     let B = A with [(i) := v] in
-      if i >= 1000 then B	
+      if i >= 999 then B	
       else init(B, i+1, rem(59557)(12345 * v) ) endif
-  MEASURE 1000 - i
+  MEASURE 999 - i
   
-  T:Arr = init( lambda(x:Ind):0, 0, 9876 )
-
+  J :Arr = lambda(k:Ind): 999 - k
+  Z :Arr = lambda(x:Ind) : 0
+  T :Arr = init(Z, 0, 9876)
   
+  
+  insert(A, v, i): RECURSIVE Arr =
+    IF (i = 0 OR v >= A(i - 1))
+    THEN A WITH [(i) := v]
+    ELSE insert(A WITH [(i) := A(i - 1)], v, i - 1)
+    ENDIF
+    MEASURE i
 
+  insort_rec(A, (n:upto(1000)) ): RECURSIVE Arr =
+    IF n < 1000 THEN insort_rec( insert(A, A(n), n), n + 1 )
+    ELSE A ENDIF
+    MEASURE 1000 - n
 
+  insort(A): Arr = insort_rec(A, 0)
+  
+  tsort: Val = insort(T)(0)
+  jsort: Val = insort(J)(0)
+  
 END benchmark

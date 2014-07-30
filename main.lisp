@@ -59,6 +59,7 @@
 (defvar *Cshow-dupl*         nil )
 (defvar *Cdebug*             nil )
 (defvar *Csimple-names*      nil )
+(defvar *Crename-uli*        nil )
 (defvar *C-analysis*         t   )
 (defvar *C-replace-analysis* t   )
 
@@ -68,6 +69,7 @@
 (setq *Cshow-dupl*           t   )
 (setq *Cdebug*               t   )
 (setq *Csimple-names*        nil )
+(setq *Crename-uli*          t   )
 (setq *C-analysis*           t   )
 (setq *C-replace-analysis*   t   )
 

@@ -53,14 +53,10 @@
   (C-expr (C-var *C-int* op t)))
 
 
-(defun pvs2C-primitive-app? (operator)
-  (or (pvs2cl-primitive? operator)
-      (rem-application? operator)))
-
 (defun rem-application? (operator)
   (and (application? operator)
-       (name-expr? (operator (operator expr)))
-       (eql 'rem (id (operator (operator expr))))))
+       (name-expr? (operator operator))
+       (eql 'rem (pvs2C-primitive-op (operator operator)))))
 
 ;; --------- Primitive function call ----------------
 (defun pvs2C*-primitive-app (expr bindings livevars)
@@ -83,12 +79,8 @@
 	  ((div-function? op args)
 	     (pvs2C*-div (car type-args) (cadr type-args) type-res args bindings livevars))
 	  ((rem-function? op)
+	   (break "Do not use rem as a closure yet...")
 	   (pvs2C*-rem (car type-args) args bindings livevars))  ;; to finish
-	  ((rem-application? op)
-	   (pvs2C*-remappli (pvs2C-type (argument op))
-			    (car type-args)
-			    (list (argument op) (car args))
-			    bindings livevars))
 	  (t
 	   (break "Unknown primitive app")
 	   (cons (pvs2C-type expr) ;; This is not even implemented correctly
@@ -257,7 +249,7 @@
 	 (cons args (cons (list *C-mpq* *C-mpq*) (Cfuncall-mp "mpq_mul" nil *C-mpq*))))))
 
 
-;; ---------- Division ------------
+;; ---------- Division ------------ Problems here...
 (defun div-function? (op args)
   (and (eq op 'pvsDiv) (eq (length args) 2)))
 (defun pvs2C*-div (typeA typeB typeR args bindings livevars)
@@ -284,14 +276,28 @@
 ;; ---------- Modulo ------------
 (defun rem-function? (op) (eq op 'rem))
 
-;; Modulo function as a closure...
+;; Modulo function as a closure. Not handled right now...
 (defun pvs2C*-rem (typeM args bindings livevars)
   (C-expr (C-var (make-instance 'C-closure))))
 
-(defun pvs2C*-remappli (typeM typeA args bindings livevars)
-  (C-expr (C-var *C-int*)) ;; TODO fill this
-  )
+(defun pvs2C-remappli (expr bindings livevars)
+  (let* ((argA (car (arguments expr)))
+	 (argM (argument (operator expr)))
+	 (args (list argA argM)))
+    (Cprocess (pvs2C*-remappli (pvs2C-type argA)
+			       (pvs2C-type argM)
+			       args bindings livevars)
+	      args bindings livevars)))
+(defun pvs2C*-remappli (typeA typeM args bindings livevars)
+  (cond ((and (C-base? typeA) (C-base? typeM))
+	 (cons (list typeA typeM) (Cfuncall (binop "%") nil typeM)))
+	((and (C-mpz? typeA) (C-unsignedlong-type? (cadr args)))
+	 (cons (list *C-mpz* *C-uli*)
+	       (Cfuncall (Cfun "modui" "mpz_mod_ui(null, ~{~a~^, ~})") nil *C-uli*)))
+	(t (cons (list *C-mpz* *C-mpz*) (Cfuncall-mp "mpz_mod" nil *C-mpz*)))))
 
 
-;;	   (let ((modulo (pvs2C2 (argument expr) bindings livevars 
-;;	   (Cprocess (cons (list *C-int*) (Cfun "rem" (format nil "(~~a % ~a)
+
+
+
+

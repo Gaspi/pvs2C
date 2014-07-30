@@ -314,8 +314,9 @@
 
 (defmethod pvs2C* ((expr application) bindings livevars)
   (with-slots (operator argument) expr
+  (if (rem-application? operator) (pvs2C-remappli expr bindings livevars)
     (if (constant? operator)
-      (if (pvs2C-primitive-app? operator)
+	(if (pvs2cl-primitive? operator)
 	    (pvs2C*-primitive-app expr bindings livevars)
 	  (if (datatype-constant? operator)
 	      (mk-C-expr-funcall (pvs2C-type (range (type operator)))
@@ -335,7 +336,7 @@
 				newbind   ;; or bindings... ??
 				(append (updateable-free-formal-vars operator) livevars)
 				(C-var-list type-args (getBindName bind-decls newbind)) t))
-;;		 (deb (break))
+		 ;;		 (deb (break))
 		 (C-expr (pvs2C* (expression operator) newbind nil)))
 	    (app-instr C-expr (instr C-arg) t)
 	    (app-destr C-expr (destr C-arg))
@@ -358,7 +359,7 @@
 			(append (destr C-op) (destr C-arg)))
 	      (C-expr (Cfuncall C-op C-arg type)
 		      (append (instr C-op) (instr C-arg))
-		      (append (destr C-op) (destr C-arg))))))))))
+		      (append (destr C-op) (destr C-arg)))))))))))
 
 
 (defun pvs2C-defn-application (expr bindings livevars)
@@ -487,7 +488,7 @@
 			     collect (mk-name-expr bd))))))
 	  (pvs2C* eta-expansion bindings livevars))
       (let ((actuals (expr-actuals (module-instance expr))))
-	(break) ;;Is that where functions from theory are called ?
+;;	(break) ;;Is that where functions from theory are called ?
 	(mk-C-expr-funcall (pvs2C-type (type expr))
 			   (declaration expr)
 ;;			  (C_nondestructive_id expr)
@@ -499,8 +500,9 @@
   (with-slots (type expression) expr
     (let ((bind-decls (bindings expr)))
       (if (and (C-updateable? type) (funtype? type))  ;; If it could be represented as an array
-	  (let* ((Ctype (pvs2C-type type)) ;; Should we use the type of the range-expr ?
-;;	         (range-type (pvs2C-type expression))  ;; Should we built Ctype from that ?
+	  (let* (
+;;		 (Ctype (pvs2C-type type))        ;; Should we built Ctype from that ?
+	         (Ctype (pvs2C-type expr))        ;; Should we built Ctype from that ?
 		 (range-type (target Ctype))
 		 (i (gen-C-var *C-int* "i"))
 		 (new-bind (append (pairlis bind-decls ;; bind-decls must have length 1
@@ -856,6 +858,8 @@
 	    "  return 0;~%}") filename))
       (format output "~{~2%~a~}" *C-definitions*)
       (format outputH "// C file generated from ~a.pvs" filename)
+      (when *Crename-uli*
+	(format outputH "~2%typedef unsigned long int uli;~%"))
       (dolist (rec-def *C-record-defns*)
 	(format outputH "~a~%" (caddr rec-def)))
       (dolist (theory theories)

@@ -5,7 +5,6 @@ BEGIN
   Ind  : TYPE = below(1000)
   Arr  : TYPE = [ Ind -> Cint ]
   
-  t(A:Arr):int = let B = A in B(0) + A(0)
   
   id(A:Arr) : Arr = A
   zero(A:Arr) : Arr = A with [(0) := 0]

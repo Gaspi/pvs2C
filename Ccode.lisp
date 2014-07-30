@@ -67,7 +67,7 @@
 
 ;; -------- A C variable : is a C type and a name (string or hole) ----
 (defcl C-var (Ccode) (type) (name) (safe))
-(defun C-var (type &optional name safe)
+(defun C-var (type &optional name (safe (C-base? type)))   ;; All C-base variables are safe
   (make-instance 'C-var :type type
 		 :name (if (listp name) name
 			 (format nil "~a" name)) ;; names must be strings
@@ -349,11 +349,15 @@
     (format out
 	    (if (spec-op fun) (spec-op fun)
 	      (format nil "~a(~~{ ~~a ~~^,~~})" fun))
-	    (loop for a in args
-		  collect (if (and (C-pointer? (type a))
-				   (or (C-var? a) (Carray-get? a) (Crecord-get? a)))
-			      (format nil "GC(~a)" a)
-			    a)))))
+	    (mapcar #'GC args))))
+
+;; -------- Function to print an expression with GC increment if needed ------
+(defun GC (v)
+  (if (and (pointer? v)
+	   (not (Cfuncall? v))
+	   (not (and (C-var? v) (safe v))))
+      (format nil "GC( ~a )" v)
+    v))
 
 ;; ---- Default print function for Cinstr --------
 (defmethod print-object ((obj Cinstr) out)
@@ -450,10 +454,7 @@
 	(mapcar #'(lambda (x) (format nil x varA varB)) (convertor typeA typeB))
       (list (format nil "~a = ~a;" varA
 		    (format nil (convertor typeA typeB)
-			    (if (or (not (C-pointer? typeB)) (Cfuncall? varB))
-				varB
-			      (format nil "GC( ~a )" varB)
-			      )))))))
+			    (GC varB)))))))
 
 (defmethod get-C-instructions ((instr Ccopy))
   (let* ((varA (varA instr))
@@ -479,7 +480,7 @@
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
 	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
-		(format nil "  ~a = GC( ~a );" varA varB)
+		(format nil "  ~a = ~a;" varA  (GC varB))
 		(format nil "else {")
 		(format nil "  ~a = GC_malloc(~a, sizeof(~a) );"
 			varA (size typeA) (target typeA)))
@@ -500,7 +501,7 @@
 	(t ;; If B never appears later but is not bang (a priori). We check the GC
 	 (append
 	  (list (format nil "if ( GC_count( ~a ) == 1 )" varB)
-		(format nil "  ~a = GC( ~a );" varA varB)
+		(format nil "  ~a = ~a;" varA (GC varB))
 		(format nil "else {")
 		(format nil "  ~a = GC_malloc(1, sizeof( struct struct_~a ));" varA typeA))
 	  (indent (get-C-instructions
@@ -509,3 +510,6 @@
 					(Crecord-get varB (car a))))))
 	  (list "}")))))
 
+
+
+(defun invisible? (e) (null (get-C-instructions e)))

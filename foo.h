@@ -1,29 +1,25 @@
 // C file generated from foo.pvs
 
-void pvs_t900(mpz_t result, int* A);
+int* pvs_id1699(int* #A#);
 
-void pvs_t_d901(mpz_t result, int* A);
+int* pvs_id_d1700(!int* #A#);
 
-int* pvs_id902(int* #A#);
+int* pvs_zero1703(int* A);
 
-int* pvs_id_d903(!int* #A#);
+int* pvs_zero_d1704(!int* #A#);
 
-int* pvs_zero904(int* A);
+int* pvs_f1729(int* A);
 
-int* pvs_zero_d905(!int* #A#);
+int* pvs_f_d1730(!int* #A#);
 
-int* pvs_f910(int* A);
+int* pvs_g1761(int* A);
 
-int* pvs_f_d911(!int* #A#);
+int* pvs_g_d1762(!int* #A#);
 
-int* pvs_g916(int* A);
+int* pvs_h1789(int* A);
 
-int* pvs_g_d917(!int* #A#);
+int* pvs_h_d1790(!int* #A#);
 
-int* pvs_h922(int* A);
+int* pvs_i1817(int* A);
 
-int* pvs_h_d923(!int* #A#);
-
-int* pvs_i928(int* A);
-
-int* pvs_i_d929(int* A);
+int* pvs_i_d1818(int* A);

@@ -16,7 +16,7 @@
 (in-package :pvs)
 
 ;; --------------------------------------------------------------------
-;;             Useful function mapping on C code
+;;             Useful functions mapping on C code
 ;; --------------------------------------------------------------------
 
 ;; ------- Maps f to all expressions and returns the concatenation of all results --------
@@ -92,10 +92,11 @@
 ;;                 C function declarations
 ;; --------------------------------------------------------------------
 
-(defcl Cfun-decl () (id) (type-out) (args) (all-vars) (flags) (body))
+(defcl Cfun-decl () (id) (type-out) (args) (all-vars) (flags) (body) (bang-return?))
 (defun Cfun-decl (id type-out body args)
   (make-instance 'Cfun-decl
-		 :id id :type-out type-out :args args
+		 :id id :type-out type-out :bang-return? t
+		 :args args
 		 :flags (init-flags args)
 		 :all-vars (get-set (get-all-vars (list args body)))
 		 :body body))
@@ -148,10 +149,17 @@
   (not (is-arg? Cvar f)))
 
 ;; ---------------- Return variable and type --------------
-(defun get-return-var (f)
-  (let ((ret (car (last (body f)))))
-    (when (Creturn? ret) (var ret)))) ;; The last instruction should be Creturn
-(defmethod bang-return? ((f Cfun-decl)) (bang? (get-return-var f) f))
+(defun get-return-vars (f)
+  (map-Ccode (body f) #'(lambda (x) (when (Creturn? x) (list (var x))))))
+
+
+(defun update-bang-return (f)
+  (let ((new-br (null (loop for e in (get-return-vars f)
+			    when (not (bang? e))
+			    collect nil))))
+(when (not (eql (bang-return? f) new-br))
+  (setf (bang-return? f) new-br)
+  t)))
 (defmethod bang-return? ((f const-decl))
   (bang-return? (C-info-definition (gethash f (C-hashtable)))))
 (defmethod bang-return? ((f null)) nil)  ;; allows to call (bang-return? nil)
@@ -188,7 +196,6 @@
 (defmethod bang? ((fc Cfuncall) &optional (f *Ccurr-f*))
   (bang-return? (get-definition fc)))
 (defmethod bang? (Cvar &optional (f *Ccurr-f*)) (bang (get-flags Cvar f)))
-
 
 
 ;; --------- Is it legal to flag this var ? (local & not treated yet) ---------
@@ -256,17 +263,17 @@
 
 ;; ---------- Replace all pointer-type variables according to assoc list ----------
 (defun replace-variables (body alist)
-  (upd-Ccode body
-	     #'(lambda (x) (or (cdr (assoc x alist :test #'eq-C-var)) x))))
+  (upd-Ccode body #'(lambda (x) (or (cdr (assoc x alist :test #'eq-C-var)) x))))
 
 ;; ----- The main analysis loop. The recursive call should terminate... ------------
 (defun C-analysis (op-decl)
   (let ((f  (C-info-definition (gethash op-decl *C-nondestructive-hash*)))
 	(fd (C-info-definition (gethash op-decl *C-destructive-hash*))))
     (and (or (C-analysis* f)
-    	     (C-analysis* fd)         ;; if both return nil  (no change)
-	     (C-last-analysis f)) ;; then perform a last analysis and return nil
-    	 (C-analysis op-decl)))) ;; else try again
+    	     (C-analysis* fd)      ;; if both return nil  (no change)
+	     (C-last-analysis f)   ;; perform a last analysis on both
+	     (C-last-analysis fd))
+    	 (C-analysis op-decl))))  ;; else try again
 
 
 ;; ------------------ Here is the body of the analysis ---------------
@@ -277,13 +284,16 @@
     (init-analysis f)
     ;; (break)
     (when *C-replace-analysis*
-      (or (C-analysis-destr-funcall body)
+      (or
+	  (C-up-analysis f)
+          (C-analysis-destr-funcall body)
 	  (C-analysis-dupl-funcall body)
-	  (C-analysis-replace-rule f body)
+	  (C-analysis-replace-rule f)
 	  (C-analysis-new-notbang body)
 	  (C-analysis-new-bang    body)
 	  (C-analysis-dupl body)
 	  (C-analysis-set-to-copy body)
+	  (update-bang-return f) ;;Update the return-bang? flag
 	  )))))
 
 
@@ -294,75 +304,133 @@
 				 (C-var (type x) (name x) nil) x))))
 
 ;; --------- This function flags "safe" all last occurence of a variable -----------
-(defun safety-analysis (l)
+(defun safety-analysis (df)
+  (safety-analysis* (reverse (body df)) nil))
+
+(defmethod safety-analysis* ((l list) safe)
+  (if (null l) safe
+    (safety-analysis* (cdr l) (safety-analysis* (car l) safe))))
+
+(defmethod safety-analysis* ((i Cif) safe)
+  (safety-analysis* (cond-part i)
+		    (unionvar (safety-analysis* (reverse (then-part i)) safe)
+			      (safety-analysis* (reverse (else-part i)) safe))))
+
+(defmethod safety-analysis* ((i Ccode) safe)
+  (let* ((vars (get-all-vars i))
+	 (candidates (set-difference vars safe :test #'eq-C-var))
+	 (set-cand   (get-set candidates)))
+    (replace-variables i (loop for c in set-cand
+			       when (= (count c candidates :test #'eq-C-var) 1)
+			       collect (cons c (safe-var c))))
+    (unionvar set-cand safe)))
+
+
+(defun clean-code (l)
   (when (consp l)
-    (let* ((safe (safety-analysis (cdr l)))
-	   (vars (get-all-vars (car l)))
-	   (candidates (set-difference vars safe :test #'eq-C-var))
-	   (set-cand (get-set candidates))
-	   (repl (pairlis set-cand
-			  (mapcar #'(lambda (x)
-				      (if (= (count x candidates :test #'eq-C-var) 1)
-					  (safe-var x) x))
-				  set-cand))))
-      (replace-variables (car l) repl)
-      (unionvar set-cand safe))))
+    (let ((c (car l)))
+      (when (Cif? c)
+	(setf (then-part c) (clean-code (then-part c)))
+	(setf (else-part c) (clean-code (else-part c))))
+      (if (get-C-instructions c)
+	  (cons c (clean-code (cdr l)))
+	(clean-code (cdr l))))))
 
 ;; --------- This function put all safe flags, unbang safe (unused) arguments,
 ;; --------- and flag the return variable as dupl
 (defun init-analysis (f)
   (assert (Cfun-decl? f))
-  (let* ((used   (safety-analysis (body f)))
+  (setf (body f) (clean-code (body f)))
+  (let* ((used   (safety-analysis f))
 	 (unused (set-difference (pointer-args f) used :test #'eq-C-var)))
     (rem-bang unused)
     (setf (args f)
 	  (mapcar #'(lambda (x) (if (member x unused :test #'eq-C-var) (safe-var x) x))
 		  (args f)))
-    (set-dupl (get-return-var f))))
+    (set-dupl (get-return-vars f))))  ;; Init the analysis of dupl vars
 
 
 
-;; ------ Analysis to find variables that can be replaced by an other -----------
-(defun C-analysis-replace-rule (f body)
-  (let ((rr (get-replace-rule body)))
-    (when rr
-      (setf (body f)
-	    (upd-Cinstr body
-			#'(lambda (x)
-			    (unless (or (and (or (Cdecl? x) (Cinit? x))
-					     (string= (name (var x)) (cadr rr)))
-					(eq x (car rr))
-					(and (Cfree? x)
-					     (eq-C-var (var x) (cddr rr))))
-			      x))))
-      (replace-variables body (list (cdr rr)))
-      t))) ;; We return t to restart the analysis loop
+;; Replace rules here  (work TODO)
 
-;; This is treated by:
+
+
+;; A repalcement rule  (varA <= varB)  is treated by:
 ;;  - Deleting the decl and init of name
 ;   - Deleting the current set or copy instruction
 ;;  - Deleting the free of var
 ;;  - Replacing occurences of name by var
 ;;  - Unsafing all variables !!!
 ;;  - Redo a safe analysis
+
+
+(defun remove-code (f test)
+  (setf (body f)
+	(upd-Cinstr (body f) #'(lambda (x) (unless (funcall test x) x)))))
+
+;; ------ Analysis to find variables that can be replaced by an other -----------
+;; (defun C-analysis-replace-rule (f body)
+;;   (let ((rr (get-replace-rule (body f))))
+;;     (when rr
+;;       (remove-code f #'(lambda (x) (or (and (or (Cdecl? x) (Cinit? x))
+;; 					    (string= (name (var x)) (cadr rr)))
+;; 				       (eq x (car rr))
+;; 				       (and (Cfree? x)
+;; 					    (eq-C-var (var x) (cddr rr))))))
+;;       (replace-variables (body f) (list (cdr rr)))
+;;       t))) ;; We return t to restart the analysis loop
+
+(defun C-analysis-replace-rule (f)
+  (let ((bodyp (apply-replacements (body f))))
+    (setf (body f) (cdr bodyp))
+    (car bodyp)))
+
+(defun apply-replacements (body)
+  (let ((rr (get-replace-rule body)))
+    (if (consp rr)
+	(cons t (upd-Ccode
+		 (upd-Cinstr body
+			     #'(lambda (x)
+				 (unless (or (and (Cdecl? x)
+						  (eq-C-var (var x) (cadr rr)))
+					     (eq x (car rr))
+					     (and (Cfree? x)
+						  (eq-C-var (var x) (cddr rr))))
+				   x)))
+		 #'(lambda (x) (if (eq-C-var x (cadr rr)) (C-var-copy (cddr rr)) x))))
+      (cons rr body))))
+
+
 (defmethod get-replace-rule ((i list))
   (when (consp i) (or (get-replace-rule (car i))
 		      (get-replace-rule (cdr i)))))
-
 (defmethod get-replace-rule ((i Cinstr))
   (cond ((and (Cset? i)
 	      (C-var? (var i))
 	      (C-var? (expr i))
 	      (type= (type (var i)) (type (expr i)))
 	      (safe (expr i)))
-	 (cons i (cons (name (var i)) (safe-var (expr i) nil))))
+	 (list* i (var i) (safe-var (expr i) nil)))
 	((and (Ccopy? i)
 	      (C-var? (varA i))
 	      (C-var? (varB i))
 	      (bang?  (varB i))
 	      (safe   (varB i)))
-	 (cons i (cons (name (varA i)) (safe-var (varB i) nil))))
+	 (list* i (varA i) (safe-var (varB i) nil)))
+	((Cif? i)
+	 (let ((thenp (apply-replacements (then-part i)))
+	       (elsep (apply-replacements (else-part i))))
+	   (setf (then-part i) (cdr thenp))
+	   (setf (else-part i) (cdr elsep))
+	   (or (car thenp) (car elsep))))
 	(t nil)))
+
+
+
+
+
+
+
 
 
 ;; --------- Analysis to remove bang flags ---------------
@@ -379,21 +447,27 @@
 
 ;; --------- Analysis to add new bang flags ---------------
 (defun C-analysis-new-bang (body)
-  (let ((new-b (get-new-bang-flag body)))
-    (when (add-bang? new-b) (add-bang new-b) t)))
-;; TODO find other cases when new array are created (bang)
+  (let ((new-b (car (get-new-bang-flag body))))
+    (when (and new-b (add-bang? new-b))
+      (add-bang new-b)
+      t)))
+
+;; These return a list of potential bang variables
 (defmethod get-new-bang-flag ((i list))
-  (when (consp i) (or (get-new-bang-flag (car i))
-		      (get-new-bang-flag (cdr i)))))
+  (when (consp i) (append (get-new-bang-flag (car i))
+			  (get-new-bang-flag (cdr i)))))
 (defmethod get-new-bang-flag ((i Ccopy))
-  (let ((var (varA i))) (when (add-bang? var) var)))
+  (let ((var (varA i))) (when (add-bang? var) (list var))))
 (defmethod get-new-bang-flag ((i Carray-init))
-  (let ((var (var i)))  (when (add-bang? var) var)))
+  (let ((var (var i)))  (when (add-bang? var) (list var))))
 (defmethod get-new-bang-flag ((i Crecord-init))
-  (let ((var (var i)))  (when (add-bang? var) var)))
+  (let ((var (var i)))  (when (add-bang? var) (list var))))
 (defmethod get-new-bang-flag ((i Cset))
   (let ((e (expr i)))
-    (when (and (safe e) (bang? e) (add-bang? (var i))) (var i))))
+    (when (and (safe e) (bang? e) (add-bang? (var i))) (list (var i)))))
+(defmethod get-new-bang-flag ((i Cif))
+  (unionvar (get-new-bang-flag (then-part i))
+	    (get-new-bang-flag (else-part i))))
 (defmethod get-new-bang-flag ((i Cinstr)) nil)
 
 
@@ -487,4 +561,106 @@
 	(list t)))))
 
 
-(defun C-last-analysis (f) )
+
+;; Last modifications to optimize the code
+;; set(res, ??)   => return ??
+;; return res;
+;;
+;; if () {  res = ?1? }  =>  if () { return ?1? }
+;; else  {  res = ?2? }  =>  else  { return ?2? )
+;; return res;
+;; 
+(defun C-up-analysis (f)
+  (setf (body f) (reverse (C-up-free-analysis (reverse (body f)) nil)))
+  (let* ((bodyp (C-up-return-analysis (body f))))
+    (setf (body f) (cdr bodyp))
+    (car bodyp)))
+
+;; Returns (cons t/nil new-list)
+(defun C-up-return-analysis (l)
+  (if (< (length l) 2) (cons nil l)
+    (let* ((lasts (last l 2))
+	   (last  (cadr lasts))
+	   (2last (car  lasts)))
+      (cond ((and (Creturn? last) (Cif? 2last))
+	     (setf (then-part 2last)
+		   (append (then-part 2last) (list (Creturn (C-var-copy (var last))))))
+	     (setf (else-part 2last)
+		   (append (else-part 2last) (list (Creturn (C-var-copy (var last))))))
+	     (cons t (butlast l)))
+	    ((and (Creturn? last) (Cset? 2last) (C-var? (var 2last)) (C-var? (var last))
+		  (eq-C-var (var last) (var 2last)))
+	     (setf (var last) (expr 2last))
+	     (cons t
+		   (append (upd-Cinstr (butlast l 2)
+				       #'(lambda (x) (unless (and (Cdecl? x)
+								  (eq-C-var (var x) (var 2last)))
+						       x)))
+			   (last l))))
+	    ((Cif? last)
+	     (let ((thenp (C-up-return-analysis (then-part last)))
+		   (elsep (C-up-return-analysis (else-part last))))
+	       (setf (then-part last) (cdr thenp))
+	       (setf (else-part last) (cdr elsep))
+	       (cons (or (car thenp) (car elsep)) l)))
+	    (t (cons nil l))))))
+
+
+
+;; TODO C down analysis with Cdecl and Cinit
+;; TODO clean the replacement rule function (no need to get rid of Cdecl and Cfree)
+
+
+
+;; Return a list of the pointer variable if it is READ (not freed)
+;; Only safe vars passed as argument are freed (unsafe vars are GCed)
+(defmethod get-read-vars ((e Carray-get))
+  (when (and (C-var? (var e)) (pointer? (var e))) (list (var e))))
+(defmethod get-read-vars ((e Crecord-get))
+  (when (and (C-var? (var e)) (pointer? (var e))) (list (var e))))
+(defmethod get-read-vars ((e C-var))
+  (when (not (safe e)) (list e)))
+(defmethod get-read-vars ((e Ccode)) nil)
+
+
+(defmethod C-up-free-analysis ((l list) tofree)
+  (if (null l) (loop for v in tofree collect (Cfree v))
+    (let ((i (car l)))
+      (if (and (Cfree? i) (pointer? (var i)))
+	  (C-up-free-analysis (cdr l) (unionvar (list (var i)) tofree))
+	(if (Cif? i)
+	    (let ((tofree-if (set-difference tofree
+					     (get-all-vars (cdr l)) :test #'eq-C-var)))
+	      (setf (then-part i) (reverse (C-up-free-analysis (reverse (then-part i))
+							       tofree-if)))
+	      (setf (else-part i) (reverse (C-up-free-analysis (reverse (else-part i))
+							       tofree-if)))
+	      (cons i (C-up-free-analysis (cdr l) (set-difference tofree
+								  tofree-if
+								  :test #'eq-C-var))))
+	  (append (loop for v in (intersection tofree (get-set (map-Ccode i #'get-read-vars))
+					       :test #'eq-C-var)
+			collect (Cfree v))
+		  (cons i
+			(C-up-free-analysis (cdr l)
+					    (set-difference tofree (get-all-vars i)
+							    :test #'eq-C-var)))))))))
+
+
+
+
+
+
+
+
+
+(defun C-last-analysis (f)
+ nil)
+
+
+
+
+
+
+
+

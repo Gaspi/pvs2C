@@ -1,45 +1,48 @@
 // C file generated from test.pvs
 
-void pvs_adda47(mpz_t result, mpz_t i);
+typedef (unsigned long int) uli;
 
-void pvs_adda_d48(mpz_t result, mpz_t i);
 
-void pvs_f49(mpz_t result, int a, int b);
+void pvs_adda6304(mpz_t result, mpz_t i);
 
-void pvs_f_d50(mpz_t result, int a, int b);
+void pvs_adda_d6305(mpz_t result, mpz_t i);
 
-void pvs_incr51(mpz_t result, mpz_t x);
+void pvs_f6306(mpz_t result, int a, int b);
 
-void pvs_incr_d52(mpz_t result, mpz_t x);
+void pvs_f_d6307(mpz_t result, int a, int b);
 
-void pvs_norm53(mpz_t result, mpz_t x, mpz_t y);
+void pvs_incr6308(mpz_t result, mpz_t x);
 
-void pvs_norm_d54(mpz_t result, mpz_t x, mpz_t y);
+void pvs_incr_d6309(mpz_t result, mpz_t x);
 
-void pvs_g59(mpz_t result, int a);
+void pvs_norm6310(mpz_t result, mpz_t x, mpz_t y);
 
-void pvs_g_d60(mpz_t result, int a);
+void pvs_norm_d6311(mpz_t result, mpz_t x, mpz_t y);
 
-int pvs_b61();
+void pvs_g6316(mpz_t result, int a);
 
-int pvs_b_d62();
+void pvs_g_d6317(mpz_t result, int a);
 
-int pvs_bar63(mpz_t n);
+int pvs_b6318();
 
-int pvs_bar_d64(mpz_t n);
+int pvs_b_d6319();
 
-void pvs_foo77(mpz_t result, mpz_t x);
+int pvs_bar6320(mpz_t n);
 
-void pvs_foo_d78(mpz_t result, mpz_t x);
+int pvs_bar_d6321(mpz_t n);
 
-void pvs_add283(mpz_t result, mpz_t a);
+void pvs_foo6334(mpz_t result, mpz_t x);
 
-void pvs_add2_d84(mpz_t result, mpz_t a);
+void pvs_foo_d6335(mpz_t result, mpz_t x);
 
-void pvs_f91(mpz_t result, mpz_t x);
+void pvs_add26340(mpz_t result, mpz_t a);
 
-void pvs_f_d92(mpz_t result, mpz_t x);
+void pvs_add2_d6341(mpz_t result, mpz_t a);
 
-void pvs_factorial93(mpz_t result, mpz_t n);
+void pvs_f6348(mpz_t result, mpz_t x);
 
-void pvs_factorial_d94(mpz_t result, mpz_t n);
+void pvs_f_d6349(mpz_t result, mpz_t x);
+
+void pvs_factorial6350(mpz_t result, mpz_t n);
+
+void pvs_factorial_d6351(mpz_t result, mpz_t n);
