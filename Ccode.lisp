@@ -147,12 +147,6 @@
 (defun Cdecl (var)
   (make-instance 'Cdecl :var var))
 
-;; -------- Initialisation of a variable : mpz_init(a); ---------------
-(defcl Cinit (Cinstr) (var))
-(defun Cinit (var)
-  (make-instance 'Cinit :var var))
-;; This function should be used
-(defun Calloc (v) (list (Cdecl v) (Cinit v)))
 
 
 ;; -------- Free a variable : GC_free(T);  mpz_clear(a); --------------
@@ -201,7 +195,6 @@
 (defcl Ccopy (Cinstr) (varA) (varB) (safe))
 (defun Ccopy (varA varB)
   (make-instance 'Ccopy :varA varA :varB varB :safe nil))
-
 
 
 ;; Takes a C instruction (list) with a hole and return a list of string
@@ -294,9 +287,6 @@
 (defmethod define-name ((i Cdecl) name)
   (rec-dn i var) i)
 
-(defmethod define-name ((i Cinit) name)
-  (rec-dn i var) i)
-
 (defmethod define-name ((i Cfree) name)
   (rec-dn i var) i)
 
@@ -367,20 +357,14 @@
 ;; ------------ C lines of code are generated here ----------
 (defmethod get-C-instructions ((instr Cdecl))
   (let ((var (var instr)))
-    (list (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang? var)) (type var) var))))
+    (cons (format nil "~:[~;!~]~a ~a;" (and *Cshow-bang* (bang? var)) (type var) var)
+	  (get-C-instructions (Cinit var)))))
 
-(defmethod get-C-instructions ((instr Cinit))
-  (let* ((var (var instr))
-	 (type (type var)))
-    (cond ((C-mpz? type) (list (format nil "mpz_init(~a);" var)))
-	  ((C-mpq? type) (list (format nil "mpq_init(~a);" var)))
-	  ;; ((C-struct? type)
-	  ;;  (get-C-instructions
-	  ;;   (mapcar #'(lambda (x) (Cinit (Crecord-get var (car x))))
-	  ;; 	    (args type))))
-	  ;; Record type should actually have an empty init...
-	  (t nil))))
-
+;; Return a Cfuncall-mp instruction to init gmp var when needed
+(defun Cinit (v)
+  (cond ((C-mpz? (type v)) (Cfuncall-mp "mpz_init" v))
+	((C-mpq? (type v)) (Cfuncall-mp "mpq_init" v))
+	(t nil)))
 
 ;; ----------- C variables memory deallocation -------------
 (defmethod get-C-instructions ((instr Cfree))
@@ -422,7 +406,7 @@
     (append (list (format nil "~a = GC_malloc(~a, sizeof(~a) );" var l (target type))
 		  (format nil "int ~a;" i)
 		  (format nil "for(~a = 0; ~a < ~a; ~a++) {" i i l i))
-	    (indent (get-C-instructions (list (Cinit (Carray-get var i)) body)))
+	    (indent (get-C-instructions (list (Cinit (Carray-get var i))  body)))
 	    (list "}")))))
 
 (defmethod get-C-instructions ((instr Crecord-init))
@@ -484,8 +468,9 @@
 		(format nil "else {")
 		(format nil "  ~a = GC_malloc(~a, sizeof(~a) );"
 			varA (size typeA) (target typeA)))
-	  (indent (create-loop (Ccopy (Carray-get varA (C-var *C-int*))
-				      (Carray-get varB (C-var *C-int*)))
+	  (indent (create-loop (list (Cinit (Carray-get varA (C-var *C-int*)))
+				     (Cset  (Carray-get varA (C-var *C-int*))
+					    (Carray-get varB (C-var *C-int*))))
 			       (size typeB)))
 	  (list "}")))))
 
@@ -506,8 +491,9 @@
 		(format nil "  ~a = GC_malloc(1, sizeof( struct struct_~a ));" varA typeA))
 	  (indent (get-C-instructions
 		   (loop for a in (args typeA)
-			 collect (Ccopy (Crecord-get varA (car a))
-					(Crecord-get varB (car a))))))
+			 collect (Cinit (Crecord-get varA (car a)))
+			 collect (Cset  (Crecord-get varA (car a))
+				        (Crecord-get varB (car a))))))
 	  (list "}")))))
 
 

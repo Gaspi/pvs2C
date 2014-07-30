@@ -180,7 +180,7 @@
 ;; Record expressions are treated seperately
 (defmethod pvs2C2 ((expr record-expr) bindings livevars var &optional need-malloc)
   (C-expr var
-	  (append (when need-malloc (Calloc var))
+	  (append (when need-malloc (list (Cdecl var)))
 		  (list (Crecord-init var))
 		  (loop for a in (assignments expr)
 			collect (let ((e (assoc (id (caar (arguments a)))
@@ -202,20 +202,20 @@
     (if (and (unnamed? e) (type= (type e) type))  ;; Perfect case
 	(progn (define-name e var)
 	       (when need-malloc
-		 (app-instr e (Calloc var) t)
+		 (app-instr e (list (Cdecl var)) t)
 		 (app-destr e (list (Cfree var))))
 	       e)
       (progn (when (unnamed? e)
 	       (let ((n (gen-C-var (type e) "set")))
 		 (define-name e n)
-		 (set-instr e (append (Calloc n) (instr e) (destr e)))
+		 (set-instr e (append (list (Cdecl n)) (instr e) (destr e)))
 		 (set-destr e (list (Cfree n)))))
 	     (set-var-to-C-expr var e need-malloc)))))
 
 (defmethod set-var-to-C-expr ((var Ccode) (e C-expr) &optional need-malloc)
   (C-expr var
 	  (append (instr e)
-		  (when need-malloc (Calloc var))
+		  (when need-malloc (list (Cdecl var)))
 		  (list (if (bang (type var)) (Ccopy var (var e))
 			                      (Cset  var (var e))))
 		  (destr e))
@@ -229,7 +229,7 @@
 	 (if-name (gen-C-var type "if")))
     (define-name if-bloc if-name)
     (set-instr if-bloc
-	       (append (Calloc if-name)
+	       (append (list (Cdecl if-name))
 		       (instr if-bloc)
 		       (destr if-bloc)))
     (set-destr if-bloc (list (Cfree if-name)))
@@ -246,7 +246,7 @@
 	(if (unnamed? e)
 	    (let ((n (gen-C-var (type e) "aux")))
 	      (define-name e n)
-	      (set-instr e (append (Calloc n)
+	      (set-instr e (append (list (Cdecl n))
 				   (instr e)
 				   (destr e)))
 	      (set-destr e (list (Cfree n)))
@@ -684,7 +684,7 @@
 					     restargs assign-expr
 					     bindings livevars)))
 	  (mk-C-expr nil
-		     (append (Calloc exprvar)
+		     (append (list (Cdecl exprvar))
 			     (list (Ccopy exprvar
 					  (Carray-get (C-var Ctype expr) arg1var)))
 			     (name C-expr)

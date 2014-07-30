@@ -28,7 +28,6 @@
 (defmethod map-Ccode ((e Cfuncall)    f) (append (funcall f e) (map-Ccode (args e) f)))
 (defmethod map-Ccode ((i Cfuncall-mp) f) (append (funcall f i) (map-Ccode (Cfunc i) f)))
 (defmethod map-Ccode ((i Cdecl) f)       (append (funcall f i) (map-Ccode (var i) f)))
-(defmethod map-Ccode ((i Cinit) f)       (append (funcall f i) (map-Ccode (var i) f)))
 ;; (defmethod map-Ccode ((i Cfree) f)       (append (funcall f i) (map-Ccode (var i) f)))
 (defmethod map-Ccode ((i Cset) f)     (append (funcall f i) (map-Ccode (list (var i)  (expr i)) f)))
 (defmethod map-Ccode ((i Ccopy) f)       (append (funcall f i) (map-Ccode (list (varA i) (varB i)) f)))
@@ -59,7 +58,6 @@
 (defmethod upd-Ccode ((e Cfuncall) f)    (setf (args e) (upd-Ccode (args e) f)) (funcall f e))
 (defmethod upd-Ccode ((i Cfuncall-mp) f) (setf (Cfunc i)(upd-Ccode (Cfunc i)f)) (funcall f i))
 (defmethod upd-Ccode ((i Cdecl) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
-(defmethod upd-Ccode ((i Cinit) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
 (defmethod upd-Ccode ((i Cfree) f)       (setf (var  i) (upd-Ccode (var  i) f)) (funcall f i))
 (defmethod upd-Ccode ((i Cset) f)
   (setf (var  i) (upd-Ccode (var  i) f))
@@ -285,15 +283,21 @@
     ;; (break)
     (when *C-replace-analysis*
       (or
-	  (C-up-analysis f)
+	  (C-up-analysis            f)
+	  (C-down-analysis          f)
           (C-analysis-destr-funcall body)
-	  (C-analysis-dupl-funcall body)
-	  (C-analysis-replace-rule f)
-	  (C-analysis-new-notbang body)
-	  (C-analysis-new-bang    body)
+	  (C-analysis-dupl-funcall  body)
+	  (C-analysis-replace-rule  f)
+;;	  (break "new-notbang")
+	  (C-analysis-new-notbang   body)
+;;	  (break "new-bang") 
+	  (C-analysis-new-bang      body)
+;;	  (break "dupl")
 	  (C-analysis-dupl body)
-	  (C-analysis-set-to-copy body)
-	  (update-bang-return f) ;;Update the return-bang? flag
+;;	  (break "set-to-copy")
+	  (C-analysis-set-to-copy   body)
+;;	  (break "bang-return")
+	  (update-bang-return       f) ;;Update the return-bang? flag
 	  )))))
 
 
@@ -350,12 +354,7 @@
     (set-dupl (get-return-vars f))))  ;; Init the analysis of dupl vars
 
 
-
-;; Replace rules here  (work TODO)
-
-
-
-;; A repalcement rule  (varA <= varB)  is treated by:
+;; A replacement rule  (varA <= varB)  is treated by:
 ;;  - Deleting the decl and init of name
 ;   - Deleting the current set or copy instruction
 ;;  - Deleting the free of var
@@ -363,23 +362,7 @@
 ;;  - Unsafing all variables !!!
 ;;  - Redo a safe analysis
 
-
-(defun remove-code (f test)
-  (setf (body f)
-	(upd-Cinstr (body f) #'(lambda (x) (unless (funcall test x) x)))))
-
 ;; ------ Analysis to find variables that can be replaced by an other -----------
-;; (defun C-analysis-replace-rule (f body)
-;;   (let ((rr (get-replace-rule (body f))))
-;;     (when rr
-;;       (remove-code f #'(lambda (x) (or (and (or (Cdecl? x) (Cinit? x))
-;; 					    (string= (name (var x)) (cadr rr)))
-;; 				       (eq x (car rr))
-;; 				       (and (Cfree? x)
-;; 					    (eq-C-var (var x) (cddr rr))))))
-;;       (replace-variables (body f) (list (cdr rr)))
-;;       t))) ;; We return t to restart the analysis loop
-
 (defun C-analysis-replace-rule (f)
   (let ((bodyp (apply-replacements (body f))))
     (setf (body f) (cdr bodyp))
@@ -388,18 +371,12 @@
 (defun apply-replacements (body)
   (let ((rr (get-replace-rule body)))
     (if (consp rr)
-	(cons t (upd-Ccode
-		 (upd-Cinstr body
-			     #'(lambda (x)
-				 (unless (or (and (Cdecl? x)
-						  (eq-C-var (var x) (cadr rr)))
-					     (eq x (car rr))
-					     (and (Cfree? x)
-						  (eq-C-var (var x) (cddr rr))))
-				   x)))
-		 #'(lambda (x) (if (eq-C-var x (cadr rr)) (C-var-copy (cddr rr)) x))))
+	(cons t (upd-Cinstr body
+			    #'(lambda (x)
+				(unless (eq x (car rr))
+				  (if (Cdecl? x) x
+				    (replace-variables x (list (cdr rr))))))))
       (cons rr body))))
-
 
 (defmethod get-replace-rule ((i list))
   (when (consp i) (or (get-replace-rule (car i))
@@ -424,10 +401,6 @@
 	   (setf (else-part i) (cdr elsep))
 	   (or (car thenp) (car elsep))))
 	(t nil)))
-
-
-
-
 
 
 
@@ -547,7 +520,6 @@
 
 
 (defun C-analysis-dupl-funcall (body)
-;;  (break "po")
   (map-Ccode body #'dupl-funcall))
 (defun dupl-funcall (fc)
   (when (and (Cfuncall? fc)
@@ -556,7 +528,6 @@
 	   (loop for e in (get-dupl-args fc)
 		 when (and (bang? e) (not (safe e)) (C-var? e))
 		 collect e)))
-;;      (break)
       (when (rem-bang rb)
 	(list t)))))
 
@@ -605,21 +576,6 @@
 	       (cons (or (car thenp) (car elsep)) l)))
 	    (t (cons nil l))))))
 
-
-
-;; TODO C down analysis with Cdecl and Cinit
-;; Keep track of variable to be set
-;; when entering if, only keep variable that occur in the if "to be set"
-;; similar to entering if, only keep variable that occur (tobefreed)
-;; when reaching empty list, decl everything
-
-;; Clean Cinit (not necessary)
-;; mp? inits are in decl
-;; array inits are in copy or init_array
-;; init + set => Cinit-set (or something...)
-
-;; TODO clean the replacement rule function (no need to get rid of Cdecl and Cfree)
-
 ;; Return a list of the pointer variable if it is READ (not freed)
 ;; Only safe vars passed as argument are freed (unsafe vars are GCed)
 (defmethod get-read-vars ((e Carray-get))
@@ -629,7 +585,6 @@
 (defmethod get-read-vars ((e C-var))
   (when (not (safe e)) (list e)))
 (defmethod get-read-vars ((e Ccode)) nil)
-
 
 (defmethod C-up-free-analysis ((l list) tofree)
   (if (null l) (loop for v in tofree collect (Cfree v))
@@ -656,9 +611,34 @@
 
 
 
+(defun get-vars-instr (body)
+  (get-set (map-Ccode body #'(lambda (x) (when (C-var? x) (list x))))))
 
+(defun C-down-analysis (f)
+  (setf (body f) (C-down-decl-analysis (body f) nil))
+  nil)
 
-
+(defmethod C-down-decl-analysis ((l list) todecl)
+  (when (consp l)
+    (let ((i (car l)))
+      (cond ((Cdecl? i)  ;;  (and (Cdecl? i) (pointer? (var i)))
+	     (C-down-decl-analysis (cdr l) (unionvar (list (var i)) todecl)))
+	    ((and (Cfree? i) (member (var i) todecl :test #'eq-C-var))
+	     (C-down-decl-analysis (cdr l) (set-difference todecl (list (var i))
+							   :test #'eq-C-var)))
+	    ((Creturn? i)
+	     (append (loop for v in todecl collect (Cdecl v)) (list i)))
+	    (t (let ((todecl-now   (intersection   todecl (get-vars-instr i) :test #'eq-C-var)))
+		 (when (Cif? i)
+		   (setf (then-part i) (C-down-decl-analysis (then-part i) nil))
+		   (setf (else-part i) (C-down-decl-analysis (else-part i) nil)))
+		 (append (loop for v in todecl-now
+			       collect (if (is-arg? v) (break)
+					 (Cdecl v)))
+			 (cons i
+			       (C-down-decl-analysis (cdr l)
+						     (set-difference todecl todecl-now
+								     :test #'eq-C-var))))))))))
 
 
 
