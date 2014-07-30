@@ -608,9 +608,17 @@
 
 
 ;; TODO C down analysis with Cdecl and Cinit
+;; Keep track of variable to be set
+;; when entering if, only keep variable that occur in the if "to be set"
+;; similar to entering if, only keep variable that occur (tobefreed)
+;; when reaching empty list, decl everything
+
+;; Clean Cinit (not necessary)
+;; mp? inits are in decl
+;; array inits are in copy or init_array
+;; init + set => Cinit-set (or something...)
+
 ;; TODO clean the replacement rule function (no need to get rid of Cdecl and Cfree)
-
-
 
 ;; Return a list of the pointer variable if it is READ (not freed)
 ;; Only safe vars passed as argument are freed (unsafe vars are GCed)
