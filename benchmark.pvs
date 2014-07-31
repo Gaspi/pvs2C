@@ -11,7 +11,7 @@ BEGIN
 % X_0    = 9876
 
   Val : TYPE = subrange(0, 59557)
-  Ind  : TYPE = below(1000)
+  Ind  : TYPE = below(20000)
   Arr  : TYPE = [ Ind -> Val ]
   
   A : VAR Arr
@@ -37,7 +37,9 @@ BEGIN
     MEASURE i
 
   insort_rec(A, (n:upto(1000)) ): RECURSIVE Arr =
-    IF n < 1000 THEN insort_rec( insert(A, A(n), n), n + 1 )
+    IF n < 1000 THEN
+      let An = A(n) in
+        insort_rec( insert(A, An, n), n + 1 )
     ELSE A ENDIF
     MEASURE 1000 - n
 

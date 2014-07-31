@@ -23,344 +23,344 @@ int main(void) {
 }
 
 
-pair1380 pvs_a1378() {
-  pair1380 result;
-  result = GC_malloc(1, sizeof( struct struct_pair1380 ) );
-  mpz_init( result->y );
-  result->x = 2;
-  mpz_set_si(result->y, (long) 12);
-  return result;
+!pair103 pvs_a101() {
+  !pair103 #result#;
+  #result# = GC_malloc(1, sizeof( struct struct_pair103 ) );
+  mpz_init( #result#->y );
+  #result#->x = *2*;
+  mpz_set_si(#result#->y, (long) *12*);
+  return *#result#*;
 }
 
-pair1380 pvs_a_d1379() {
-  pair1380 result;
-  result = GC_malloc(1, sizeof( struct struct_pair1380 ) );
-  mpz_init( result->y );
-  result->x = 2;
-  mpz_set_si(result->y, (long) 12);
-  return result;
+!pair103 pvs_a_d102() {
+  !pair103 #result#;
+  #result# = GC_malloc(1, sizeof( struct struct_pair103 ) );
+  mpz_init( #result#->y );
+  #result#->x = *2*;
+  mpz_set_si(#result#->y, (long) *12*);
+  return *#result#*;
 }
 
-int pvs_first1381(pair1380 a) {
-  int result;
-  result = a->x;
+int pvs_first104(pair103 a) {
+  int *result*;
+  *result* = *a*->x;
   if( GC_count( a ) == 1 ) {
     mpz_clear(a->y);
   }
   GC_free(a);
-  return result;
+  return *result*;
 }
 
-int pvs_first_d1382(pair1380 a) {
-  int result;
-  result = a->x;
+int pvs_first_d105(pair103 a) {
+  int *result*;
+  *result* = *a*->x;
   if( GC_count( a ) == 1 ) {
     mpz_clear(a->y);
   }
   GC_free(a);
-  return result;
+  return *result*;
 }
 
-pair1380 pvs_zero1383(pair1380 a) {
-  pair1380 result;
-  if ( GC_count( a ) == 1 )
-    result = a;
+!pair103 pvs_zero106(pair103 a) {
+  !pair103 #result#;
+  if ( GC_count( *a* ) == 1 )
+    #result# = *a*;
   else {
-    result = GC_malloc(1, sizeof( struct struct_pair1380 ));
-    mpz_init( result->y );
-    mpz_set(result->y, a->y);
-    result->x = a->x;
+    #result# = GC_malloc(1, sizeof( struct struct_pair103 ));
+    mpz_init( #result#->y );
+    mpz_set(#result#->y, *a*->y);
+    #result#->x = *a*->x;
   }
-  result->x = 0;
-  int res1385;
-  return result;
+  #result#->x = 0;
+  int *res108*;
+  return *#result#*;
 }
 
-pair1380 pvs_zero_d1384(pair1380 a) {
-  a->x = 0;
-  int res1386;
-  pair1380 result;
-  return a;
+!pair103 pvs_zero_d107(!pair103 #a#) {
+  #a#->x = 0;
+  int *res109*;
+  pair103 *#result#*;
+  return *#a#*;
 }
 
-uli pvs_a1387() {
-  return (uli) 2;
+uli pvs_a110() {
+  return (uli) *2*;
 }
 
-uli pvs_a_d1388() {
-  return (uli) 2;
+uli pvs_a_d111() {
+  return (uli) *2*;
 }
 
-int pvs_b1389() {
-  return (3 + 1);
+int pvs_b112() {
+  return (*3* + *1*);
 }
 
-int pvs_b_d1390() {
-  return (3 + 1);
+int pvs_b_d113() {
+  return (*3* + *1*);
 }
 
-void pvs_c1391(mpz_t result) {
-  mpz_set_si(result, (long) (3 * (1 + 2)));
+!void pvs_c114(mpz_t result) {
+  mpz_set_si(result, (long) (*3* * (*1* + *2*)));
 }
 
-void pvs_c_d1392(mpz_t result) {
-  mpz_set_si(result, (long) (3 * (1 + 2)));
+!void pvs_c_d115(mpz_t result) {
+  mpz_set_si(result, (long) (*3* * (*1* + *2*)));
 }
 
-int pvs_incr1393(int x) {
-  return (x + 1);
+int pvs_incr116(int *x*) {
+  return (*x* + *1*);
 }
 
-int pvs_incr_d1394(int x) {
-  return (x + 1);
+int pvs_incr_d117(int *x*) {
+  return (*x* + *1*);
 }
 
-int pvs_zero1395(mpz_t x) {
+int pvs_zero118(mpz_t x) {
   mpz_clear(x);
-  int result;
+  int *result*;
   return 0;
 }
 
-int pvs_zero_d1396(mpz_t x) {
+int pvs_zero_d119(mpz_t x) {
   mpz_clear(x);
-  int result;
+  int *result*;
   return 0;
 }
 
-int pvs_f1397(int a, int b) {
-  mpz_t conv1399;
-  mpz_init( conv1399 );
-  mpz_set_si(conv1399, (long) b);
-  int result;
-  result = (int) (pvs_zero_d1396( conv1399 ) * pvs_incr_d1394( a ));
-  mpz_clear(conv1399);
-  return result;
+int pvs_f120(int *a*, int *b*) {
+  mpz_t conv122;
+  mpz_init( conv122 );
+  mpz_set_si(conv122, (long) *b*);
+  int *result*;
+  *result* = (int) (pvs_zero_d119( conv122 ) * pvs_incr_d117( *a* ));
+  mpz_clear(conv122);
+  return *result*;
 }
 
-int pvs_f_d1398(int a, int b) {
-  mpz_t conv1400;
-  mpz_init( conv1400 );
-  mpz_set_si(conv1400, (long) b);
-  int result;
-  result = (int) (pvs_zero_d1396( conv1400 ) * pvs_incr_d1394( a ));
-  mpz_clear(conv1400);
-  return result;
+int pvs_f_d121(int *a*, int *b*) {
+  mpz_t conv123;
+  mpz_init( conv123 );
+  mpz_set_si(conv123, (long) *b*);
+  int *result*;
+  *result* = (int) (pvs_zero_d119( conv123 ) * pvs_incr_d117( *a* ));
+  mpz_clear(conv123);
+  return *result*;
 }
 
-int pvs_f1401(int x) {
-  if (((x <= 1) && 1)) {
-    if (((x == 0) || (x < 0))) {
-      return 0;
+int pvs_f124(int *x*) {
+  if (((*x* <= *1*) && *1*)) {
+    if (((*x* == *0*) || (*x* < *0*))) {
+      return *0*;
     } else {
-      return x;
+      return *x*;
     }
   } else {
-    if ((x > 10)) {
-      return 10;
+    if ((*x* > *10*)) {
+      return *10*;
     } else {
-      return (x - 5);
+      return (*x* - *5*);
     }
   }
 }
 
-int pvs_f_d1402(int x) {
-  if (((x <= 1) && 1)) {
-    if (((x == 0) || (x < 0))) {
-      return 0;
+int pvs_f_d125(int *x*) {
+  if (((*x* <= *1*) && *1*)) {
+    if (((*x* == *0*) || (*x* < *0*))) {
+      return *0*;
     } else {
-      return x;
+      return *x*;
     }
   } else {
-    if ((x > 10)) {
-      return 10;
+    if ((*x* > *10*)) {
+      return *10*;
     } else {
-      return (x - 5);
+      return (*x* - *5*);
     }
   }
 }
 
-int pvs_t1409(int x) {
-  return x;
+int pvs_t132(int *x*) {
+  return *x*;
 }
 
-int pvs_t_d1410(int x) {
-  return x;
+int pvs_t_d133(int *x*) {
+  return *x*;
 }
 
-int* pvs_id21411(int* t59375) {
-  return t59375;
+int* pvs_id2134(int* #t59375#) {
+  return *#t59375#*;
 }
 
-int* pvs_id2_d1412(int* t59375) {
-  return t59375;
+!int* pvs_id2_d135(!int* #t59375#) {
+  return *#t59375#*;
 }
 
-int* pvs_f1415(int x) {
-  int* result;
-  result = GC_malloc(1000, sizeof(int) );
-  int i1417;
-  for(i1417 = 0; i1417 < 1000; i1417++) {
-    result[i1417] = pvs_t_d1410( i1417 );
+!int* pvs_f138(int *x*) {
+  !int* #result#;
+  #result# = GC_malloc(1000, sizeof(int) );
+  int *i140*;
+  for(*i140* = 0; *i140* < 1000; *i140*++) {
+    #result#[*i140*] = pvs_t_d133( **i140** );
   }
-  return result;
+  return *#result#*;
 }
 
-int* pvs_f_d1416(int x) {
-  int* result;
-  result = GC_malloc(1000, sizeof(int) );
-  int i1418;
-  for(i1418 = 0; i1418 < 1000; i1418++) {
-    result[i1418] = pvs_t_d1410( i1418 );
+!int* pvs_f_d139(int *x*) {
+  !int* #result#;
+  #result# = GC_malloc(1000, sizeof(int) );
+  int *i141*;
+  for(*i141* = 0; *i141* < 1000; *i141*++) {
+    #result#[*i141*] = pvs_t_d133( **i141** );
   }
-  return result;
+  return *#result#*;
 }
 
-int* pvs_update1419(int* x) {
-  int* result;
-  if ( GC_count( x ) == 1 )
-    result = x;
+!int* pvs_update142(int* x) {
+  !int* #result#;
+  if ( GC_count( *x* ) == 1 )
+    #result# = *x*;
   else {
-    result = GC_malloc(1000, sizeof(int) );
-    int i1573;
-    for(i1573 = 0; i1573 < 1000; i1573++) {
-      result[i1573] = x[i1573];
+    #result# = GC_malloc(1000, sizeof(int) );
+    int *i296*;
+    for(*i296* = 0; *i296* < 1000; *i296*++) {
+      #result#[*i296*] = *x*[*i296*];
     }
   }
-  result[0] = 0;
-  int L1421;
-  int res1422;
-  return result;
+  #result#[0] = 0;
+  int *L144*;
+  int *res145*;
+  return *#result#*;
 }
 
-int* pvs_update_d1420(int* x) {
-  x[0] = 0;
-  int res1424;
-  int L1423;
-  int* result;
-  return x;
+!int* pvs_update_d143(!int* #x#) {
+  #x#[0] = 0;
+  int *res147*;
+  int *L146*;
+  int* *#result#*;
+  return *#x#*;
 }
 
-int* pvs_t21437(int x) {
-  int* result;
-  result = GC_malloc(1000, sizeof(int) );
-  int i1439;
-  for(i1439 = 0; i1439 < 1000; i1439++) {
-    result[i1439] = (x + i1439);
+!int* pvs_t2160(int *x*) {
+  !int* #result#;
+  #result# = GC_malloc(1000, sizeof(int) );
+  int *i162*;
+  for(*i162* = 0; *i162* < 1000; *i162*++) {
+    #result#[*i162*] = (*x* + **i162**);
   }
-  return result;
+  return *#result#*;
 }
 
-int* pvs_t2_d1438(int x) {
-  int* result;
-  result = GC_malloc(1000, sizeof(int) );
-  int i1440;
-  for(i1440 = 0; i1440 < 1000; i1440++) {
-    result[i1440] = (x + i1440);
+!int* pvs_t2_d161(int *x*) {
+  !int* #result#;
+  #result# = GC_malloc(1000, sizeof(int) );
+  int *i163*;
+  for(*i163* = 0; *i163* < 1000; *i163*++) {
+    #result#[*i163*] = (*x* + **i163**);
   }
-  return result;
+  return *#result#*;
 }
 
-int* pvs_id1441(int** t59375) {
-  int* result;
-  result = (int*) t59375[0];
-  if( GC_count( t59375 ) == 1 ) {
-    int i1574;
-    for(i1574 = 0; i1574 < 1000; i1574++) {
-      GC_free(t59375[i1574]);
+int* pvs_id164(int** #t59375#) {
+  int* #result#;
+  #result# = (int*) *#t59375#*[*0*];
+  if( GC_count( #t59375# ) == 1 ) {
+    int *i297*;
+    for(*i297* = 0; *i297* < 1000; *i297*++) {
+      GC_free(#t59375#[*i297*]);
     }
   }
-  GC_free(t59375);
-  int** a;
-  return result;
+  GC_free(#t59375#);
+  int** *a*;
+  return *#result#*;
 }
 
-int* pvs_id_d1442(int** t59375) {
-  int* result;
-  result = (int*) t59375[0];
-  if( GC_count( t59375 ) == 1 ) {
-    int i1576;
-    for(i1576 = 0; i1576 < 1000; i1576++) {
-      GC_free(t59375[i1576]);
+int* pvs_id_d165(int** #t59375#) {
+  int* #result#;
+  #result# = (int*) *#t59375#*[*0*];
+  if( GC_count( #t59375# ) == 1 ) {
+    int *i299*;
+    for(*i299* = 0; *i299* < 1000; *i299*++) {
+      GC_free(#t59375#[*i299*]);
     }
   }
-  GC_free(t59375);
-  int** a;
-  return result;
+  GC_free(#t59375#);
+  int** *a*;
+  return *#result#*;
 }
 
-int* pvs_te1473() {
-  int* aux1476;
-  aux1476 = GC_malloc(1000, sizeof(int) );
-  int i1475;
-  for(i1475 = 0; i1475 < 1000; i1475++) {
-    aux1476[i1475] = pvs_t_d1410( i1475 );
+!int* pvs_te196() {
+  !int* #aux199#;
+  #aux199# = GC_malloc(1000, sizeof(int) );
+  int *i198*;
+  for(*i198* = 0; *i198* < 1000; *i198*++) {
+    #aux199#[*i198*] = pvs_t_d133( **i198** );
   }
-  return pvs_update_d1420( pvs_update_d1420( aux1476 ) );
+  return pvs_update_d143( pvs_update_d143( *#aux199#* ) );
 }
 
-int* pvs_te_d1474() {
-  int* aux1478;
-  aux1478 = GC_malloc(1000, sizeof(int) );
-  int i1477;
-  for(i1477 = 0; i1477 < 1000; i1477++) {
-    aux1478[i1477] = pvs_t_d1410( i1477 );
+!int* pvs_te_d197() {
+  !int* #aux201#;
+  #aux201# = GC_malloc(1000, sizeof(int) );
+  int *i200*;
+  for(*i200* = 0; *i200* < 1000; *i200*++) {
+    #aux201#[*i200*] = pvs_t_d133( **i200** );
   }
-  return pvs_update_d1420( pvs_update_d1420( aux1478 ) );
+  return pvs_update_d143( pvs_update_d143( *#aux201#* ) );
 }
 
-int** pvs_update1481(int** x) {
-  int* res1488;
-  res1488 = GC_malloc(1000, sizeof(int) );
-  int i1489;
-  for(i1489 = 0; i1489 < 1000; i1489++) {
-    res1488[i1489] = i1489;
+!int** pvs_update204(int** x) {
+  !int* #res211#;
+  #res211# = GC_malloc(1000, sizeof(int) );
+  int *i212*;
+  for(*i212* = 0; *i212* < 1000; *i212*++) {
+    #res211#[*i212*] = **i212**;
   }
-  int** result;
-  if ( GC_count( x ) == 1 )
-    result = x;
+  !int** #result#;
+  if ( GC_count( *x* ) == 1 )
+    #result# = *x*;
   else {
-    result = GC_malloc(1000, sizeof(int*) );
-    int i1578;
-    for(i1578 = 0; i1578 < 1000; i1578++) {
-      result[i1578] = (int*) x[i1578];
+    #result# = GC_malloc(1000, sizeof(int*) );
+    int *i301*;
+    for(*i301* = 0; *i301* < 1000; *i301*++) {
+      #result#[*i301*] = (int*) *x*[*i301*];
     }
   }
-  int* E1484;
-  E1484 = GC_malloc(1000, sizeof(int) );
-  int i1579;
-  for(i1579 = 0; i1579 < 1000; i1579++) {
-    E1484[i1579] = result[0][i1579];
+  !int* #E207#;
+  #E207# = GC_malloc(1000, sizeof(int) );
+  int *i302*;
+  for(*i302* = 0; *i302* < 1000; *i302*++) {
+    #E207#[*i302*] = #result#[0][*i302*];
   }
-  E1484[1] = 0;
-  result[0] = (int*) E1484;
-  result[1] = (int*) res1488;
-  int L1483;
-  int L1485;
-  int res1486;
-  int L1487;
-  return result;
+  #E207#[1] = 0;
+  #result#[0] = (int*) *#E207#*;
+  #result#[1] = (int*) *#res211#*;
+  int *L206*;
+  int *L208*;
+  int *res209*;
+  int *L210*;
+  return *#result#*;
 }
 
-int** pvs_update_d1482(int** x) {
-  int* res1495;
-  res1495 = GC_malloc(1000, sizeof(int) );
-  int i1496;
-  for(i1496 = 0; i1496 < 1000; i1496++) {
-    res1495[i1496] = i1496;
+!int** pvs_update_d205(!int** #x#) {
+  !int* #res218#;
+  #res218# = GC_malloc(1000, sizeof(int) );
+  int *i219*;
+  for(*i219* = 0; *i219* < 1000; *i219*++) {
+    #res218#[*i219*] = **i219**;
   }
-  int* E1491;
-  E1491 = GC_malloc(1000, sizeof(int) );
-  int i1580;
-  for(i1580 = 0; i1580 < 1000; i1580++) {
-    E1491[i1580] = x[0][i1580];
+  !int* #E214#;
+  #E214# = GC_malloc(1000, sizeof(int) );
+  int *i303*;
+  for(*i303* = 0; *i303* < 1000; *i303*++) {
+    #E214#[*i303*] = #x#[0][*i303*];
   }
-  E1491[1] = 0;
-  x[0] = (int*) E1491;
-  x[1] = (int*) res1495;
-  int** result;
-  int L1490;
-  int L1492;
-  int res1493;
-  int L1494;
-  return x;
+  #E214#[1] = 0;
+  #x#[0] = (int*) *#E214#*;
+  #x#[1] = (int*) *#res218#*;
+  int** *#result#*;
+  int *L213*;
+  int *L215*;
+  int *res216*;
+  int *L217*;
+  return *#x#*;
 }
