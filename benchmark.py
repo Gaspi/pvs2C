@@ -1,8 +1,14 @@
 
+size = 20000
+
 def genT():
    v = 9876
-   for e in xrange(1000):
+   for e in xrange( size ):
       yield v
       v = (v * 12345) % 59557
 
-print min( genT() )
+
+
+
+
+print sorted( genT() )[0]

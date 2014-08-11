@@ -1,40 +1,19 @@
 // C file generated from benchmark.pvs
 
-typedef unsigned long int uli;
+unsigned long int* init(unsigned long int* A, int i, unsigned long int v);
 
+unsigned long int J(int k);
 
-uli* pvs_init485(uli* A, int i, uli v);
+unsigned long int Z(int x);
 
-uli* pvs_init_d486(uli* A, int i, uli v);
+unsigned long int* T();
 
-uli pvs_J511(int k);
+unsigned long int* insert(unsigned long int* A, unsigned long int v, int i);
 
-uli pvs_J_d512(int k);
+unsigned long int* insort_rec(unsigned long int* A, int n);
 
-uli pvs_Z513(int x);
+unsigned long int* insort(unsigned long int* A);
 
-uli pvs_Z_d514(int x);
+unsigned long int tsort();
 
-uli* pvs_T515();
-
-uli* pvs_T_d516();
-
-uli* pvs_insert523(uli* A, uli v, int i);
-
-uli* pvs_insert_d524(uli* A, uli v, int i);
-
-uli* pvs_insort_rec617(uli* A, int n);
-
-uli* pvs_insort_rec_d618(uli* A, int n);
-
-uli* pvs_insort621(uli* A);
-
-uli* pvs_insort_d622(uli* A);
-
-uli pvs_tsort625();
-
-uli pvs_tsort_d626();
-
-uli pvs_jsort627();
-
-uli pvs_jsort_d628();
+unsigned long int jsort();

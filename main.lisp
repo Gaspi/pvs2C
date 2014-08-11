@@ -39,11 +39,6 @@
 ;;        ./foo
 ;;
 ;;
-;;  TODO : handle if branch correctly
-;;  TODO : sorting arrays benchmark
-;;  TODO : GC_free the arguments
-;;  TODO : GC wrong in  id( GC( f( A ) ) )
-;;      Only for variables passed as arguments
 ;;  TODO: management of GC of variables
 ;;  GC_free all variables at the end
 ;;     f( GC(*A*) )   =>   f( A ) and remove GC_free(A)
@@ -62,21 +57,19 @@
 (defvar *Crename-uli*        nil )
 (defvar *C-analysis*         t   )
 (defvar *C-replace-analysis* t   )
+(defvar *tests-on-load*      nil)
 
 ;; Change only for debugging...
-(setq *Cshow-safe*           t   )
-(setq *Cshow-bang*           t   )
-(setq *Cshow-dupl*           t   )
-(setq *Cdebug*               t   )
-(setq *Csimple-names*        nil )
-(setq *Crename-uli*          t   )
-(setq *C-analysis*           t   )
-(setq *C-replace-analysis*   t   )
-
-
-;; The tests to perform on load
-; (defvar *tests-on-load* nil)  ;; Default
-(defvar *tests-on-load* (list "test" "draft"))
+;; (setq *Cshow-safe*           t   )
+;; (setq *Cshow-bang*           t   )
+;; (setq *Cshow-dupl*           t   )
+;; (setq *Cdebug*               t   )
+;; (setq *Csimple-names*        nil )
+;; (setq *Crename-uli*          t   )
+;; (setq *C-analysis*           t   )
+;; (setq *C-replace-analysis*   t   )
+;; ;; The tests to perform on load
+;; (setq *tests-on-load* (list "test" "draft"))
 
 
 ;; ------------------------ Loading the files ---------------------

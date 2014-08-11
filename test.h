@@ -1,15 +1,12 @@
 // C file generated from test.pvs
 
-typedef unsigned long int uli;
-
-
 void pvs_adda47(mpz_t result, mpz_t i);
 
 void pvs_adda_d48(mpz_t result, mpz_t i);
 
-void pvs_f49(mpz_t result, int *a*, int *b*);
+void pvs_f49(mpz_t result, int a, int b);
 
-void pvs_f_d50(mpz_t result, int *a*, int *b*);
+void pvs_f_d50(mpz_t result, int a, int b);
 
 void pvs_incr51(mpz_t result, mpz_t x);
 
@@ -19,9 +16,9 @@ void pvs_norm53(mpz_t result, mpz_t x, mpz_t y);
 
 void pvs_norm_d54(mpz_t result, mpz_t x, mpz_t y);
 
-void pvs_g59(mpz_t result, int *a*);
+void pvs_g59(mpz_t result, int a);
 
-void pvs_g_d60(mpz_t result, int *a*);
+void pvs_g_d60(mpz_t result, int a);
 
 int pvs_b61();
 
