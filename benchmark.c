@@ -23,166 +23,166 @@ int main(void) {
 }
 
 
-unsigned long int* pvs_init722(unsigned long int* A, int i, unsigned long int v) {
+unsigned long int* pvs_init47(unsigned long int* A, int i, unsigned long int v) {
   unsigned long int* B;
   if ( GC_count( A ) == 1 )
     B = A;
   else {
     B = GC_malloc(20000, sizeof(unsigned long int) );
-    int i872;
-    for(i872 = 0; i872 < 20000; i872++) {
-      B[i872] = A[i872];
+    int i197;
+    for(i197 = 0; i197 < 20000; i197++) {
+      B[i197] = A[i197];
     }
   }
   B[i] = v;
   if ((i >= 999)) {
     return B;
   } else {
-    return pvs_init_d723( B , (i + 1) , ((12345 * v) % 59557) );
+    return pvs_init_d48( B , (i + 1) , ((12345 * v) % 59557) );
   }
 }
 
-unsigned long int* pvs_init_d723(unsigned long int* A, int i, unsigned long int v) {
+unsigned long int* pvs_init_d48(unsigned long int* A, int i, unsigned long int v) {
   A[i] = v;
   if ((i >= 999)) {
     return A;
   } else {
-    return pvs_init_d723( A , (i + 1) , ((12345 * v) % 59557) );
+    return pvs_init_d48( A , (i + 1) , ((12345 * v) % 59557) );
   }
 }
 
-unsigned long int pvs_J748(int k) {
+unsigned long int pvs_J73(int k) {
   return (unsigned long int) (999 - k);
 }
 
-unsigned long int pvs_J_d749(int k) {
+unsigned long int pvs_J_d74(int k) {
   return (unsigned long int) (999 - k);
 }
 
-unsigned long int pvs_Z750(int x) {
+unsigned long int pvs_Z75(int x) {
   return (unsigned long int) 0;
 }
 
-unsigned long int pvs_Z_d751(int x) {
+unsigned long int pvs_Z_d76(int x) {
   return (unsigned long int) 0;
 }
 
-unsigned long int* pvs_T752() {
-  unsigned long int* aux755;
-  aux755 = GC_malloc(20000, sizeof(unsigned long int) );
-  int i754;
-  for(i754 = 0; i754 < 20000; i754++) {
-    aux755[i754] = pvs_Z_d751( i754 );
+unsigned long int* pvs_T77() {
+  unsigned long int* aux80;
+  aux80 = GC_malloc(20000, sizeof(unsigned long int) );
+  int i79;
+  for(i79 = 0; i79 < 20000; i79++) {
+    aux80[i79] = pvs_Z_d76( i79 );
   }
-  return pvs_init_d723( aux755 , 0 , (unsigned long int) 9876 );
+  return pvs_init_d48( aux80 , 0 , (unsigned long int) 9876 );
 }
 
-unsigned long int* pvs_T_d753() {
-  unsigned long int* aux757;
-  aux757 = GC_malloc(20000, sizeof(unsigned long int) );
-  int i756;
-  for(i756 = 0; i756 < 20000; i756++) {
-    aux757[i756] = pvs_Z_d751( i756 );
+unsigned long int* pvs_T_d78() {
+  unsigned long int* aux82;
+  aux82 = GC_malloc(20000, sizeof(unsigned long int) );
+  int i81;
+  for(i81 = 0; i81 < 20000; i81++) {
+    aux82[i81] = pvs_Z_d76( i81 );
   }
-  return pvs_init_d723( aux757 , 0 , (unsigned long int) 9876 );
+  return pvs_init_d48( aux82 , 0 , (unsigned long int) 9876 );
 }
 
-unsigned long int* pvs_insert760(unsigned long int* A, unsigned long int v, int i) {
+unsigned long int* pvs_insert85(unsigned long int* A, unsigned long int v, int i) {
   unsigned long int* result;
   if (((i == 0) || (v >= A[(i - 1)]))) {
     if ( GC_count( A ) == 1 )
       result = A;
     else {
       result = GC_malloc(20000, sizeof(unsigned long int) );
-      int i873;
-      for(i873 = 0; i873 < 20000; i873++) {
-        result[i873] = A[i873];
+      int i198;
+      for(i198 = 0; i198 < 20000; i198++) {
+        result[i198] = A[i198];
       }
     }
     result[i] = v;
     return result;
   } else {
-    unsigned long int res765;
-    res765 = A[(i - 1)];
-    unsigned long int* aux766;
+    unsigned long int res90;
+    res90 = A[(i - 1)];
+    unsigned long int* aux91;
     if ( GC_count( A ) == 1 )
-      aux766 = A;
+      aux91 = A;
     else {
-      aux766 = GC_malloc(20000, sizeof(unsigned long int) );
-      int i874;
-      for(i874 = 0; i874 < 20000; i874++) {
-        aux766[i874] = A[i874];
+      aux91 = GC_malloc(20000, sizeof(unsigned long int) );
+      int i199;
+      for(i199 = 0; i199 < 20000; i199++) {
+        aux91[i199] = A[i199];
       }
     }
-    aux766[i] = res765;
-    return pvs_insert_d761( aux766 , v , (i - 1) );
+    aux91[i] = res90;
+    return pvs_insert_d86( aux91 , v , (i - 1) );
   }
 }
 
-unsigned long int* pvs_insert_d761(unsigned long int* A, unsigned long int v, int i) {
+unsigned long int* pvs_insert_d86(unsigned long int* A, unsigned long int v, int i) {
   if (((i == 0) || (v >= A[(i - 1)]))) {
     A[i] = v;
     return A;
   } else {
-    unsigned long int res770;
-    res770 = A[(i - 1)];
-    A[i] = res770;
-    return pvs_insert_d761( A , v , (i - 1) );
+    unsigned long int res95;
+    res95 = A[(i - 1)];
+    A[i] = res95;
+    return pvs_insert_d86( A , v , (i - 1) );
   }
 }
 
-unsigned long int* pvs_insort_rec854(unsigned long int* A, int n) {
+unsigned long int* pvs_insort_rec179(unsigned long int* A, int n) {
   if ((n < 1000)) {
     unsigned long int An;
     An = A[n];
-    return pvs_insort_rec_d855( pvs_insert760( A , An , n ) , (n + 1) );
+    return pvs_insort_rec_d180( pvs_insert85( A , An , n ) , (n + 1) );
   } else {
     return A;
   }
 }
 
-unsigned long int* pvs_insort_rec_d855(unsigned long int* A, int n) {
+unsigned long int* pvs_insort_rec_d180(unsigned long int* A, int n) {
   if ((n < 1000)) {
     unsigned long int An;
     An = A[n];
-    return pvs_insort_rec_d855( pvs_insert_d761( A , An , n ) , (n + 1) );
+    return pvs_insort_rec_d180( pvs_insert_d86( A , An , n ) , (n + 1) );
   } else {
     return A;
   }
 }
 
-unsigned long int* pvs_insort858(unsigned long int* A) {
-  return pvs_insort_rec854( A , 0 );
+unsigned long int* pvs_insort183(unsigned long int* A) {
+  return pvs_insort_rec179( A , 0 );
 }
 
-unsigned long int* pvs_insort_d859(unsigned long int* A) {
-  return pvs_insort_rec_d855( A , 0 );
+unsigned long int* pvs_insort_d184(unsigned long int* A) {
+  return pvs_insort_rec_d180( A , 0 );
 }
 
-unsigned long int pvs_tsort862() {
-  return pvs_insort_d859( pvs_T_d753() )[0];
+unsigned long int pvs_tsort187() {
+  return pvs_insort_d184( pvs_T_d78() )[0];
 }
 
-unsigned long int pvs_tsort_d863() {
-  return pvs_insort_d859( pvs_T_d753() )[0];
+unsigned long int pvs_tsort_d188() {
+  return pvs_insort_d184( pvs_T_d78() )[0];
 }
 
-unsigned long int pvs_jsort864() {
-  unsigned long int* aux867;
-  aux867 = GC_malloc(20000, sizeof(unsigned long int) );
-  int i866;
-  for(i866 = 0; i866 < 20000; i866++) {
-    aux867[i866] = pvs_J_d749( i866 );
+unsigned long int pvs_jsort189() {
+  unsigned long int* aux192;
+  aux192 = GC_malloc(20000, sizeof(unsigned long int) );
+  int i191;
+  for(i191 = 0; i191 < 20000; i191++) {
+    aux192[i191] = pvs_J_d74( i191 );
   }
-  return pvs_insort_d859( aux867 )[0];
+  return pvs_insort_d184( aux192 )[0];
 }
 
-unsigned long int pvs_jsort_d865() {
-  unsigned long int* aux869;
-  aux869 = GC_malloc(20000, sizeof(unsigned long int) );
-  int i868;
-  for(i868 = 0; i868 < 20000; i868++) {
-    aux869[i868] = pvs_J_d749( i868 );
+unsigned long int pvs_jsort_d190() {
+  unsigned long int* aux194;
+  aux194 = GC_malloc(20000, sizeof(unsigned long int) );
+  int i193;
+  for(i193 = 0; i193 < 20000; i193++) {
+    aux194[i193] = pvs_J_d74( i193 );
   }
-  return pvs_insort_d859( aux869 )[0];
+  return pvs_insort_d184( aux194 )[0];
 }
