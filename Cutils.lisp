@@ -410,4 +410,22 @@
 
 
 
+;; Useless functions ?/
+
+;; (defun pvs2C-assign-rhs (assignments bindings livevars)
+;;   (when (consp assignments)
+;;     (let* ((e (expression (car assignments)))
+;; 	   (C-assign-expr (pvs2C e
+;; 				 bindings
+;; 				 (append (updateable-vars
+;; 					  (arguments (car assignments)))
+;; 					 (append (updateable-vars (cdr assignments))
+;; 						 livevars))))
+;; 	   (*lhs-args* nil))
+;;       (cons C-assign-expr
+;; 	    (pvs2C-assign-rhs (cdr assignments) bindings
+;; 			      (append (updateable-free-formal-vars e)
+;; 				      livevars))))))
+
+
 
