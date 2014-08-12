@@ -90,6 +90,7 @@
 
 ;; Perform tests
 (when *tests-on-load*
+  (setf *tests-on-load* nil)
   (format t "All Lisp files loaded.~%")
-  (test-cases)
-  (setq *tests-on-load* nil))
+  (test-cases))
+

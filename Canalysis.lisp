@@ -20,28 +20,30 @@
 ;; --------------------------------------------------------------------
 
 ;; ------- Maps f to all expressions and returns the concatenation of all results --------
-(defmethod map-Ccode ((l list) f)
-  (when (consp l) (append (map-Ccode (car l) f) (map-Ccode (cdr l) f))))
-(defmethod map-Ccode ((v C-var)       f) (funcall f v))
-(defmethod map-Ccode ((e Crecord-get) f) (append (funcall f e) (map-Ccode (var e) f)))
-(defmethod map-Ccode ((e Carray-get)  f) (append (funcall f e) (map-Ccode (list (var e) (arg e)) f)))
-(defmethod map-Ccode ((e Cfuncall)    f) (append (funcall f e) (map-Ccode (args e) f)))
-(defmethod map-Ccode ((i Cfuncall-mp) f) (append (funcall f i) (map-Ccode (Cfunc i) f)))
-(defmethod map-Ccode ((i Cdecl) f)       (append (funcall f i) (map-Ccode (var i) f)))
-;; (defmethod map-Ccode ((i Cfree) f)       (append (funcall f i) (map-Ccode (var i) f)))
-(defmethod map-Ccode ((i Cset) f)     (append (funcall f i) (map-Ccode (list (var i)  (expr i)) f)))
-(defmethod map-Ccode ((i Ccopy) f)       (append (funcall f i) (map-Ccode (list (varA i) (varB i)) f)))
-(defmethod map-Ccode ((i Carray-init) f) (append (funcall f i) (map-Ccode (list (var i)  (body i)) f)))
-(defmethod map-Ccode ((i Crecord-init) f)(append (funcall f i) (map-Ccode (var i) f)))
-(defmethod map-Ccode ((i Creturn) f)     (append (funcall f i) (map-Ccode (var i) f)))
-(defmethod map-Ccode ((i Cif) f)
-  (append (funcall f i)  (map-Ccode (list (cond-part i) (then-part i) (else-part i)) f)))
-(defmethod map-Ccode ((e Ccode) f) nil)
-(defmethod map-Ccode (e f) (break "Mapvars encountered unknown C expression..."))
+(defun map-Ccode (e f &optional (ignore #'(lambda (x) nil)))
+  (unless (funcall ignore e) (map-Ccode* e f ignore)))
+(defmethod map-Ccode* ((l list) f ig)
+  (when (consp l) (append (map-Ccode (car l) f ig) (map-Ccode (cdr l) f ig))))
+(defmethod map-Ccode* ((v C-var)       f ig) (funcall f v))
+(defmethod map-Ccode* ((e Crecord-get) f ig) (append (funcall f e) (map-Ccode (var e) f ig)))
+(defmethod map-Ccode* ((e Carray-get)  f ig) (append (funcall f e) (map-Ccode (list (var e) (arg e)) f ig)))
+(defmethod map-Ccode* ((e Cfuncall)    f ig) (append (funcall f e) (map-Ccode (args e) f ig)))
+(defmethod map-Ccode* ((i Cfuncall-mp) f ig) (append (funcall f i) (map-Ccode (Cfunc i) f ig)))
+(defmethod map-Ccode* ((i Cdecl)       f ig) (append (funcall f i) (map-Ccode (var i) f ig)))
+;; (defmethod map-Ccode* ((i Cfree)    f ig) (append (funcall f i) (map-Ccode (var i) f ig)))
+(defmethod map-Ccode* ((i Cset)        f ig) (append (funcall f i) (map-Ccode (list (var i)  (expr i)) f ig)))
+(defmethod map-Ccode* ((i Ccopy)       f ig) (append (funcall f i) (map-Ccode (list (varA i) (varB i)) f ig)))
+(defmethod map-Ccode* ((i Carray-init) f ig) (append (funcall f i) (map-Ccode (list (var i)  (body i)) f ig)))
+(defmethod map-Ccode* ((i Crecord-init) f ig)(append (funcall f i) (map-Ccode (var i) f ig)))
+(defmethod map-Ccode* ((i Creturn)     f ig) (append (funcall f i) (map-Ccode (var i) f ig)))
+(defmethod map-Ccode* ((i Cif) f ig)
+  (append (funcall f i)  (map-Ccode (list (cond-part i) (then-part i) (else-part i)) f ig)))
+(defmethod map-Ccode* ((e Ccode) f ig) nil)
+(defmethod map-Ccode* (e f ig) (break "Mapvars encountered unknown C expression..."))
 
 ;; ------------------- Maps f only to instructions ----------------------
 (defun map-Cinstr (body f)
-  (map-Ccode body #'(lambda (x) (when (Cinstr? x) (funcall f x)))))
+  (map-Ccode body f #'(lambda (x) (not (Cinstr? x)))))
 
 ;; --------------- Maps update function f to all C expressions ----------------
 (defmethod upd-Ccode ((v C-var) f) (funcall f v))
@@ -255,7 +257,6 @@
 ;; --------------- Gets all pointer-type variables -----------------
 (defun get-all-vars (body)
   (map-Ccode body #'(lambda (x) (when (pointer? x) (list x)))))
-
 
 
 
@@ -641,9 +642,14 @@
 								     :test #'eq-C-var))))))))))
 
 
-
 (defun C-last-analysis (f)
- nil)
+  (let* ((body (body f))
+	 (vars (get-set (map-Ccode body #'(lambda (y) (when (C-var? y) (list y))) #'Cdecl?))))
+    (setf (body f)
+	  (upd-Ccode body #'(lambda (x) (unless (and (Cdecl? x)
+						     (not (member (var x) vars :test #'eq-C-var)))
+					  x))))
+    nil))
 
 
 
