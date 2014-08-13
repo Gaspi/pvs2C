@@ -8,7 +8,8 @@ Manip to integrate pvs2c into PVS :
 
 ---- PVS/emacs/emacs-src/pvs-eval.el ----
 
-add
+-> After :
+
 (defpvs pvs-lisp-theory typecheck (theoryname)
   "Generates the Lisp code for a given theory and displays it in a buffer"
   (interactive (complete-theory-name "Generate lisp for theory: "))
@@ -34,7 +35,38 @@ add
       (find-file-read-only-other-window lisp-file))))
 
 
-with my own functions
+-> Add :
+
+(defpvs pvs-C-file find-file (filename)
+  "Generates the C code for a given file and displays it in a buffer"
+  (interactive (pvs-complete-file-name "Generate C for file: "))
+  (unless (interactive-p) (pvs-collect-theories))
+  (pvs-bury-output)
+  (message "Generating C for file...")
+  (pvs-send-and-wait (format "(generate-C-for-pvs-file \"%s\")"
+			 filename) nil nil 'dont-care)
+  (let ((buf (pvs-find-C-file filename)))
+    (when buf
+      (message "")
+      (save-excursion
+	(set-buffer buf)
+	(setq pvs-context-sensitive t)
+	(lisp-mode)))))
+
+(defun pvs-find-C-file (filename)
+  (let ((buf (get-buffer (format nil "%s.c" filename))))
+    (when buf (kill-buffer buf)))
+  (let ((C-file (format nil "%s%s.c" pvs-current-directory filename)))
+    (when (file-exists-p C-file)
+      (find-file-read-only-other-window C-file))))
+
+
+
+
+
+
+
+
 
 
 
@@ -54,8 +86,14 @@ with my own functions
 		  (:file "pvs2clean")
 
 -> add 
-		  (:file "main")
-		  (:file "etc...")
+		  (:file "Cutils")
+		  (:file "Ctypes")
+		  (:file "Ccode")
+		  (:file "Canalysis")
+		  (:file "Cprimop")
+		  (:file "pvs2c")
+
+
 
 
 
@@ -70,10 +108,17 @@ groundevallisp = src/groundeval/eval-macros.lisp \
 		 src/groundeval/pvseval-update.lisp \
 		 src/groundeval/cl2pvs.lisp \
 		 src/groundeval/generate-lisp-for-theory.lisp \
-                 src/groundeval/random-test.lisp \
-                 src/groundeval/pvs2clean.lisp
-add the path of my own files
+         src/groundeval/random-test.lisp \
+         src/groundeval/pvs2clean.lisp
 
+
+add the path of my own files
+         src/groundeval/pvs2c/Cutils.lisp \
+         src/groundeval/pvs2c/Ctypes.lisp \
+         src/groundeval/pvs2c/Ccode.lisp \
+         src/groundeval/pvs2c/Canalysis.lisp \
+         src/groundeval/pvs2c/Cprimop.lisp \
+         src/groundeval/pvs2c/pvs2c.lisp
 
 
 

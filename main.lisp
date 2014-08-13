@@ -47,19 +47,17 @@
 
 (in-package :pvs)
 
-;; ------------------Debugging functions and variables ---------------
-;; Default values
-(defvar *Cshow-safe*         nil )
-(defvar *Cshow-bang*         nil )
-(defvar *Cshow-dupl*         nil )
-(defvar *Cdebug*             nil )
-(defvar *Csimple-names*      nil )
-(defvar *Crename-uli*        nil )
-(defvar *C-analysis*         t   )
-(defvar *C-replace-analysis* t   )
-(defvar *tests-on-load*      nil)
+(defvar *tests-on-load*      nil )
 
-;; Change only for debugging...
+(defun load-and-test (&rest tests)
+  (setq *tests-on-load* tests)
+  (load "main"))
+
+(load "Cutils")
+
+
+
+;; Use for debugging purposes...
 ;; (setq *Cshow-safe*           t   )
 ;; (setq *Cshow-bang*           t   )
 ;; (setq *Cshow-dupl*           t   )
@@ -72,15 +70,6 @@
 ;; (setq *tests-on-load* (list "test" "draft"))
 
 
-;; ------------------------ Loading the files ---------------------
-;; (pushnew "/amd/pfs/export/u2/homes/ferey/Documents/pvs2c" *pvs-directories* :test #'string=)
-;; (lf "Cutils.lisp")
-;; (lf "Ctypes.lisp")
-;; (lf "Ccode.lisp")
-;; (lf "Canalysis.lisp")
-;; (lf "Cprimop.lisp")
-;; (lf "pvs2c.lisp")
-(load "Cutils")
 (load "Ctypes")
 (load "Ccode")
 (load "Canalysis")
