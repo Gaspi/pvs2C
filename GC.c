@@ -119,12 +119,12 @@ int GC_free(void* pointer) {
   int i;
   entry_t* e = GC_get_entry(pointer);
   e->counter--;
-  return (e->counter == 0);
-  /* if (e->counter == 0) { */
-  /*   free(pointer); */
-  /*   return 0; */
-  /* } else */
-  /*   return 1; */
+  /* return (e->counter == 0); */
+  if (e->counter == 0) {
+    free(pointer);
+    return 0;
+  } else
+    return 1;
 }
 
 

@@ -841,7 +841,7 @@
 	    "//        C file generated from ~a.pvs"
 	    "// ---------------------------------------------"
 	    "//   Make sure to link GC.c and GMP in compilation:"
-	    "//      gcc -o ~a ~:*~a.c GC.c -lgmp"
+	    "//      gcc -O3 -o ~a ~:*~a.c GC.c -lgmp"
 	    "//      ./~a"
 	    "// ---------------------------------------------"
 	    "~%#include<stdio.h>"
