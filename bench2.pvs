@@ -1,0 +1,54 @@
+bench2 : THEORY
+BEGIN
+
+% We use the Lehmer random number generator
+% with the following parameters
+
+% n      = 59557   big prime number picked from
+%                  http://primes.utm.edu/lists/small/10000.txt
+% length = 1000
+% g      = 12345
+% X_0    = 9876
+
+
+  Val  : TYPE+ = subrange(0, 59557)
+  Ind  : TYPE+ = below(10000)
+  Arr  : TYPE+ = [ Ind -> Val ]
+  
+  A : VAR Arr
+  i : VAR Ind
+  v : VAR Val
+  
+  re:[Val -> Val] = rem(59557)
+  
+  init(A, i, v): RECURSIVE Arr =
+    let B = A with [(i) := v] in
+      if i >= 9999 then B
+      else init(B, i+1, re(12345 * v) ) endif
+  MEASURE 9999 - i
+  
+  J :Arr = lambda(k:Ind): 9999 - k
+  Z :Arr = lambda(x:Ind) : 0
+  T :Arr = init(Z, 0, 9876)
+  
+  
+  insert(A, v, i): RECURSIVE Arr =
+    IF (i = 0 OR v >= A(i - 1))
+    THEN A WITH [(i) := v]
+    ELSE insert(A WITH [(i) := A(i - 1)], v, i - 1)
+    ENDIF
+    MEASURE i
+
+  insort_rec(A, (n:upto(10000)) ): RECURSIVE Arr =
+    IF n < 10000 THEN
+      let An = A(n) in
+        insort_rec( insert(A, An, n), n + 1 )
+    ELSE A ENDIF
+    MEASURE 10000 - n
+
+  insort(A): Arr = insort_rec(A, 0)
+  
+  tsort: Val = insort(T)(0)
+  jsort: Val = insort(J)(0)
+  
+END bench2

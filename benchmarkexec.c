@@ -13,7 +13,7 @@
 #include "GC.h"
 #include "benchmarkexec.h"
 
-#define SIZE 100000
+#define SIZE 10000
 #define SIZE_1 SIZE-1
 
 int main(void) {
@@ -25,14 +25,9 @@ int main(void) {
   unsigned long int* TArraySorted;
   
   ticks1=clock();
-  TArray = T();
+  TArraySorted = insort( T() );
   ticks2=clock();
-  printf("Took %f sec to compute T.\n", ( (double) (ticks2-ticks1) ) / CLOCKS_PER_SEC );
-  
-  ticks1=clock();
-  TArraySorted = insort( TArray );
-  ticks2=clock();
-  printf("Took %f sec to sort T.\n", ( (double) (ticks2-ticks1) ) / CLOCKS_PER_SEC );
+  printf("Took %f sec to compute and sort T.\n", ( (double) (ticks2-ticks1) ) / CLOCKS_PER_SEC );
   
   printf("Mininimum of T = %lu\n", ((unsigned long int*) TArraySorted)[0] );
 
@@ -79,8 +74,6 @@ unsigned long int* insert(unsigned long int* A, unsigned long int v, int i) {
 unsigned long int* insort_rec(unsigned long int* A, int n) {
   if ((n < SIZE)) {
     unsigned long int An = A[n];
-    if ( (n % 1000) == 0)
-      printf("debug: %i \n", n);
     return insort_rec( insert( A , An , n ) , (n + 1) );
   } else
     return A;
