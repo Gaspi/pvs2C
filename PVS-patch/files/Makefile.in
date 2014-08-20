@@ -1,0 +1,722 @@
+########################### -*- Mode: Makefile -*- ###########################
+## Makefile -- Main Makefile for PVS; requires GNU Make
+## Author          : Sam Owre, Joseph Kiniry
+## Created On      : Wed Dec 30 19:29:47 1998
+## Last Modified By: Sam Owre
+## Last Modified On: Thu May 20 22:26:02 2004
+## Update Count    : 23
+## Status          : Stable
+###############################################################################
+## PVS
+## Copyright (C) 2006, SRI International.  All Rights Reserved.
+
+## This program is free software; you can redistribute it and/or
+## modify it under the terms of the GNU General Public License
+## as published by the Free Software Foundation; either version 2
+## of the License, or (at your option) any later version.
+
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+## --------------------------------------------------------------------
+
+# This Makefile consists of several parts
+#  Initialization
+#  External libraries and files
+#  PVS grammar files
+#  PVS methods file
+#  PVS Lisp compilation
+#  PVS Lisp image
+#  PVS Emacs prelude info file
+#  PVS Emacs compilation
+#  PVS tarfiles
+#  Clean
+
+# Initialization
+# Initializes variables and performs some checks before invoking rules
+
+ifneq (,)
+This makefile requires GNU Make.
+endif
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+SHELL=/bin/sh
+
+# Should test for existence of platform dependent Makefiles
+
+ETAGS = @ETAGS@
+MKDIR = @MKDIR@
+CFLAGS = @CFLAGS@
+
+# Check to see if we are doing something that requires Emacs and Lisp
+# If MAKECMDGOALS is empty, or has something besides clean, tar, etc.
+# then buildcmds will be nonempty
+ifeq ($(MAKECMDGOALS),)
+buildcmds = all
+else
+buildcmds = $(filter-out clean tarfiles, $(MAKECMDGOALS))
+endif
+
+PLATFORM := $(shell $(PVSPATH)bin/pvs-platform)
+export PLATFORM
+
+bindir = $(TARGETPATH)bin/$(PLATFORM)
+
+SYSTEM ?= pvs
+
+ifneq ($(ALLEGRO_HOME),)
+ALLEGROEXE = $(ALLEGRO_HOME)/mlisp
+LD_LIBRARY_PATH = $(ALLEGRO_HOME):$LD_LIBRARY_PATH
+allegro-devel = $(bindir)/devel/$(SYSTEM)-allegro
+ifeq ($(shell if `grep -q dynamic-runtime $(ALLEGRO_HOME)/devel.lic`; then echo OK; fi),OK)
+allegro-rt = $(bindir)/runtime/$(SYSTEM)-allegro
+endif
+endif
+
+ifneq ($(CMULISP_HOME),)
+# Check that CMULISP_HOME looks OK
+CMULISPEXE = $(CMULISP_HOME)/bin/lisp
+ifeq ($(shell if [ -x "$(CMULISPEXE)" ]; then echo OK; fi),OK)
+# CMUVERSION = $(shell $(CMULISP_HOME)/bin/lisp -batch -eval '(progn (format t "~a" (lisp-implementation-version)) (terpri) (quit))')
+# $(warning "CMU Version $(CMUVERSION)")
+#cmulisp-devel = $(bindir)/devel/$(SYSTEM)-cmulisp
+cmulisp-rt = $(bindir)/runtime/$(SYSTEM)-cmulisp
+else
+$(error "$(CMULISPEXE) is not executable")
+endif
+endif
+
+ifneq ($(SBCLISP_HOME),)
+# Check that the given SBCLISP_HOME works
+SBCLISPEXE = $(SBCLISP_HOME)/run-sbcl.sh
+ifeq ($(shell if [ -x "$(SBCLISPEXE)" ]; then echo OK; fi),OK)
+SBCLVERSION = $(shell $(SBCLISPEXE) --version)
+# $(warning "$(SBCLVERSION)")
+# sbcl-devel += $(bindir)/devel/$(SYSTEM)-sbclisp
+sbcl-rt = $(bindir)/runtime/$(SYSTEM)-sbclisp
+else
+$(error "$(SBCLISPEXE) is not executable")
+endif
+endif
+
+LOAD-FOREIGN-EXTENSION=so
+export LD_LIBRARY_PATH
+ifeq ($(PLATFORM),powerpc-MacOSX)
+  LOAD-FOREIGN-EXTENSION=dylib
+else
+ifeq ($(PLATFORM),ix86-MacOSX)
+  LOAD-FOREIGN-EXTENSION=dylib
+endif
+endif
+
+ifneq ($(buildcmds),)
+
+# Need an emacs to work with
+ifndef EMACS
+EMACS = $(shell which emacs 2> /dev/null)
+endif
+ifeq ($(EMACS),)
+EMACS = $(shell which xemacs 2> /dev/null)
+endif
+ifeq ($(EMACS),)
+$(error "No Emacs or Xemacs found")
+endif
+
+emacsversion = $(shell expr "`$(EMACS) --version 2> /dev/null`" \
+                            : '[^X]*\(X*Emacs [0-9][0-9]\)')
+
+EMACSSUBDIR = $(shell echo "$(emacsversion)" \
+                 | tr '[:upper:]' '[:lower:]' | tr -d ' ')
+
+endif # end of buildcmds check
+
+
+pvs-make-files = pvs.system src/defsystem.lisp src/closopt.lisp
+
+allegro-make-files =  src/make-pvs.lisp src/make-allegro-pvs.lisp
+
+pvs-emacs-src = $(wildcard $(PVSPATH)emacs/emacs-src/*.el)
+# Wanted to use findstring here, but couldn't get it to work
+#$(findstring pvs-prelude-files-and-regions.el, $(pvs-emacs-src))
+# So instead we simply add it and sort the result, which removes duplicates
+pvs-emacs-src += $(PVSPATH)emacs/emacs-src/pvs-prelude-files-and-regions.el
+pvs-emacs-src := $(sort $(pvs-emacs-src))
+
+ilisp-emacs-src = $(wildcard $(PVSPATH)emacs/emacs-src/ilisp/*.el)
+
+emacs-src = $(pvs-emacs-src) $(ilisp-emacs-src)
+
+pvs-emacs-sub-src = $(addprefix $(PVSPATH)emacs/$(EMACSSUBDIR)/,$(notdir $(pvs-emacs-src)))
+
+ilisp-emacs-sub-src = $(addprefix $(PVSPATH)emacs/$(EMACSSUBDIR)/,$(notdir $(ilisp-emacs-src)))
+
+emacs-sub-src = $(pvs-emacs-sub-src) $(ilisp-emacs-sub-src)
+
+emacs-elc = $(filter-out %ilfsf18.elc %ilfsf19.elc %ilfsf20.elc \
+                         %illuc19.elc %ilxemacs.elc %ilisp-menu.elc,\
+                         $(emacs-sub-src:.el=.elc))
+
+ff-files = src/utils/$(PLATFORM)/file_utils.$(LOAD-FOREIGN-EXTENSION) \
+           src/utils/$(PLATFORM)/b64 \
+           BDD/$(PLATFORM)/mu.$(LOAD-FOREIGN-EXTENSION) \
+           src/WS1S/$(PLATFORM)/ws1s.$(LOAD-FOREIGN-EXTENSION)
+
+ess = ess/dist-ess.lisp \
+	ess/init-load.lisp \
+	ess/sys/ergolisp/rel/ergolisp.lisp \
+	ess/sys/ergolisp/rel/ergolisp-exports.lisp \
+	ess/sys/ergolisp/rel/ergo-system.lisp \
+	ess/sys/ergolisp/rel/ergo-types.lisp \
+	ess/sys/ergolisp/rel/type-check.lisp \
+	ess/sys/ergolisp/rel/tdefun.lisp \
+	ess/sys/tools/rel/retry.lisp \
+	ess/sys/tools/rel/box-system.lisp \
+	ess/sys/tools/rel/box.lisp \
+	ess/box-defs.lisp \
+	ess/sys/tools/rel/regression-test.lisp \
+	ess/sys/tools/rel/clet.lisp \
+	ess/sys/tools/rel/box-lib.lisp \
+	ess/sys/tools/rel/print-utils.lisp \
+	ess/sys/ergolisp/rel/dlambda.lisp \
+	ess/sys/ergolisp/rel/dlambda-lib.lisp \
+	ess/term/language/rel/languages.lisp \
+	ess/term/terms/rel/opers.lisp \
+	ess/term/terms/rel/occur.lisp \
+	ess/term/terms/rel/sorts.lisp \
+	ess/term/trep/rel/attr-prims.lisp \
+	ess/term/trep/rel/gterm.lisp \
+	ess/term/terms/rel/terms.lisp \
+	ess/term/terms/rel/termop.lisp \
+	ess/lang/sb-term/rel/access.lisp \
+	ess/lang/sb-term/rel/access-par.lisp \
+	ess/lang/sb-term/rel/aux-funs.lisp \
+	ess/lang/sb-term/rel/sb-lexer.lisp \
+	ess/lang/sb-term/rel/sb-parser.lisp \
+	ess/lang/sb-term/rel/sb-sorts.lisp \
+	ess/lang/sb-term/rel/sb-unparser.lisp \
+	ess/lang/sb-term/rel/sb-unparsing-aux.lisp \
+	ess/lang/sb-term/rel/pre-process.lisp \
+	ess/lang/sb-term/rel/inter-phase.lisp \
+	ess/lang/sb-term/rel/sort-gen.lisp \
+	ess/lang/sb-term/rel/lexer-gen.lisp \
+	ess/lang/sb-term/rel/flatten.lisp \
+	ess/lang/sb-term/rel/look-ahead.lisp \
+	ess/lang/sb-term/rel/compare.lisp \
+	ess/lang/sb-term/rel/phase-three.lisp \
+	ess/lang/sb-term/rel/top-parse.lisp \
+	ess/lang/sb-term/rel/unp-code-revise.lisp \
+	ess/lang/sb-term/rel/unparse-gen.lisp \
+	ess/lang/sb-term/rel/sbrt-lang-def.lisp \
+	ess/lang/sb-term/rel/sbrt-sorting.lisp \
+	ess/lang/sb-term/rel/rt-structs.lisp \
+	ess/lang/sb-term/rel/rt-unp-structs.lisp \
+	ess/lang/sb-term/rel/rt-lex.lisp \
+	ess/lang/sb-term/rel/rt-term.lisp \
+	ess/lang/sb-term/rel/rt-parse-mac.lisp \
+	ess/lang/sb-term/rel/rt-parse.lisp \
+	ess/lang/sb-term/rel/rt-unparse.lisp \
+	ess/lang/sb-term/rel/top.lisp \
+	ess/term/attr/rel/attr-lang-lib.lisp \
+	ess/term/attr/rel/attr-sort.lisp \
+	ess/term/attr/rel/attr-lang.lisp \
+	ess/term/attr/rel/attr-global.lisp \
+	ess/lang/sb-term/rel/rt-unp-attr.lisp \
+	ess/lang/sb-term/rel/rt-format.lisp \
+	ess/lang/sb-term/rel/rt-unp-tex.lisp \
+	ess/lang/sb-term/rel/rt-unp-top.lisp \
+	ess/term/attr/rel/attr-lib.lisp \
+	ess/term/attr/rel/attr-gsort.lisp \
+	ess/term/attr/rel/attr-occ.lisp \
+	ess/lang/sb-term/rel/sbrt-lang-def.lisp \
+	ess/lang/sb-term/rel/sbrt-sorting.lisp \
+	ess/lang/sb-term/rel/rt-structs.lisp \
+	ess/lang/sb-term/rel/rt-unp-structs.lisp \
+	ess/lang/sb-term/rel/rt-lex.lisp \
+	ess/lang/sb-term/rel/rt-term.lisp \
+	ess/lang/sb-term/rel/rt-parse-mac.lisp \
+	ess/lang/sb-term/rel/rt-parse.lisp \
+	ess/lang/sb-term/rel/rt-unparse.lisp \
+	ess/lang/sb-term/rel/rt-unp-attr.lisp \
+	ess/lang/sb-term/rel/rt-format.lisp \
+	ess/lang/sb-term/rel/rt-unp-tex.lisp \
+	ess/lang/sb-term/rel/rt-unp-top.lisp \
+	ess/lang/ab-term/rel/af-runtime.lisp \
+	ess/sys/constr/rel/constr.lisp \
+	ess/sys/constr/rel/constr-term-rep.lisp \
+	ess/sys/constr/rel/constr-sorts.lisp \
+	ess/sys/constr/rel/constr-lexer.lisp \
+	ess/sys/constr/rel/constr-parser.lisp \
+	ess/sys/constr/rel/defsconstr.lisp
+
+pvs-parser-in = src/make-pvs-parser.lisp \
+             src/pvs-gr.txt \
+             src/ergo-runtime-fixes.lisp \
+             src/ergo-gen-fixes.lisp \
+             src/pvs-lang-def.lisp \
+             src/pvs-parse-fixes.lisp
+
+pvs-parser-out = src/pvs-lexer.lisp \
+             src/pvs-parser.lisp \
+             src/pvs-sorts.lisp
+
+ground-prover = src/ground-prover/prmacros.lisp \
+		src/ground-prover/interface.lisp \
+		src/ground-prover/prglobals.lisp \
+		src/ground-prover/process.lisp \
+		src/ground-prover/arrays.lisp \
+		src/ground-prover/tuples.lisp \
+		src/ground-prover/arith.lisp \
+		src/ground-prover/q.lisp
+
+rahd = src/rahd/rahd.lisp src/rahd/polyalg.lisp \
+       src/rahd/polyeval.lisp src/rahd/polyconv.lisp \
+       src/rahd/sturm.lisp src/rahd/sturmineq.lisp \
+       src/rahd/strings.lisp src/rahd/ineqfert.lisp \
+       src/rahd/canonizer.lisp src/rahd/ideals.lisp \
+       src/rahd/opencad.lisp src/rahd/cocoa.lisp \
+       src/rahd/cases.lisp src/rahd/realnull.lisp \
+       src/rahd/cauchyeval.lisp src/rahd/intgrldom.lisp \
+       src/rahd/demodlin.lisp src/rahd/demodnl.lisp \
+       src/rahd/plinsolver.lisp src/rahd/intsplit.lisp \
+       src/rahd/interval.lisp src/rahd/intvlcp.lisp \
+       src/rahd/gbrnull.lisp src/rahd/cnf.lisp \
+       src/rahd/division.lisp src/rahd/quicksat.lisp \
+       src/rahd/prover.lisp src/rahd/abbrevs.lisp \
+       src/rahd/regression.lisp src/rahd/debug.lisp \
+       src/rahd/prfanal.lisp src/rahd/rahd-pvs.lisp
+
+nlyices = src/nlyices/nlyices.lisp src/nlyices/polyrep-totdeglex.lisp \
+	  src/nlyices/decide3_2a.lisp src/nlyices/nlsolver.lisp \
+	  src/nlyices/named-callbacks.lisp src/nlyices/fcpo.lisp \
+          src/nlyices/vts.lisp
+
+pvs-src = src/closopt.lisp \
+          src/store-object.lisp \
+	  src/defcl.lisp \
+          src/classes-expr.lisp \
+          src/classes-decl.lisp \
+          src/prover/estructures.lisp \
+          src/pvs-methods.lisp \
+          src/utils/hashfn.lisp \
+          src/macros.lisp \
+          src/linked-hash-table.lisp \
+          src/globals.lisp \
+          src/optimize.lisp \
+	  src/makes.lisp \
+	  src/parse.lisp \
+	  src/pp.lisp \
+          src/pp-tex.lisp \
+          src/pp-html.lisp \
+          src/pp-xml.lisp \
+          src/print-object.lisp \
+	  src/equalities.lisp \
+          src/utils.lisp \
+          src/gensubst.lisp \
+	  src/substit.lisp \
+	  src/freeparams.lisp \
+	  src/subst-mod-params.lisp \
+	  src/tc-unify.lisp \
+	  src/resolve.lisp \
+	  src/tcc-gen.lisp \
+	  src/set-type.lisp \
+	  src/check-for-tccs.lisp \
+          src/tcexprs.lisp \
+	  src/tcdecls.lisp \
+	  src/conversions.lisp \
+	  src/judgements.lisp \
+	  src/xref.lisp \
+	  src/occurs-in.lisp \
+	  src/context.lisp \
+	  src/datatype.lisp \
+	  src/typecheck.lisp \
+	  src/tclib.lisp \
+          src/compare.lisp \
+	  src/untypecheck.lisp \
+	  src/copy-lex.lisp \
+	  src/save-theories.lisp \
+          src/pvs.lisp \
+          src/status-cmds.lisp \
+	  src/add-decl.lisp \
+	  src/list-decls.lisp \
+	  src/tex-support.lisp \
+          src/raw-api.lisp
+
+sbcllisp += src/utils/file-utils-sbcl.lisp
+cmulisp += src/utils/file-utils-cmu.lisp
+allegrolisp += src/utils/file-utils.lisp
+
+interface = src/interface/pvs-emacs.lisp \
+	    src/interface/emacs-calls.lisp \
+	    src/interface/cl-ilisp.lisp \
+	    src/interface/allegro.lisp \
+	    src/interface/cmulisp.lisp \
+	    src/interface/ilisp-pkg.lisp \
+	    src/interface/pvs-xml-rpc.lisp \
+	    src/interface/pvs-json-rpc.lisp \
+	    src/interface/pvs-json-methods.lisp
+
+pvs-prover = src/prover/checker-macros.lisp \
+         src/prover/decision-procedure-interface.lisp \
+         src/prover/translate-to-prove.lisp \
+         src/prover/eproofcheck.lisp \
+         src/prover/proofrules.lisp \
+	 src/prover/equantifiers.lisp \
+	 src/prover/freevars.lisp \
+	 src/prover/rewrites.lisp \
+	 src/prover/assert.lisp \
+	 src/prover/beta-reduce.lisp \
+	 src/prover/replace.lisp \
+	 src/prover/expand.lisp \
+	 src/prover/match.lisp \
+	 src/prover/rules.lisp \
+         src/prover/strategies.lisp \
+         src/prover/wish.lisp \
+	 src/prover/translate-to-yices.lisp \
+	 src/prover/translate-to-yices2.lisp
+
+bddlisp = BDD/bdd.lisp BDD/mu.lisp
+allegrolisp += BDD/bdd-allegro.lisp BDD/mu-allegro.lisp
+sbcllisp += BDD/bdd-sbcl.lisp BDD/mu-sbcl.lisp
+cmulisp += BDD/bdd-cmu.lisp BDD/mu-cmu.lisp
+
+PVSiolisp = src/PVSio/pvs-lib.lisp src/PVSio/defattach.lisp \
+            src/PVSio/eval.lisp src/PVSio/pvsio.lisp
+
+Maniplisp = src/Manip/pregexp.lisp src/Manip/manip-utilities.lisp \
+            src/Manip/extended-expr.lisp src/Manip/syntax-matching.lisp \
+            src/Manip/manip-strategies.lisp
+
+Fieldlisp = src/Field/extrategies.lisp src/Field/field.lisp
+
+ProofLitelisp = src/ProofLite/prooflite.lisp
+
+ws1slisp = src/WS1S/lisp/dfa-foreign.lisp src/WS1S/lisp/dfa.lisp \
+           src/WS1S/lisp/pvs-utils.lisp src/WS1S/lisp/symtab.lisp \
+           src/WS1S/lisp/signature.lisp src/WS1S/lisp/pvs2dfa.lisp \
+           src/WS1S/lisp/ws1s-strategy.lisp \
+           src/WS1S/lisp/presburger.lisp
+
+abstractionlisp = src/abstraction/abstract.lisp
+
+groundevallisp = src/groundeval/eval-macros.lisp \
+		 src/groundeval/eval-utils.lisp \
+		 src/groundeval/ground-expr.lisp \
+		 src/groundeval/static-update.lisp \
+		 src/groundeval/pvseval-update.lisp \
+		 src/groundeval/cl2pvs.lisp \
+		 src/groundeval/generate-lisp-for-theory.lisp \
+                 src/groundeval/random-test.lisp \
+                 src/groundeval/pvs2clean.lisp \
+	         src/groundeval/pvs2c-utils.lisp \
+		 src/groundeval/pvs2c-types.lisp \
+		 src/groundeval/pvs2c-code.lisp \
+		 src/groundeval/pvs2c-analysis.lisp \
+		 src/groundeval/pvs2c-primop.lisp \
+		 src/groundeval/pvs2c.lisp
+
+
+inst-by-unif-lisp = src/inst-by-unif/unify.lisp \
+                    src/inst-by-unif/herbrandize.lisp \
+                    src/inst-by-unif/gensubsts.lisp \
+                    src/inst-by-unif/inst-by-unif.lisp
+
+lisp-files = pvs-config.lisp $(pvs-parser-out) $(ground-prover) $(pvs-src) \
+	     $(interface) $(pvs-prover) $(bddlisp) \
+	     $(PVSiolisp) $(Maniplisp) $(Fieldlisp) $(ProofLitelisp) \
+             $(ws1slisp) $(groundevallisp) $(abstractionlisp) $(rahd) \
+	     $(nlyices)
+
+ifneq ($(PVSPATH),)
+pvs-make-files := $(patsubst %,$(PVSPATH)%,$(pvs-make-files))
+allegro-make-files := $(patsubst %,$(PVSPATH)%,$(allegro-make-files))
+ff-files := $(patsubst %,$(PVSPATH)%,$(ff-files))
+ess := $(patsubst %,$(PVSPATH)%,$(ess))
+pvs-parser-in := $(patsubst %,$(PVSPATH)%,$(pvs-parser-in))
+pvs-parser-out := $(patsubst %,$(PVSPATH)%,$(pvs-parser-out))
+ground-prover := $(patsubst %,$(PVSPATH)%,$(ground-prover))
+pvs-src := $(patsubst %,$(PVSPATH)%,$(pvs-src))
+interface := $(patsubst %,$(PVSPATH)%,$(interface))
+pvs-prover := $(patsubst %,$(PVSPATH)%,$(pvs-prover))
+bddlisp := $(patsubst %,$(PVSPATH)%,$(bddlisp))
+PVSiolisp := $(patsubst %,$(PVSPATH)%,$(PVSiolisp))
+Maniplisp := $(patsubst %,$(PVSPATH)%,$(Maniplisp))
+Fieldlisp := $(patsubst %,$(PVSPATH)%,$(Fieldlisp))
+ProofLitelisp := $(patsubst %,$(PVSPATH)%,$(ProofLitelisp))
+ws1slisp := $(patsubst %,$(PVSPATH)%,$(ws1slisp))
+abstractionlisp := $(patsubst %,$(PVSPATH)%,$(abstractionlisp))
+rahd := $(patsubst %,$(PVSPATH)%,$(rahd))
+nlyices := $(patsubst %,$(PVSPATH)%,$(nlyices))
+groundevallisp := $(patsubst %,$(PVSPATH)%,$(groundevallisp))
+inst-by-unif-lisp := $(patsubst %,$(PVSPATH)%,$(inst-by-unif-lisp))
+allegrolisp := $(patsubst %,$(PVSPATH)%,$(allegrolisp))
+sbcllisp := $(patsubst %,$(PVSPATH)%,$(sbcllisp))
+cmulisp := $(patsubst %,$(PVSPATH)%,$(cmulisp))
+endif
+
+all-lisp-files = $(ess) $(pvs-parser-in) $(lisp-files)
+
+PVSiolib = $(PVSPATH)lib/PVSio/pvsbin/top.bin
+
+bitvectorslib = $(PVSPATH)lib/bitvectors/pvsbin/top.bin
+
+finitesetslib = $(PVSPATH)lib/finite_sets/pvsbin/top.bin
+
+.PHONY : all devel runtime parser emacs prelude-files-and-regions etags
+
+ifneq ($(buildcmds),)
+ifeq ($(SBCLISP_HOME)$(CMULISP_HOME)$(ALLEGRO_HOME),)
+$(error "Must set SBCLISP_HOME, CMULISP_HOME, or ALLEGRO_HOME")
+endif
+endif
+
+all : devel runtime prelude-files-and-regions $(emacs-elc) etags
+
+devel : $(allegro-devel) # $(sbcl-devel) $(cmulisp-devel)
+
+runtime : $(allegro-rt) $(sbcl-rt) $(cmulisp-rt)
+
+parser : pvs-parser-out
+
+prelude-files-and-regions : $(PVSPATH)emacs/emacs-src/pvs-prelude-files-and-regions.el
+
+etags : $(PVSPATH)TAGS
+
+$(PVSPATH)TAGS : $(lisp-files) $(allegrolisp) $(sbcllisp) $(cmulisp) $(pvs-emacs-src)
+	$(ETAGS) $(lisp-files) $(allegrolisp) $(sbcllisp) $(cmulisp) $(pvs-emacs-src)
+
+fileutils = \
+   $(PVSPATH)src/utils/$(PLATFORM)/file_utils.$(LOAD-FOREIGN-EXTENSION) \
+   $(PVSPATH)src/utils/$(PLATFORM)/b64
+
+bddlib = $(PVSPATH)BDD/$(PLATFORM)/mu.$(LOAD-FOREIGN-EXTENSION)
+
+ws1slib = $(PVSPATH)src/WS1S/$(PLATFORM)/ws1s.$(LOAD-FOREIGN-EXTENSION)
+
+image-deps = $(fileutils) $(bddlib) $(ws1slib) $(pvs-make-files) \
+             $(ess) $(ff-files) $(lisp-files) \
+             $(PVSPATH)lib/prelude.pvs $(PVSPATH)lib/prelude.prf
+
+emacs = $(PVSPATH)emacs/$(EMACSSUBDIR)/pvs-load.elc
+
+# Here are the rules for building the PVS grammar, pvs-methods file, and
+# devel and runtime images.
+
+ifneq ($(SBCLISP_HOME),)
+
+ifeq ($(ALLEGRO_HOME),) # Build these only if Allegro is not available
+$(PVSPATH)src/pvs-lexer.lisp : $(pvs-parser-in)
+	@echo "******* Creating parser"
+	$(SBCLISPEXE) --load src/make-pvs-parser
+
+$(PVSPATH)src/pvs-methods.lisp : $(PVSPATH)src/make-pvs-methods.lisp \
+	$(PVSPATH)src/defcl.lisp \
+	$(PVSPATH)src/classes-expr.lisp \
+	$(PVSPATH)src/classes-decl.lisp
+	@echo "******* Creating pvs-methods.lisp"
+	$(SBCLISPEXE) --eval "(defvar *pvs-path* \"$(PVSPATH)\")" \
+		   --load src/make-pvs-methods.lisp
+endif
+
+# $(sbcl-devel)
+$(sbcl-rt) : $(image-deps) $(sbcllisp)
+	$(MKDIR) -p $(subst $(SYSTEM)-sbclisp,,$@)
+	@echo "******* Compiling PVS files in Steel Bank Common Lisp (SBCL)"
+	$(SBCLISPEXE) --eval '(require :sb-posix)' \
+		      --eval '(require :sb-md5)' \
+		      --eval '(load "pvs.system" :verbose t)' \
+		      --eval "(let ((*load-pvs-prelude* nil)) \
+				(mk:operate-on-system :pvs :compile))" \
+		      --eval '(quit)'
+	cp $(PVSPATH)src/utils/$(PLATFORM)/b64 $(bindir)
+	@echo "******* Building PVS image $@"
+	$(SBCLISPEXE) --eval '(require :sb-posix)' \
+		      --eval '(require :sb-md5)' \
+		      --eval '(load "pvs.system" :verbose t)' \
+		      --eval "(unwind-protect \
+				  (mk:operate-on-system :pvs :compile) \
+				(save-lisp-and-die \"$@\" \
+				    :toplevel (function startup-pvs) \
+				    :executable t))"
+	-rm $(PVSPATH)BDD/$(PLATFORM)/bdd-sbcl.*
+	cp $(SBCLISPEXE) $(subst $(SYSTEM)-sbclisp,,$@)
+	cp $(PVSPATH)BDD/$(PLATFORM)/mu.$(LOAD-FOREIGN-EXTENSION) $(subst $(SYSTEM)-sbclisp,,$@)
+	cp $(PVSPATH)BDD/bdd-sbcl.lisp $(PVSPATH)BDD/mu-sbcl.lisp $(subst $(SYSTEM)-sbclisp,,$@)
+	cp $(PVSPATH)src/WS1S/$(PLATFORM)/ws1s.$(LOAD-FOREIGN-EXTENSION) $(subst $(SYSTEM)-sbclisp,,$@)
+	cp $(PVSPATH)src/WS1S/lisp/dfa-foreign-sbcl.lisp $(subst $(SYSTEM)-sbclisp,,$@)
+	cp $(PVSPATH)src/utils/$(PLATFORM)/b64 $(bindir)
+endif
+
+ifneq ($(CMULISP_HOME),)
+
+ifeq ($(ALLEGRO_HOME),) # Build these only if Allegro is not available
+$(PVSPATH)src/pvs-lexer.lisp : $(pvs-parser-in)
+	@echo "******* Creating parser"
+	$(CMULISPEXE) -load src/make-pvs-parser
+
+$(PVSPATH)src/pvs-methods.lisp : $(PVSPATH)src/make-pvs-methods.lisp \
+                       $(PVSPATH)src/defcl.lisp \
+                       $(PVSPATH)src/classes-expr.lisp \
+                       $(PVSPATH)src/classes-decl.lisp
+	@echo "******* Creating pvs-methods.lisp"
+	$(CMULISPEXE) -eval '(defvar *pvs-path* "/homes/owre/tmp/pvs4.0")' \
+		   -load src/make-pvs-methods.lisp
+endif
+
+# $(cmulisp-devel)
+$(cmulisp-rt) : $(image-deps) $(cmulisp)
+	@echo "******* Compiling PVS files in CMU Lisp"
+	$(MKDIR) -p $(subst $(SYSTEM)-cmulisp,,$@)
+	$(CMULISPEXE) -eval '(load "pvs.system" :verbose t) (let ((*load-pvs-prelude* nil)) (mk:operate-on-system :pvs :compile)) (quit)'
+	@echo "******* Building PVS image $@"
+	$(CMULISPEXE) -eval '(load "pvs.system" :verbose t) (unwind-protect (mk:operate-on-system :pvs :compile) (save-lisp "$@" :executable t :init-function (function startup-pvs)))'
+	-rm $(PVSPATH)BDD/$(PLATFORM)/bdd-cmu.*
+	cp $(PVSPATH)BDD/$(PLATFORM)/mu.$(LOAD-FOREIGN-EXTENSION) $(subst $(SYSTEM)-cmulisp,,$@)
+	cp $(PVSPATH)BDD/bdd-cmu.lisp $(PVSPATH)BDD/mu-cmu.lisp $(subst $(SYSTEM)-cmulisp,,$@)
+	cp $(PVSPATH)src/WS1S/$(PLATFORM)/ws1s.$(LOAD-FOREIGN-EXTENSION) $(subst $(SYSTEM)-cmulisp,,$@)
+	cp $(PVSPATH)src/WS1S/lisp/dfa-foreign-cmu.lisp $(subst $(SYSTEM)-cmulisp,,$@)
+	cp $(PVSPATH)src/utils/$(PLATFORM)/b64 $(bindir)
+endif
+
+ifneq ($(ALLEGRO_HOME),)
+$(allegro-devel) $(allegro-rt) : $(image-deps) $(allegro-make-files) $(allegrolisp)
+	$(MKDIR) -p $(subst $(SYSTEM)-allegro,,$@)
+	rm -rf /tmp/pvs-allegro-build
+	@echo "******* Compiling PVS files in Allegro Lisp"
+	$(ALLEGROEXE) -e '(load "$(PVSPATH)pvs.system")' \
+		-e "(let ((code 1) \
+                          (*load-pvs-prelude* nil)) \
+                      (unwind-protect \
+                          (multiple-value-bind (v err) \
+                            (ignore-errors (mk:operate-on-system :pvs :compile)) \
+                               (if err \
+                                   (let ((*print-readably* nil)) \
+                                     (format t \"~a\" err)) \
+                                   (setq code 0)))) \
+                        (excl:exit code)))"
+	cp $(PVSPATH)src/utils/$(PLATFORM)/b64 $(bindir)
+	@echo "******* Building PVS image $@"
+	$(ALLEGROEXE) -e '(defvar *runtime* $(if $(findstring runtime,$@),t,nil))' \
+		-L $(PVSPATH)src/make-pvs.lisp
+	touch $@
+
+$(PVSPATH)src/pvs-lexer.lisp : $(pvs-parser-in)
+	@echo "******* Creating parser"
+	$(ALLEGROEXE) -L $(PVSPATH)src/make-pvs-parser
+
+$(PVSPATH)src/pvs-methods.lisp : $(PVSPATH)src/make-pvs-methods.lisp \
+                       $(PVSPATH)src/defcl.lisp \
+                       $(PVSPATH)src/classes-expr.lisp \
+                       $(PVSPATH)src/classes-decl.lisp
+	@echo "******* Creating pvs-methods.lisp"
+	$(ALLEGROEXE) -e '(defvar *pvs-path* "@PVSPATH@")' \
+		-L $(PVSPATH)src/make-pvs-methods.lisp
+endif
+
+
+
+.PHONY: all makefileutils makebdd makews1s make-release-notes \
+        clean distclean tar
+
+$(fileutils) makefileutils :
+	$(MAKE) -C $(PVSPATH)src/utils/$(PLATFORM) XCFLAGS="$(CFLAGS)"
+$(bddlib) makebdd :
+	$(MAKE) -C $(PVSPATH)BDD/$(PLATFORM) XCFLAGS="$(CFLAGS)"
+$(ws1slib) makews1s :
+	(cd $(PVSPATH)src/WS1S ; rm -rf mona ; ln -s mona-1.4 mona);\
+	$(MAKE) -C $(PVSPATH)src/WS1S/$(PLATFORM) XCFLAGS="$(CFLAGS)"
+
+make-release-notes :
+	$(MAKE) -C $(PVSPATH)doc/release-notes
+
+$(PVSiolib) : $(PVSPATH)lib/PVSio/top.pvs
+	./pvs -batch -q -l $(PVSPATH)lib/PVSio/tc-pvsio.el 
+
+$(bitvectorslib) : $(PVSPATH)lib/bitvectors/top.pvs
+	./pvs -batch -q -l $(PVSPATH)lib/bitvectors/tc-bitvectors.el 
+
+$(finitesetslib) : $(PVSPATH)lib/finite_sets/top.pvs
+	./pvs -batch -q -l $(PVSPATH)lib/finite_sets/tc-finite_sets.el
+
+libraries : $(PVSiolib) $(bitvectorslib) $(finitesetslib)
+
+tar :
+	bin/make-dist
+
+lib/strategies.lisp : src/prover/strategies.lisp
+	(cd lib; ln -sf ../src/prover/strategies.lisp strategies.lisp)
+
+$(PVSPATH)emacs/emacs-src/pvs-prelude-files-and-regions.el : \
+                  $(PVSPATH)emacs/emacs-src/pvs-set-prelude-info.el \
+                  $(PVSPATH)lib/prelude.pvs
+	-./pvs -batch -l emacs/emacs-src/pvs-set-prelude-info.el \
+                        -f set-prelude-files-and-regions
+
+$(PVSPATH)emacs/$(EMACSSUBDIR)/%.el : $(PVSPATH)emacs/emacs-src/%.el
+	$(MKDIR) -p emacs/$(EMACSSUBDIR)
+	(cd emacs/$(EMACSSUBDIR) ; ln -sf ../emacs-src/$(@F) .)
+
+$(PVSPATH)emacs/$(EMACSSUBDIR)/%.el : $(PVSPATH)emacs/emacs-src/ilisp/%.el
+	$(MKDIR) -p emacs/$(EMACSSUBDIR)
+	(cd emacs/$(EMACSSUBDIR) ; ln -sf ../emacs-src/ilisp/$(@F) .)
+
+# We need to create the elc files, but this does not work well with make, as
+# we can't simply byte-compile each file separately.  So we create a dummy
+# .readme file.  It will be newer than all of the subdir source files, and
+# the byte compiled files will thne be newer than it.
+
+$(PVSPATH)emacs/$(EMACSSUBDIR)/.readme : $(emacs-sub-src)
+	echo "File exists for make dependency usage" > $@
+
+$(emacs-elc) : $(PVSPATH)emacs/$(EMACSSUBDIR)/.readme
+	(cd emacs/$(EMACSSUBDIR); $(EMACS) -batch -l pvs-byte-compile.el)
+
+install:
+	@echo "target install is not used for PVS - see INSTALL"
+
+faslexts = fasl,rfasl,hfasl,lfasl,mfasl,nfasl,sbin,obin,rbin,mbin,x86f,ppcf,sparcf,x8664s,x86s,ppcs,sparcs,clfasl,wfasl,err
+
+platforms = ix86-Linux,ix86_64-Linux,ix86-MacOSX,powerpc-MacOSX,powerpc-MacOSX,sun4-SunOS5
+# HT: Need to put a comma in a variable, because a literal 
+# comma cannot appear in a makefile function argument.
+comma:= ,
+
+clean : 
+	rm -f *.{$(faslexts)} */*.{$(faslexts)} */*/*.{$(faslexts)} \
+              */*/*/*.{$(faslexts)} */*/*/*/*.{$(faslexts)} \
+              */{$(platforms)}/*.o */*/{$(platforms)}/*.o
+	rm -rf src/WS1S/mona
+	rm -f lib/*_adt.pvs
+	for p in $(subst $(comma), ,$(platforms)) ; do \
+		rm -rf bin/$$p; \
+		$(MAKE) -C src/utils/$$p clean; \
+		$(MAKE) -C src/WS1S/$$p clean; \
+		$(MAKE) -C BDD/$$p clean; \
+	done
+
+distclean :
+	rm -f *.{$(faslexts)} */*.{$(faslexts)} */*/*.{$(faslexts)} \
+              */*/*/*.{$(faslexts)} */*/*/*/*.{$(faslexts)} \
+              */{$(platforms)}/*.o */*/{$(platforms)}/*.o
+	rm -f Makefile TAGS autoloads.out config.log config.status configure \
+              emacs/emacs-src/pvs-prelude-files-and-regions.el lib/*_adt.pvs \
+              pvs pvsio src/WS1S/mona
+	rm -f src/pvs-info.lisp src/pvs-lexer.lisp src/pvs-methods.lisp \
+              src/pvs-parser.lisp src/pvs-sorts.lisp
+	rm -f src/utils/{$(platforms)}/b64
+	rm -rf emacs/emacs19/*.{el,elc} emacs/emacs24 emacs/emacs23 \
+               emacs/emacs22 emacs/emacs20 emacs/xeamcs20 emacs/xemacs21
+	rm -rf */{$(platforms)}/*.{a,so,dylib} */*/{$(platforms)}/*.{a,so,dylib}
+	rm -f doc/langauge/Makefile doc/language/pvs-doc.el doc/prover/Makefile doc/user-guide/Makefile
+	rm -rf autom4te.cache bin/{$(platforms)}
+
+# Cute hack for printing variables, e.g.,
+#  make print-emacs-elc
+# will print the value of emacs-elc
+print-%:
+	@echo '$*=$($*)'
